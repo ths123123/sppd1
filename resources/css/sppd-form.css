@@ -1,0 +1,657 @@
+/* 
+ * SPPD Form Styling - Clean & Elegant Design
+ * Sistem SPPD KPU Kabupaten Cirebon
+ * 
+ * Desain simpel dan elegan dengan warna putih bersih
+ * Terinspirasi dari Grok AI - minimalis namun profesional
+ */
+
+/* ===== GLOBAL FORM STYLING ===== */
+.sppd-form-container {
+    background: #ffffff;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.sppd-form-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(0, 0, 0, 0.02) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.02) 0%, transparent 50%);
+    z-index: 1;
+}
+
+.sppd-form-main {
+    position: relative;
+    z-index: 2;
+    max-width: 800px; /* Batasan maksimal */
+    margin: 0 auto;
+}
+
+/* Ensure all form sections have consistent width */
+.sppd-form-header,
+.sppd-form-section,
+.sppd-form-actions {
+    width: 100%;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Container consistency */
+.sppd-form-container main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* ===== FORM HEADER STYLING ===== */
+.sppd-form-header {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.sppd-form-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #000000;
+    border-radius: 12px 12px 0 0;
+}
+
+.sppd-form-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #000000;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    letter-spacing: -0.025em;
+}
+
+.sppd-form-subtitle {
+    color: #6b7280;
+    text-align: center;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    font-weight: 400;
+}
+
+.sppd-form-subtitle {
+    color: #6b7280;
+    text-align: center;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ===== PROGRESS STEPS STYLING ===== */
+.sppd-progress-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.sppd-progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
+.sppd-progress-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: calc(100% + 0.5rem);
+    width: 2rem;
+    height: 2px;
+    background: #e5e7eb;
+    border-radius: 1px;
+}
+
+.sppd-progress-step.active:not(:last-child)::after {
+    background: #000000;
+}
+
+.sppd-progress-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: #6b7280;
+    transition: all 0.3s ease;
+}
+
+.sppd-progress-step.active .sppd-progress-circle {
+    background: #000000;
+    color: white;
+    border-color: #000000;
+    transform: scale(1.1);
+}
+
+.sppd-progress-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-align: center;
+    font-weight: 500;
+}
+
+.sppd-progress-step.active .sppd-progress-label {
+    color: #000000;
+    font-weight: 600;
+}
+
+.sppd-progress-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-align: center;
+    font-weight: 500;
+}
+
+.sppd-progress-step.active .sppd-progress-label {
+    color: #374151;
+    font-weight: 600;
+}
+
+/* ===== FORM SECTION STYLING ===== */
+.sppd-form-section {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    max-width: 100%;
+    width: 100%;
+}
+
+.sppd-form-header {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    max-width: 100%;
+    width: 100%;
+}
+
+.sppd-form-section:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sppd-section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    position: relative;
+}
+
+.sppd-section-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 60px;
+    height: 1px;
+    background: #000000;
+    border-radius: 1px;
+}
+
+.sppd-section-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    background: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.sppd-section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #000000;
+    margin: 0;
+    letter-spacing: -0.025em;
+}
+
+.sppd-section-subtitle {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin: 0;
+    font-weight: 400;
+}
+
+.sppd-section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+}
+
+.sppd-section-subtitle {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* ===== FORM INPUTS STYLING ===== */
+.sppd-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.sppd-form-group.half-width {
+    width: calc(50% - 0.5rem);
+}
+
+.sppd-form-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.sppd-form-label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.sppd-form-label.required::after {
+    content: ' *';
+    color: #ef4444;
+    font-weight: 700;
+}
+
+.sppd-form-input,
+.sppd-form-select,
+.sppd-form-textarea {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #ffffff;
+    color: #000000;
+}
+
+.sppd-form-input:focus,
+.sppd-form-select:focus,
+.sppd-form-textarea:focus {
+    outline: none;
+    border-color: #000000;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.sppd-form-input.error,
+.sppd-form-select.error,
+.sppd-form-textarea.error {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.sppd-form-input.success,
+.sppd-form-select.success,
+.sppd-form-textarea.success {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+/* ===== CURRENCY INPUT STYLING ===== */
+.sppd-currency-input {
+    position: relative;
+}
+
+.sppd-currency-input::before {
+    content: 'Rp';
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-weight: 600;
+    z-index: 1;
+}
+
+.sppd-currency-input input {
+    padding-left: 2.5rem;
+}
+
+/* ===== BUDGET SECTION SPECIAL STYLING ===== */
+.sppd-budget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.sppd-budget-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.sppd-budget-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #000000;
+    border-radius: 8px 8px 0 0;
+}
+
+.sppd-budget-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sppd-total-budget {
+    background: #000000;
+    color: white;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    margin-top: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sppd-total-budget .amount {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sppd-total-budget .label {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ===== UPLOAD SECTION STYLING ===== */
+.sppd-upload-zone {
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.sppd-upload-zone:hover {
+    border-color: #000000;
+    background: #f9fafb;
+}
+
+.sppd-upload-zone.drag-over {
+    border-color: #000000;
+    background: #f3f4f6;
+}
+
+.sppd-upload-icon {
+    font-size: 3rem;
+    color: #9ca3af;
+    margin-bottom: 1rem;
+}
+
+.sppd-upload-zone:hover .sppd-upload-icon {
+    color: #000000;
+}
+
+/* ===== FORM ACTIONS STYLING ===== */
+.sppd-form-actions {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 2rem;
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.sppd-btn {
+    padding: 0.875rem 2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.sppd-btn-primary {
+    background: #000000;
+    color: white;
+    border: 1px solid #000000;
+}
+
+.sppd-btn-primary:hover {
+    background: #374151;
+    border-color: #374151;
+}
+
+.sppd-btn-secondary {
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid #e5e7eb;
+}
+
+.sppd-btn-secondary:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.sppd-btn-success {
+    background: #16a34a;
+    color: white;
+    border: 1px solid #16a34a;
+}
+
+.sppd-btn-success:hover {
+    background: #15803d;
+    border-color: #15803d;
+}
+
+/* ===== HELPER CLASSES ===== */
+.sppd-text-error {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.sppd-text-success {
+    color: #16a34a;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.sppd-text-info {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .sppd-form-container {
+        padding: 1rem;
+    }
+    
+    .sppd-form-title {
+        font-size: 2rem;
+    }
+    
+    .sppd-form-row {
+        flex-direction: column;
+    }
+    
+    .sppd-form-group.half-width {
+        width: 100%;
+    }
+    
+    .sppd-budget-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .sppd-form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .sppd-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .sppd-progress-container {
+        gap: 0.5rem;
+    }
+    
+    .sppd-progress-step:not(:last-child)::after {
+        width: 1rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .sppd-form-main {
+        padding: 0 0.75rem;
+    }
+    
+    .sppd-form-header,
+    .sppd-form-section,
+    .sppd-form-actions {
+        padding: 1.25rem;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes sppd-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes sppd-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.sppd-animate-fade-in {
+    animation: sppd-fade-in 0.6s ease-out;
+}
+
+.sppd-animate-slide-in {
+    animation: sppd-slide-in 0.6s ease-out;
+}
+
+/* ===== DARK MODE SUPPORT ===== */
+@media (prefers-color-scheme: dark) {
+    .sppd-form-container {
+        background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+    }
+    
+    .sppd-form-header,
+    .sppd-form-section,
+    .sppd-form-actions {
+        background: rgba(31, 41, 55, 0.95);
+        border-color: rgba(75, 85, 99, 0.2);
+    }
+    
+    .sppd-section-title {
+        color: #f9fafb;
+    }
+    
+    .sppd-form-label {
+        color: #e5e7eb;
+    }
+    
+    .sppd-form-input,
+    .sppd-form-select,
+    .sppd-form-textarea {
+        background: rgba(31, 41, 55, 0.8);
+        border-color: #4b5563;
+        color: #f9fafb;
+    }
+    
+    .sppd-form-input:focus,
+    .sppd-form-select:focus,
+    .sppd-form-textarea:focus {
+        background: rgba(31, 41, 55, 0.95);
+    }
+}

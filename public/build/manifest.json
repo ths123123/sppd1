@@ -1,0 +1,87 @@
+{
+  "_api-C2LmOsIF.js": {
+    "file": "assets/api-C2LmOsIF.js",
+    "name": "api"
+  },
+  "_vendor-Cm4okMZt.js": {
+    "file": "assets/vendor-Cm4okMZt.js",
+    "name": "vendor"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-D2n_Dnj9.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/css/login.css": {
+    "file": "assets/login-CcLBkzDv.css",
+    "src": "resources/css/login.css",
+    "isEntry": true
+  },
+  "resources/css/sppd-form-animations.css": {
+    "file": "assets/sppd-form-animations-CDPd7xK7.css",
+    "src": "resources/css/sppd-form-animations.css",
+    "isEntry": true
+  },
+  "resources/css/sppd-form-override.css": {
+    "file": "assets/sppd-form-override-D3thM8Ja.css",
+    "src": "resources/css/sppd-form-override.css",
+    "isEntry": true
+  },
+  "resources/css/sppd-form.css": {
+    "file": "assets/sppd-form-ds9Ov8LH.css",
+    "src": "resources/css/sppd-form.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-9_lK-H8e.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "_vendor-Cm4okMZt.js",
+      "_api-C2LmOsIF.js"
+    ],
+    "css": [
+      "assets/app-CCl8E_5p.css"
+    ]
+  },
+  "resources/js/dashboard/charts.js": {
+    "file": "assets/charts-DwhFoL6A.js",
+    "name": "charts",
+    "src": "resources/js/dashboard/charts.js",
+    "isEntry": true
+  },
+  "resources/js/forms/sppd-form.js": {
+    "file": "assets/sppd-form-BHg1kIvI.js",
+    "name": "sppd-form",
+    "src": "resources/js/forms/sppd-form.js",
+    "isEntry": true
+  },
+  "resources/js/navbar-profile-update.js": {
+    "file": "assets/navbar-profile-update-KXQzEHpx.js",
+    "name": "navbar-profile-update",
+    "src": "resources/js/navbar-profile-update.js",
+    "isEntry": true
+  },
+  "resources/js/pages/analytics.js": {
+    "file": "assets/analytics-D8CpvcJr.js",
+    "name": "analytics",
+    "src": "resources/js/pages/analytics.js",
+    "isEntry": true
+  },
+  "resources/js/pages/dashboard.js": {
+    "file": "assets/dashboard-e4MiHWXX.js",
+    "name": "dashboard",
+    "src": "resources/js/pages/dashboard.js",
+    "isEntry": true,
+    "imports": [
+      "_api-C2LmOsIF.js"
+    ]
+  },
+  "resources/js/sppd-form-enhanced.js": {
+    "file": "assets/sppd-form-enhanced-4uyoaBhr.js",
+    "name": "sppd-form-enhanced",
+    "src": "resources/js/sppd-form-enhanced.js",
+    "isEntry": true
+  }
+}

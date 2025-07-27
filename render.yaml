@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: sppd-kpu-app
+    env: php
+    buildCommand: composer install --no-dev --optimize-autoloader && npm install && npm run build
+    startCommand: php artisan serve --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: SESSION_SECURE_COOKIE
+        value: true
+      - key: SESSION_HTTP_ONLY
+        value: true
+      - key: SESSION_SAME_SITE
+        value: lax
+
+databases:
+  - name: sppd-kpu-db
+    databaseName: sppd_kpu
+    user: sppd_user 

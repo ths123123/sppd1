@@ -1,0 +1,166 @@
+/* 
+ * SPPD Form Clean Animations
+ * Animasi simpel dan elegan untuk form SPPD
+ * Terinspirasi dari Grok AI - minimalis dan tidak berlebihan
+ */
+
+/* ===== SUBTLE HOVER EFFECTS ===== */
+.sppd-form-section:hover {
+    transform: none;
+    transition: all 0.3s ease;
+}
+
+/* ===== INPUT FOCUS ANIMATIONS ===== */
+.sppd-form-input:focus,
+.sppd-form-select:focus,
+.sppd-form-textarea:focus {
+    transition: all 0.3s ease;
+}
+
+/* ===== BUTTON PRESS ANIMATIONS ===== */
+.sppd-btn:active {
+    transform: translateY(1px);
+    transition: transform 0.1s ease;
+}
+
+/* ===== PROGRESS STEP ANIMATIONS ===== */
+.sppd-progress-step {
+    transition: all 0.3s ease;
+}
+
+.sppd-progress-step.active .sppd-progress-circle {
+    transition: all 0.3s ease;
+}
+
+/* ===== BUDGET CARD ANIMATIONS ===== */
+.sppd-budget-card {
+    transition: all 0.3s ease;
+}
+
+/* ===== FORM ACTIONS ANIMATIONS ===== */
+.sppd-form-actions {
+    animation: slideUpFade 0.6s ease-out;
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== LOADING STATES ===== */
+.sppd-btn.loading {
+    position: relative;
+    color: transparent;
+}
+
+.sppd-btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* ===== SUCCESS/ERROR FEEDBACK ANIMATIONS ===== */
+.sppd-form-input.success {
+    transition: all 0.3s ease;
+}
+
+.sppd-form-input.error {
+    animation: errorShake 0.5s ease-out;
+}
+
+@keyframes errorShake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-4px);
+    }
+    75% {
+        transform: translateX(4px);
+    }
+}
+
+/* ===== SECTION REVEAL ANIMATIONS ===== */
+.sppd-form-section.animate-in {
+    animation: sectionReveal 0.6s ease-out;
+}
+
+@keyframes sectionReveal {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== MOBILE OPTIMIZATIONS ===== */
+@media (max-width: 768px) {
+    .sppd-form-section:hover {
+        transform: none;
+    }
+    
+    .sppd-budget-card:hover {
+        transform: none;
+    }
+    
+    .sppd-form-input:focus,
+    .sppd-form-select:focus,
+    .sppd-form-textarea:focus {
+        transform: none;
+    }
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ===== CLEAN SCROLLBAR ===== */
+.sppd-form-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sppd-form-container::-webkit-scrollbar-track {
+    background: #f9fafb;
+}
+
+.sppd-form-container::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.sppd-form-container::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}

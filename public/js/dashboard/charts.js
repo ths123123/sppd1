@@ -1,0 +1,273 @@
+/**
+ * ====================================================================
+ * DASHBOARD CHARTS MODULE - SISTEM SPPD KPU KABUPATEN CIREBON
+ * ====================================================================
+ * 
+ * 📊 PROFESSIONAL CHART MANAGEMENT
+ * 
+ * 🎯 FEATURES:
+ * - Monthly trend analysis
+ * - Status distribution visualization
+ * - Real-time data integration
+ * - Responsive chart rendering
+ * - Fallback data handling
+ * 
+ * 🔧 DEPENDENCIES:
+ * - Chart.js v3+
+ * - Backend data integration
+ * 
+ * ====================================================================
+ */
+
+class DashboardCharts {
+    constructor(data) {
+        this.data = data;
+        this.charts = {};
+        this.initialize();
+    }
+
+    /**
+     * Initialize all dashboard charts
+     */
+    initialize() {
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js is not loaded!');
+            return;
+        }
+
+        this.initializeMonthlyChart();
+        this.initializeStatusChart();
+        console.log('Dashboard charts initialized successfully');
+    }
+
+    /**
+     * Initialize monthly trend chart
+     */
+    initializeMonthlyChart() {
+        const ctx = document.getElementById('monthlyChart');
+        if (!ctx) return;
+
+        // Use real data or fallback
+        const months = this.data.months.length > 0 ? this.data.months : this.getDefaultMonths();
+        const approved = this.data.monthlyApproved.length > 0 ? this.data.monthlyApproved : this.getDefaultData();
+        const submitted = this.data.monthlySubmitted.length > 0 ? this.data.monthlySubmitted : this.getDefaultData();
+
+        this.charts.monthly = new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: 'SPPD Disetujui',
+                        data: approved,
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59,130,246,0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#3B82F6',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    },
+                    {
+                        label: 'SPPD Diajukan',
+                        data: submitted,
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16,185,129,0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#10B981',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Initialize status distribution chart
+     */
+    initializeStatusChart() {
+        const ctx = document.getElementById('statusChart');
+        if (!ctx) return;
+
+        const distribution = this.data.statusDistribution;
+
+        this.charts.status = new Chart(ctx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Disetujui', 'Menunggu', 'Ditinjau', 'Ditolak', 'Draft'],
+                datasets: [{
+                    data: [
+                        distribution.approved || 1,
+                        distribution.submitted || 2,
+                        distribution.in_review || 1,
+                        distribution.rejected || 1,
+                        distribution.draft || 3
+                    ],
+                    backgroundColor: [
+                        '#3B82F6', 
+                        '#10B981', 
+                        '#F59E0B', 
+                        '#EC4899', 
+                        '#6B7280'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 20
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Update charts with new data
+     */
+    updateCharts(newData) {
+        this.data = { ...this.data, ...newData };
+        
+        if (this.charts.monthly) {
+            this.charts.monthly.destroy();
+        }
+        
+        if (this.charts.status) {
+            this.charts.status.destroy();
+        }
+
+        this.initializeMonthlyChart();
+        this.initializeStatusChart();
+    }
+
+    /**
+     * Get default months for fallback
+     */
+    getDefaultMonths() {
+        return [
+            'Jul 2024', 'Agu 2024', 'Sep 2024', 'Okt 2024', 
+            'Nov 2024', 'Des 2024', 'Jan 2025', 'Feb 2025', 
+            'Mar 2025', 'Apr 2025', 'Mei 2025', 'Jun 2025'
+        ];
+    }
+
+    /**
+     * Get default data array for fallback
+     */
+    getDefaultData() {
+        return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    }
+
+    /**
+     * Destroy all charts
+     */
+    destroy() {
+        Object.values(this.charts).forEach(chart => {
+            if (chart) chart.destroy();
+        });
+        this.charts = {};
+    }
+}
+
+/**
+ * Dashboard Statistics Manager
+ */
+class DashboardStatistics {
+    constructor() {
+        this.elements = this.initializeElements();
+    }
+
+    /**
+     * Initialize DOM elements
+     */
+    initializeElements() {
+        return {
+            approved: document.getElementById('approved-count'),
+            pending: document.getElementById('pending-count'),
+            review: document.getElementById('review-count'),
+            document: document.getElementById('document-count')
+        };
+    }
+
+    /**
+     * Update statistics display
+     */
+    updateStatistics(data) {
+        if (this.elements.approved) {
+            this.elements.approved.textContent = data.approved || 0;
+        }
+        if (this.elements.pending) {
+            this.elements.pending.textContent = data.pending || 0;
+        }
+        if (this.elements.review) {
+            this.elements.review.textContent = data.review || 0;
+        }
+        if (this.elements.document) {
+            this.elements.document.textContent = data.document || 0;
+        }
+    }
+}
+
+/**
+ * Main Dashboard Manager
+ */
+window.DashboardManager = {
+    charts: null,
+    statistics: null,
+
+    /**
+     * Initialize dashboard
+     */
+    init(data) {
+        this.charts = new DashboardCharts(data);
+        this.statistics = new DashboardStatistics();
+        
+        console.log('Dashboard Manager initialized');
+        console.log('Data received:', data);
+    },
+
+    /**
+     * Refresh dashboard data
+     */
+    refresh(newData) {
+        if (this.charts) {
+            this.charts.updateCharts(newData);
+        }
+        if (this.statistics) {
+            this.statistics.updateStatistics(newData.statusDistribution || {});
+        }
+    },
+
+    /**
+     * Cleanup dashboard
+     */
+    destroy() {
+        if (this.charts) {
+            this.charts.destroy();
+        }
+    }
+};
