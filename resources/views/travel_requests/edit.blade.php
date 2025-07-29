@@ -20,6 +20,38 @@
                 </span>
             </div>
         </div>
+        
+        <!-- Pesan Revisi -->
+        @php
+            $latestRevision = $travelRequest->approvals()
+                ->whereIn('status', ['revision', 'revision_minor'])
+                ->orderBy('created_at', 'desc')
+                ->first();
+        @endphp
+        
+        @if($latestRevision)
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-red-400"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">
+                        Pesan Revisi dari {{ $latestRevision->approver->name ?? 'Approver' }}
+                    </h3>
+                    <div class="mt-2 text-sm text-red-700">
+                        <p class="font-medium">Alasan Revisi:</p>
+                        <p class="mt-1">{{ $latestRevision->comments ?? 'Tidak ada pesan revisi' }}</p>
+                    </div>
+                    <div class="mt-2 text-xs text-red-600">
+                        <i class="fas fa-clock mr-1"></i>
+                        {{ $latestRevision->created_at->format('d/m/Y H:i') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+        
         <div class="sppd-form-content">
             @if ($errors->any())
                 <div class="alert-error">
@@ -60,8 +92,51 @@
                                 <i class="fas fa-users mr-2"></i> Pilih Peserta
                             </a>
                         </div>
-                        <input type="hidden" name="participants[]" id="participants-hidden">
-                        <div id="peserta-terpilih-table" class="mt-3"></div>
+                        <input type="hidden" name="participants[]" id="participants-hidden" value="{{ $travelRequest->participants ? $travelRequest->participants->pluck('id')->implode(',') : '' }}">
+                        <!-- Tambahan hidden inputs untuk setiap peserta -->
+                        @if($travelRequest->participants)
+                            @foreach($travelRequest->participants as $participant)
+                                <input type="hidden" name="participants[]" value="{{ $participant->id }}">
+                            @endforeach
+                        @endif
+                        
+                        <!-- Tampilan Peserta yang Sudah Dipilih -->
+                        <div id="peserta-terpilih-table" class="mt-3">
+                            @if($travelRequest->participants && $travelRequest->participants->count() > 0)
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <h4 class="text-sm font-medium text-blue-800 mb-2">
+                                        <i class="fas fa-users mr-1"></i> Peserta yang Sudah Dipilih ({{ $travelRequest->participants->count() }})
+                                    </h4>
+                                    <div class="space-y-2">
+                                        @foreach($travelRequest->participants as $participant)
+                                            <div class="flex items-center justify-between bg-white rounded-lg p-3 border border-blue-100">
+                                                <div class="flex items-center">
+                                                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
+                                                        {{ substr($participant->name, 0, 1) }}
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-sm font-medium text-gray-900">{{ $participant->name }}</p>
+                                                        <p class="text-xs text-gray-500">{{ $participant->role }}</p>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="text-red-500 hover:text-red-700 remove-peserta-btn" data-participant-id="{{ $participant->id }}" title="Hapus peserta">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <p class="text-xs text-blue-600 mt-2">
+                                        <i class="fas fa-info-circle mr-1"></i> Klik tombol "Pilih Peserta" untuk menambah peserta baru
+                                    </p>
+                                </div>
+                            @else
+                                <div class="text-center text-blue-500 py-4">
+                                    <i class="fas fa-user text-2xl mb-2"></i>
+                                    <p class="font-medium">Tidak ada peserta tambahan</p>
+                                    <p class="text-sm text-gray-500 mt-1">Anda sendiri yang akan melakukan perjalanan dinas</p>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
@@ -205,14 +280,35 @@
 
                         @if($revisionNote)
                             <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-                                <div class="flex">
-                                    <div class="flex-shrink-0">
-                                        <i class="fas fa-exclamation-triangle text-yellow-400"></i>
-                                    </div>
-                                    <div class="ml-3">
+                                <div class="flex items-start">
+                                    @php
+                                        $revisionData = null;
+                                        if ($history && is_array($history)) {
+                                            foreach ($history as $item) {
+                                                if (isset($item['status']) && $item['status'] === 'revision') {
+                                                    $revisionData = $item;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    @endphp
+                                    @if($revisionData && isset($revisionData['approver_avatar']))
+                                        <div class="flex-shrink-0 mr-3">
+                                            <img src="{{ $revisionData['approver_avatar'] }}" alt="{{ $revisionData['approved_by'] ?? 'Approver' }}" class="w-8 h-8 rounded-full object-cover border border-yellow-400">
+                                        </div>
+                                    @else
+                                        <div class="flex-shrink-0 mr-3">
+                                            <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                                        </div>
+                                    @endif
+                                    <div class="flex-1">
                                         <p class="text-sm text-yellow-700">
-                                            <strong>Catatan Revisi:</strong> {{ $revisionNote }}
+                                            <strong>Catatan Revisi dari {{ $revisionData['approved_by'] ?? 'Approver' }}:</strong>
                                         </p>
+                                        <p class="text-sm text-yellow-700 mt-1">{{ $revisionNote }}</p>
+                                        @if(isset($revisionData['timestamp']))
+                                            <p class="text-xs text-yellow-600 mt-1">{{ \Carbon\Carbon::parse($revisionData['timestamp'])->format('d M Y, H:i') }}</p>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -235,8 +331,9 @@
                     </button>
                 </div>
             </form>
-            <form method="POST" action="{{ route('travel-requests.submit', $travelRequest->id) }}" class="mt-4">
+            <form method="POST" action="{{ route('travel-requests.submit', $travelRequest->id) }}" class="mt-4" id="submit-form">
                 @csrf
+                <!-- Hidden inputs untuk peserta akan di-update oleh JavaScript secara dinamis -->
                 <button type="submit" class="submit-btn bg-indigo-600 text-white hover:bg-indigo-700">
                     <i class="fas fa-paper-plane"></i>
                     Ajukan Ulang
@@ -245,14 +342,235 @@
         </div>
     </div>
 </div>
-@include('travel_requests.partials.peserta-modal', ['users' => $users, 'selected' => old('participants', $travelRequest->participants->pluck('id')->toArray())])
+@include('travel_requests.partials.peserta-modal', ['users' => $users, 'selected' => old('participants', $travelRequest->participants ? $travelRequest->participants->pluck('id')->toArray() : [])])
 @endsection
 
 @push('scripts')
 <script>
     window.users = @json($users);
-    window.selectedPeserta = @json(old('participants', $travelRequest->participants->pluck('id')->toArray()));
+    window.selectedPeserta = @json(old('participants', $travelRequest->participants ? $travelRequest->participants->pluck('id')->toArray() : []));
+    
+    // Debug: Log data peserta untuk memastikan ter-load dengan benar
+    console.log('Debug - Travel Request ID:', @json($travelRequest->id));
+    console.log('Debug - Travel Request Participants:', @json($travelRequest->participants));
+    console.log('Debug - Selected Participants:', window.selectedPeserta);
+    console.log('Debug - Users Count:', window.users.length);
+    
+    // Ensure participants are properly initialized
+    document.addEventListener('DOMContentLoaded', function() {
+        const participantsHidden = document.getElementById('participants-hidden');
+        const pesertaTable = document.getElementById('peserta-terpilih-table');
+        
+        console.log('Debug - Hidden Input Value:', participantsHidden ? participantsHidden.value : 'No hidden input found');
+        console.log('Debug - Peserta Table Element:', pesertaTable);
+        
+        // Force refresh peserta table if needed
+        if (window.selectedPeserta && window.selectedPeserta.length > 0) {
+            console.log('Debug - Found selected participants, ensuring they are displayed');
+            // Trigger a custom event to refresh the table
+            const event = new CustomEvent('refreshPesertaTable', { 
+                detail: { participants: window.selectedPeserta } 
+            });
+            document.dispatchEvent(event);
+        }
+    });
 </script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{{ asset('js/forms/sppd-form-professional.js') }}"></script>
+<script>
+$(document).ready(function() {
+    // Handle remove participant button
+    $(document).on('click', '.remove-peserta-btn', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const participantId = $(this).data('participant-id');
+        const participantCard = $(this).closest('.flex.items-center.justify-between');
+        
+        console.log('Debug - Remove button clicked for participant ID:', participantId);
+        console.log('Debug - Before removal, selectedPeserta:', window.selectedPeserta);
+        console.log('Debug - Before removal, selectedPeserta type:', typeof window.selectedPeserta);
+        
+        // Ensure selectedPeserta is an array
+        if (!Array.isArray(window.selectedPeserta)) {
+            console.log('Debug - selectedPeserta is not an array, converting...');
+            window.selectedPeserta = window.selectedPeserta ? [window.selectedPeserta] : [];
+        }
+        
+        // Remove from selectedPeserta array
+        window.selectedPeserta = window.selectedPeserta.filter(id => id != participantId);
+        
+        console.log('Debug - After removal, selectedPeserta:', window.selectedPeserta);
+        console.log('Debug - After removal, selectedPeserta type:', typeof window.selectedPeserta);
+        
+        // Update hidden input
+        $('#participants-hidden').val(window.selectedPeserta.join(','));
+        console.log('Debug - Updated hidden input value:', $('#participants-hidden').val());
+        
+        // Update hidden inputs for form submission
+        updateHiddenInputs(window.selectedPeserta);
+        
+        // Remove the card with animation
+        participantCard.fadeOut(300, function() {
+            $(this).remove();
+            
+            // Update participant count
+            const remainingParticipants = $('.remove-peserta-btn').length;
+            const countElement = $('h4:contains("Peserta yang Sudah Dipilih")');
+            if (countElement.length) {
+                countElement.text(`Peserta yang Sudah Dipilih (${remainingParticipants})`);
+            }
+            
+            // Show "no participants" message if none left
+            if (remainingParticipants === 0) {
+                $('#peserta-terpilih-table').html(`
+                    <div class="text-center text-blue-500 py-4">
+                        <i class="fas fa-user text-2xl mb-2"></i>
+                        <p class="font-medium">Tidak ada peserta tambahan</p>
+                        <p class="text-sm text-gray-500 mt-1">Anda sendiri yang akan melakukan perjalanan dinas</p>
+                    </div>
+                `);
+            }
+            
+            console.log('Debug - Participant removed successfully. Remaining count:', remainingParticipants);
+            console.log('Debug - Final selectedPeserta after removal:', window.selectedPeserta);
+        });
+    });
+    
+    // Update hidden input when modal adds new participants
+    $(document).on('participantsUpdated', function(e, newParticipants) {
+        console.log('Debug - participantsUpdated event triggered');
+        console.log('Debug - Event detail:', e.detail);
+        console.log('Debug - New participants:', newParticipants);
+        console.log('Debug - Current selectedPeserta before update:', window.selectedPeserta);
+        
+        // Extract participants from event detail if available
+        if (e.detail && e.detail.participants !== undefined) {
+            newParticipants = e.detail.participants;
+            console.log('Debug - Extracted participants from event detail:', newParticipants);
+        }
+        
+        // Handle undefined or null newParticipants
+        if (newParticipants === undefined || newParticipants === null) {
+            console.log('Debug - newParticipants is undefined/null, using empty array');
+            newParticipants = [];
+        }
+        
+        // Ensure newParticipants is an array
+        if (!Array.isArray(newParticipants)) {
+            console.log('Debug - newParticipants is not an array, converting to array');
+            newParticipants = [newParticipants].filter(item => item !== undefined && item !== null);
+        }
+        
+        // Merge existing participants with new participants (preserve existing data)
+        const existingParticipants = window.selectedPeserta || [];
+        const mergedParticipants = [...new Set([...existingParticipants, ...newParticipants])];
+        
+        console.log('Debug - Existing participants:', existingParticipants);
+        console.log('Debug - New participants:', newParticipants);
+        console.log('Debug - Merged participants:', mergedParticipants);
+        
+        window.selectedPeserta = mergedParticipants;
+        $('#participants-hidden').val(mergedParticipants.join(','));
+        
+        // Update hidden inputs for form submission
+        updateHiddenInputs(mergedParticipants);
+        
+        console.log('Debug - Updated window.selectedPeserta:', window.selectedPeserta);
+        console.log('Debug - Updated hidden input value:', $('#participants-hidden').val());
+    });
+    
+    // Function to update hidden inputs
+    function updateHiddenInputs(participants) {
+        // Remove existing hidden inputs
+        $('input[name="participants[]"]').not('#participants-hidden').remove();
+        
+        // Add new hidden inputs for each participant
+        participants.forEach(function(participantId) {
+            if (participantId && participantId.toString().trim() !== '') {
+                const input = $('<input>')
+                    .attr('type', 'hidden')
+                    .attr('name', 'participants[]')
+                    .val(participantId.toString().trim());
+                $('#participants-hidden').after(input);
+            }
+        });
+        
+        console.log('Debug - Updated hidden inputs:', participants);
+    }
+    
+    // Handle form submission to ensure participants data is sent
+    $('#sppd-form').on('submit', function(e) {
+        console.log('Debug - Form submission started');
+        console.log('Debug - Current selectedPeserta:', window.selectedPeserta);
+        
+        // Ensure hidden inputs are up to date
+        updateHiddenInputs(window.selectedPeserta);
+        
+        // Log all hidden inputs before submission
+        const hiddenInputs = $('input[name="participants[]"]');
+        console.log('Debug - Hidden inputs before submission:', hiddenInputs.length);
+        hiddenInputs.each(function(index) {
+            console.log(`Debug - Hidden input ${index}:`, $(this).val());
+        });
+        
+        // Continue with form submission
+        console.log('Debug - Proceeding with form submission');
+    });
+    
+    // Handle submit form submission to ensure participants data is sent
+    $('#submit-form').on('submit', function(e) {
+        console.log('Debug - Submit form submission started');
+        console.log('Debug - Current selectedPeserta:', window.selectedPeserta);
+        console.log('Debug - selectedPeserta type:', typeof window.selectedPeserta);
+        console.log('Debug - selectedPeserta length:', window.selectedPeserta ? window.selectedPeserta.length : 'undefined');
+        
+        // Ensure selectedPeserta is an array
+        if (!Array.isArray(window.selectedPeserta)) {
+            console.log('Debug - selectedPeserta is not an array, converting...');
+            window.selectedPeserta = window.selectedPeserta ? [window.selectedPeserta] : [];
+        }
+        
+        // CRITICAL FIX: Clear ALL existing hidden inputs in submit form
+        $('#submit-form input[name="participants[]"]').remove();
+        
+        // Add new hidden inputs for each participant
+        if (window.selectedPeserta && window.selectedPeserta.length > 0) {
+            console.log('Debug - Adding hidden inputs for participants:', window.selectedPeserta);
+            window.selectedPeserta.forEach(function(participantId, index) {
+                console.log(`Debug - Processing participant ${index}:`, participantId);
+                if (participantId && participantId.toString().trim() !== '') {
+                    const input = $('<input>')
+                        .attr('type', 'hidden')
+                        .attr('name', 'participants[]')
+                        .val(participantId.toString().trim());
+                    $('#submit-form').append(input);
+                    console.log(`Debug - Added hidden input for participant ${index}:`, participantId);
+                }
+            });
+        } else {
+            console.log('Debug - No participants to add or selectedPeserta is empty');
+        }
+        
+        // Log all hidden inputs before submission
+        const submitHiddenInputs = $('#submit-form input[name="participants[]"]');
+        console.log('Debug - Submit form hidden inputs before submission:', submitHiddenInputs.length);
+        submitHiddenInputs.each(function(index) {
+            console.log(`Debug - Submit form hidden input ${index}:`, $(this).val());
+        });
+        
+        // CRITICAL: Ensure form data is properly set before submission
+        console.log('Debug - Final check before submission:');
+        console.log('Debug - Form action:', $('#submit-form').attr('action'));
+        console.log('Debug - Form method:', $('#submit-form').attr('method'));
+        console.log('Debug - All form inputs:');
+        $('#submit-form input').each(function(index) {
+            console.log(`Debug - Input ${index}: name="${$(this).attr('name')}", value="${$(this).val()}"`);
+        });
+        
+        // Continue with form submission
+        console.log('Debug - Proceeding with submit form submission');
+    });
+});
+</script>
 @endpush

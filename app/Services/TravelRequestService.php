@@ -223,6 +223,7 @@ class TravelRequestService
         return [
             'user_id' => $userId,
             'kode_sppd' => null,
+            'tempat_berangkat' => $request->tempat_berangkat,
             'tujuan' => $request->tujuan,
             'keperluan' => $request->keperluan,
             'tanggal_berangkat' => $request->tanggal_berangkat,
@@ -241,6 +242,7 @@ class TravelRequestService
             'nomor_surat_tugas' => null,
             'tanggal_surat_tugas' => null,
             'status' => $status,
+            'current_approval_level' => 0,
             'submitted_at' => $submittedAt,
         ];
     }
@@ -256,10 +258,6 @@ class TravelRequestService
     {
         $data = $this->prepareTravelRequestData($request, $currentUser);
         $travelRequest = TravelRequest::create($data);
-        // Inisialisasi approval workflow jika action submit
-        if (($request->action ?? null) === 'submit') {
-            app(\App\Services\ApprovalService::class)->initializeApprovalWorkflow($travelRequest);
-        }
         return $travelRequest;
     }
 

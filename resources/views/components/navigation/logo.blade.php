@@ -2,10 +2,10 @@
 <div class="shrink-0 flex items-center">
     <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 group">
         <div class="relative">
-            <div class="w-10 h-10 bg-gradient-to-br from-white to-gray-100 rounded-lg shadow-lg flex items-center justify-center group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-105">
+            <div class="w-12 h-12 bg-white rounded-lg shadow-lg flex items-center justify-center group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-105">
                 <img src="{{ asset('images/logo.png') }}"
                      alt="KPU Kabupaten Cirebon"
-                     class="h-6 w-6 object-contain">
+                     class="h-8 w-8 object-contain">
             </div>
             <div class="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full animate-pulse"></div>
         </div>

@@ -31,7 +31,7 @@
                 </div>
             </div>
         @endif
-        @if ($errors->has('rejection_reason'))
+        @if (isset($errors) && $errors->has('rejection_reason'))
             <script>
                 window.addEventListener('DOMContentLoaded', function() {
                     showRejectModal('{{ old('reject_id') ?? '' }}', '{{ old('reject_kode') ?? '' }}');
@@ -189,11 +189,11 @@
                             <div class="mt-6">
                                 <label for="rejection_reason" class="block text-sm font-medium text-gray-700 mb-2 text-left">Alasan Penolakan</label>
                                 <textarea id="rejection_reason" name="rejection_reason"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all @if($errors->has('rejection_reason')) border-red-500 @endif"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all @if(isset($errors) && $errors->has('rejection_reason')) border-red-500 @endif"
                                         rows="3"
                                         placeholder="Jelaskan alasan penolakan SPPD ini..."
                                         required>{{ old('rejection_reason') }}</textarea>
-                                @if($errors->has('rejection_reason'))
+                                @if(isset($errors) && $errors->has('rejection_reason'))
                                     <div class="text-red-600 text-xs mt-1">{{ $errors->first('rejection_reason') }}</div>
                                 @endif
                             </div>
@@ -267,7 +267,12 @@
                                 <label for="revision_target" class="block text-sm font-medium text-gray-700 mb-2 text-left">Target Revisi</label>
                                 <select id="revision_target" name="target" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all" required>
                                     <option value="">Pilih Target</option>
-                                    <option value="kasubbag" selected>Kembali ke Kasubbag</option>
+                                    @if(auth()->user()->role === 'sekretaris')
+                                        <option value="kasubbag">Kembali ke Kasubbag</option>
+                                    @elseif(auth()->user()->role === 'ppk')
+                                        <option value="sekretaris">Kembali ke Sekretaris</option>
+                                        <option value="kasubbag">Kembali ke Kasubbag</option>
+                                    @endif
                                 </select>
                             </div>
                         </div>
@@ -646,14 +651,19 @@ document.addEventListener('alpine:init', () => {
             const url = `/approval/pimpinan/${id}/reject`;
             const reason = form.querySelector('textarea[name="rejection_reason"]').value;
             console.log(`[approvalTable] Sending REJECT AJAX: url=${url}, id=${id}, reason=${reason}`);
+            
+            // Create FormData for proper form submission
+            const formData = new FormData();
+            formData.append('rejection_reason', reason);
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+            
             fetch(url, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ rejection_reason: reason })
+                body: formData
             })
             .then(async res => {
                 let data = {};
@@ -716,14 +726,20 @@ document.addEventListener('alpine:init', () => {
             const reason = form.querySelector('textarea[name="revision_reason"]').value;
             const target = form.querySelector('select[name="target"]').value;
             console.log(`[approvalTable] Sending REVISION AJAX: url=${url}, id=${id}, reason=${reason}, target=${target}`);
+            
+            // Create FormData for proper form submission
+            const formData = new FormData();
+            formData.append('revision_reason', reason);
+            formData.append('target', target);
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+            
             fetch(url, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ revision_reason: reason, target: target })
+                body: formData
             })
             .then(async res => {
                 let data = {};

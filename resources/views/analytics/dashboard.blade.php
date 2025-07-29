@@ -1,49 +1,146 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 pt-4">
+<style>
+    .timeframe-btn.active {
+        background-color: rgb(79, 70, 229);
+        color: white;
+    }
+    
+    .timeframe-btn:not(.active) {
+        background-color: rgb(243, 244, 246);
+        color: rgb(55, 65, 81);
+    }
+    
+    .timeframe-btn:hover:not(.active) {
+        background-color: rgb(229, 231, 235);
+    }
+    
+    .chart-container {
+        position: relative;
+        width: 100%;
+    }
+    
+    .summary-card {
+        transition: all 0.3s ease;
+    }
+    
+    .summary-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .insight-section {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border-left: 4px solid #3b82f6;
+    }
+</style>
+
+<!-- Main Content -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <!-- Header -->
-    <div class="bg-white border-b border-gray-200 shadow-md md:sticky md:top-16 z-20">
-        <div class="max-w-7xl mx-auto px-3 py-2 md:px-6 md:py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-2 md:gap-0">
-            <div class="flex items-center gap-3">
-                <span class="inline-flex items-center justify-center w-8 h-8 md:w-12 md:h-12 rounded-full bg-indigo-100">
-                    <i class="fas fa-chart-line text-indigo-600 text-lg md:text-2xl"></i>
-                </span>
-                <div>
-                    <h1 class="text-lg md:text-2xl font-bold text-gray-900">Laporan Analitik SPPD</h1>
-                    <p class="text-xs md:text-base text-gray-600 mt-1">Dashboard analitik komprehensif untuk monitoring dan evaluasi SPPD</p>
-                </div>
-                </div>
-            <div class="flex items-center space-x-2 md:space-x-4 w-full md:w-auto mt-2 md:mt-0">
-                <!-- Period Filter -->
-                <form method="GET" class="flex items-center space-x-2 w-full md:w-auto">
-                    <select name="period" class="rounded-lg border-gray-300 text-xs md:text-sm shadow focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition w-full md:w-auto">
-                        <option value="1" {{ $period == '1' ? 'selected' : '' }}>1 Bulan Terakhir</option>
-                        <option value="3" {{ $period == '3' ? 'selected' : '' }}>3 Bulan Terakhir</option>
-                        <option value="6" {{ $period == '6' ? 'selected' : '' }}>6 Bulan Terakhir</option>
-                        <option value="12" {{ $period == '12' ? 'selected' : '' }}>12 Bulan Terakhir</option>
-                        <option value="all" {{ $period == 'all' ? 'selected' : '' }}>Sepanjang Waktu</option>
-                    </select>
-                </form>
+    <div class="glass-card rounded-xl p-6 mb-6 fade-in border-l-4 border-blue-500">
+        <div class="flex items-center">
+            <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
+                <i class="fas fa-chart-line text-blue-600 text-3xl"></i>
+            </div>
+            <div class="flex-1">
+                <h2 class="text-lg font-bold text-gray-900 mb-2">Laporan Analitik SPPD</h2>
+                <p class="text-gray-700 text-base">
+                    Dashboard analitik komprehensif untuk monitoring dan evaluasi SPPD
+                </p>
             </div>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-6 py-8">
-        <!-- Charts Row 1 -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Charts Row 1: Monthly Trends Chart (Full Width) -->
+        <div class="mb-8">
             <!-- Monthly Trends Chart -->
             <div class="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-shadow p-6 relative border border-slate-100 group">
-                <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                    <i class="fas fa-calendar-alt text-indigo-400"></i> Tren Bulanan SPPD
-                </h3>
-                <div class="h-80 relative">
-                    <canvas id="monthlyTrendsChart" class="cursor-pointer"></canvas>
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-chart-line text-indigo-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Tren Bulanan SPPD</h3>
+                            <p class="text-sm text-gray-600">Data real-time dari database dengan breakdown status lengkap</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="mt-4 text-sm text-gray-600 bg-indigo-50 rounded-lg px-4 py-2">
-                    <span class="font-semibold">Insight:</span> <span id="insight-monthly">(Analisis tren bulanan akan muncul di sini)</span>
+
+                <!-- Chart Type Selector -->
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm font-medium text-gray-700">Chart Type:</span>
+                        <select id="chartTypeSelector" class="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="sppd_count">Jumlah SPPD</option>
+                            <option value="budget">Anggaran</option>
+                            <option value="approval_rate">Tingkat Approval</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Timeframe Selector -->
+                    <div class="flex items-center space-x-1">
+                        <button class="timeframe-btn bg-gray-100 text-gray-700 px-3 py-1 text-xs font-medium rounded-md hover:bg-gray-200 transition-colors" data-period="1">1M</button>
+                        <button class="timeframe-btn bg-gray-100 text-gray-700 px-3 py-1 text-xs font-medium rounded-md hover:bg-gray-200 transition-colors" data-period="3">3M</button>
+                        <button class="timeframe-btn bg-indigo-600 text-white px-3 py-1 text-xs font-medium rounded-md hover:bg-indigo-700 transition-colors" data-period="12">1Y</button>
+                        <button class="timeframe-btn bg-gray-100 text-gray-700 px-3 py-1 text-xs font-medium rounded-md hover:bg-gray-200 transition-colors" data-period="all">All</button>
+                    </div>
+                </div>
+                
+                <!-- Chart Container with Enhanced Layout -->
+                <div class="chart-container">
+                    <!-- Main Chart -->
+                    <div class="h-80 relative">
+                        <canvas id="monthlyTrendsChart" class="cursor-pointer"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Real-time Data Display -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 mt-4">
+                    <div class="summary-card bg-blue-50 rounded-lg p-3 text-center">
+                        <div class="text-2xl font-bold text-blue-600" id="total-sppd">-</div>
+                        <div class="text-xs text-blue-700">Total SPPD</div>
+                        <div class="text-xs text-gray-500" id="total-change">-</div>
+                    </div>
+                    <div class="summary-card bg-green-50 rounded-lg p-3 text-center">
+                        <div class="text-2xl font-bold text-green-600" id="approved-sppd">-</div>
+                        <div class="text-xs text-green-700">Disetujui</div>
+                        <div class="text-xs text-gray-500" id="approved-change">-</div>
+                    </div>
+                    <div class="summary-card bg-red-50 rounded-lg p-3 text-center">
+                        <div class="text-2xl font-bold text-red-600" id="rejected-sppd">-</div>
+                        <div class="text-xs text-red-700">Ditolak</div>
+                        <div class="text-xs text-gray-500" id="rejected-change">-</div>
+                    </div>
+                    <div class="summary-card bg-yellow-50 rounded-lg p-3 text-center">
+                        <div class="text-2xl font-bold text-yellow-600" id="review-sppd">-</div>
+                        <div class="text-xs text-yellow-700">Dalam Review</div>
+                        <div class="text-xs text-gray-500" id="review-change">-</div>
+                    </div>
+                </div>
+                
+                <!-- Enhanced Insight Section -->
+                <div class="insight-section rounded-lg p-4">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-lightbulb text-indigo-600 text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm font-semibold text-indigo-900 mb-1">Analisis Tren Bulanan</div>
+                            <div class="text-sm text-indigo-800" id="insight-monthly">
+                                (Analisis tren bulanan akan muncul di sini)
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Charts Row 2: Budget Trends Chart (Full Width) -->
+        <div class="mb-8">
             <!-- Budget Trends Chart -->
             <div class="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-shadow p-6 relative border border-slate-100 group">
                 <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
@@ -58,7 +155,7 @@
             </div>
         </div>
 
-        <!-- Charts Row 2: Distribusi Status & Analisis Departemen -->
+        <!-- Charts Row 3: Distribusi Status & Analisis Departemen -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <!-- Status Distribution -->
             <div class="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-shadow p-6 relative border border-slate-100 group">

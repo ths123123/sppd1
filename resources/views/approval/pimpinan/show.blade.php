@@ -305,11 +305,13 @@
                             <i class="fas fa-check mr-2"></i>Setujui SPPD
                         </button>
                     </form>
+                    @if($request->status === 'in_review')
                     <button type="button"
                             onclick="openRevisionModal()"
                             class="w-full inline-flex items-center justify-center px-4 py-3 border border-yellow-300 text-sm font-medium rounded-md text-yellow-700 bg-yellow-50 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors">
                         <i class="fas fa-edit mr-2"></i>Minta Revisi
                     </button>
+                    @endif
                     @endif
 
                     @if(auth()->user()->role !== 'admin')

@@ -72,6 +72,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/travel-requests/{id}/submit', [TravelRequestController::class, 'submit'])->name('travel-requests.submit');
     Route::get('/travel-requests/{id}/export/pdf', [TravelRequestController::class, 'exportPdf'])->name('travel-requests.export.pdf');
     Route::get('/travel-requests/{id}/export/zip', [App\Http\Controllers\ExportController::class, 'exportZip'])->name('travel-requests.export.zip');
+    Route::get('/travel-requests/{id}/download-approval', [App\Http\Controllers\TravelRequestController::class, 'downloadApprovalLetter'])->name('travel-requests.download-approval');
 
 
     // My Travel Requests

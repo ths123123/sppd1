@@ -8,7 +8,7 @@
     "name": "vendor"
   },
   "resources/css/app.css": {
-    "file": "assets/app-D2n_Dnj9.css",
+    "file": "assets/app-T2OuISUm.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -46,7 +46,7 @@
     ]
   },
   "resources/js/dashboard/charts.js": {
-    "file": "assets/charts-DwhFoL6A.js",
+    "file": "assets/charts-U_b7n5ZG.js",
     "name": "charts",
     "src": "resources/js/dashboard/charts.js",
     "isEntry": true
@@ -64,7 +64,7 @@
     "isEntry": true
   },
   "resources/js/pages/analytics.js": {
-    "file": "assets/analytics-D8CpvcJr.js",
+    "file": "assets/analytics-Di8A9dBN.js",
     "name": "analytics",
     "src": "resources/js/pages/analytics.js",
     "isEntry": true

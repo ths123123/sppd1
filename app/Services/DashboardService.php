@@ -54,18 +54,34 @@ class DashboardService
 
             $monthlyCompleted = [];
             $monthlyInReview = [];
+            $monthlyRejected = [];
+            $monthlySubmitted = [];
             $months = [];
 
             for ($i = 11; $i >= 0; $i--) {
                 $month = now('Asia/Jakarta')->subMonths($i);
                 $months[] = $month->format('M Y');
 
+                // Completed (Disetujui)
                 $monthlyCompleted[] = TravelRequest::where('status', 'completed')
                     ->whereYear('created_at', $month->year)
                     ->whereMonth('created_at', $month->month)
                     ->count();
 
+                // In Review (Diajukan)
                 $monthlyInReview[] = TravelRequest::whereIn('status', ['in_review'])
+                    ->whereYear('created_at', $month->year)
+                    ->whereMonth('created_at', $month->month)
+                    ->count();
+
+                // Rejected (Ditolak)
+                $monthlyRejected[] = TravelRequest::where('status', 'rejected')
+                    ->whereYear('created_at', $month->year)
+                    ->whereMonth('created_at', $month->month)
+                    ->count();
+
+                // Submitted (Diajukan - termasuk draft yang sudah diajukan)
+                $monthlySubmitted[] = TravelRequest::whereIn('status', ['in_review', 'completed', 'rejected'])
                     ->whereYear('created_at', $month->year)
                     ->whereMonth('created_at', $month->month)
                     ->count();
@@ -75,6 +91,8 @@ class DashboardService
                 'months' => $months,
                 'completed' => $monthlyCompleted,
                 'in_review' => $monthlyInReview,
+                'rejected' => $monthlyRejected,
+                'submitted' => $monthlySubmitted,
             ];
         } catch (\Exception $e) {
             Log::error('Error getting monthly trend data: ' . $e->getMessage());
@@ -84,6 +102,8 @@ class DashboardService
                 'months' => ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
                 'completed' => [8, 12, 15, 10, 18, 14, 16, 19, 22, 25, 28, 30],
                 'in_review' => [12, 18, 20, 15, 25, 20, 24, 28, 32, 35, 38, 42],
+                'rejected' => [2, 3, 1, 2, 4, 3, 2, 5, 3, 4, 6, 2],
+                'submitted' => [22, 33, 36, 27, 47, 37, 42, 52, 57, 64, 72, 74],
             ];
         }
     }

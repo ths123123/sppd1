@@ -31,6 +31,8 @@ class DashboardController extends Controller
             'months' => $dashboardData['trend_data']['months'],
             'monthlyApproved' => $dashboardData['trend_data']['completed'],
             'monthlyInReview' => $dashboardData['trend_data']['in_review'],
+            'monthlyRejected' => $dashboardData['trend_data']['rejected'] ?? [],
+            'monthlySubmitted' => $dashboardData['trend_data']['submitted'] ?? [],
             'statusDistribution' => $dashboardData['status_distribution'],
             'recentActivities' => $dashboardData['recent_activities'],
             'lastUpdated' => $dashboardData['last_updated'],

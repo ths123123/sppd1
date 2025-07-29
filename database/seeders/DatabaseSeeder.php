@@ -15,8 +15,8 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            RoleSeeder::class,
-            UserRoleSeeder::class,
+                    UserRoleSeeder::class,
+            // DummyTravelRequestSeeder::class, // Seeder untuk dummy SPPD kasubbag1 (hapus, akan dipanggil dari UserRoleSeeder)
             // Tambahkan seeder lain yang esensial di sini jika ada
         ]);
     }

@@ -62,7 +62,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Inisialisasi selectedPeserta dari hidden input jika ada
     if (pesertaHidden && pesertaHidden.value) {
-        selectedPeserta = pesertaHidden.value.split(',').filter(id => id.trim() !== '');
+        // Check if it's comma-separated (old format) or array format
+        if (pesertaHidden.value.includes(',')) {
+            selectedPeserta = pesertaHidden.value.split(',').filter(id => id.trim() !== '');
+        } else {
+            selectedPeserta = [pesertaHidden.value];
+        }
+    }
+    
+    // Also check for existing participants[] inputs
+    const existingParticipants = document.querySelectorAll('input[name="participants[]"]');
+    if (existingParticipants.length > 0) {
+        selectedPeserta = Array.from(existingParticipants).map(input => input.value);
+    }
+    
+    // Check window.selectedPeserta if available (for edit mode)
+    if (window.selectedPeserta && window.selectedPeserta.length > 0) {
+        selectedPeserta = window.selectedPeserta;
+        console.log('Debug - Using window.selectedPeserta:', selectedPeserta);
     }
     
     // Fungsi untuk render tabel peserta terpilih
@@ -73,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
         pesertaTable.innerHTML = '';
         
         if (selectedPeserta.length === 0) {
-            pesertaTable.innerHTML = '<div class="text-center py-4"><span class="text-red-500 font-medium">Belum ada peserta dipilih</span></div>';
+            pesertaTable.innerHTML = '<div class="text-center py-4"><span class="text-blue-500 font-medium">Tidak ada peserta dipilih - Anda sendiri yang akan melakukan perjalanan dinas</span></div>';
             return;
         }
         
@@ -93,23 +110,28 @@ document.addEventListener('DOMContentLoaded', function() {
         const participantList = document.createElement('div');
         participantList.className = 'divide-y divide-gray-200';
         
-        selectedPeserta.forEach(id => {
-            const user = users.find(u => u.id == id);
-            if (!user) return;
-            
-            const item = document.createElement('div');
-            item.className = 'flex items-center px-4 py-3 hover:bg-gray-50';
-            item.innerHTML = `
-                <div class="flex-shrink-0">
-                    <img src="${user.avatar_url}" alt="${user.name}" class="w-10 h-10 rounded-full object-cover border border-gray-200">
-                </div>
-                <div class="ml-3 flex-grow">
-                    <p class="text-sm font-medium text-gray-900">${user.name}</p>
-                    <p class="text-xs text-gray-500">${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</p>
-                </div>
-            `;
-            participantList.appendChild(item);
-        });
+                 selectedPeserta.forEach(id => {
+             const user = users.find(u => u.id == id);
+             if (!user) return;
+             
+             const item = document.createElement('div');
+             item.className = 'flex items-center justify-between px-4 py-3 hover:bg-gray-50';
+             item.innerHTML = `
+                 <div class="flex items-center flex-grow">
+                     <div class="flex-shrink-0">
+                         <img src="${user.avatar_url}" alt="${user.name}" class="w-10 h-10 rounded-full object-cover border border-gray-200">
+                     </div>
+                     <div class="ml-3">
+                         <p class="text-sm font-medium text-gray-900">${user.name}</p>
+                         <p class="text-xs text-gray-500">${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</p>
+                     </div>
+                 </div>
+                 <button type="button" class="text-red-500 hover:text-red-700 remove-peserta-btn" data-participant-id="${user.id}" title="Hapus peserta">
+                     <i class="fas fa-times"></i>
+                 </button>
+             `;
+             participantList.appendChild(item);
+         });
         
         container.appendChild(participantList);
         pesertaTable.appendChild(container);
@@ -119,32 +141,109 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnPilih) {
         btnPilih.addEventListener('click', function(e) {
             e.preventDefault();
-            if (modal) modal.style.display = 'flex';
+            console.log('Debug - Pilih Peserta button clicked');
+            console.log('Debug - Current selectedPeserta:', selectedPeserta);
+            
+            if (modal) {
+                modal.style.display = 'flex';
+                console.log('Debug - Modal opened');
+            }
             
             // Update checkbox state based on selectedPeserta
             document.querySelectorAll('.peserta-checkbox').forEach(cb => {
-                cb.checked = selectedPeserta.includes(cb.value);
+                const isChecked = selectedPeserta.includes(cb.value);
+                cb.checked = isChecked;
+                console.log(`Debug - Checkbox ${cb.value} (${isChecked ? 'checked' : 'unchecked'})`);
             });
         });
     }
     
+    // Listen for refresh event
+    document.addEventListener('refreshPesertaTable', function(e) {
+        console.log('Debug - Refreshing peserta table with:', e.detail.participants);
+        selectedPeserta = e.detail.participants;
+        renderPesertaTable();
+    });
+    
     // Event handler untuk tombol OK
     if (btnOk) {
         btnOk.addEventListener('click', function() {
-            // Get selected participants
+            console.log('Debug - OK button clicked');
+            
+            // Get selected participants from modal checkboxes
             const checked = Array.from(document.querySelectorAll('.peserta-checkbox:checked')).map(cb => cb.value);
-            selectedPeserta = checked;
+            console.log('Debug - Checked participants from modal:', checked);
+            
+            // Get existing participants from parent page
+            const existingParticipants = window.selectedPeserta || [];
+            console.log('Debug - Existing participants from parent:', existingParticipants);
+            
+            // Merge existing and new participants (preserve existing data)
+            const mergedParticipants = [...new Set([...existingParticipants, ...checked])];
+            console.log('Debug - Merged participants:', mergedParticipants);
+            
+            selectedPeserta = mergedParticipants;
+            console.log('Debug - Updated selectedPeserta:', selectedPeserta);
             
             // Update hidden input
-            if (pesertaHidden) {
+            if (pesertaHidden && pesertaHidden.parentNode) {
+                console.log('Debug - pesertaHidden found:', pesertaHidden);
+                console.log('Debug - pesertaHidden.parentNode:', pesertaHidden.parentNode);
+                
+                // Clear existing hidden inputs
+                const existingInputs = document.querySelectorAll('input[name="participants[]"]');
+                existingInputs.forEach(input => input.remove());
+                
+                // Create new hidden inputs for each participant
+                selectedPeserta.forEach(id => {
+                    if (id && id.toString().trim() !== '') {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'participants[]';
+                        input.value = id.toString().trim();
+                        
+                        // Use pesertaHidden.parentNode if available, otherwise use document.body as fallback
+                        const targetParent = pesertaHidden.parentNode || document.body;
+                        targetParent.appendChild(input);
+                        console.log(`Debug - Created hidden input for participant ${id}`);
+                    }
+                });
+                
+                // Also update the hidden value for backward compatibility
                 pesertaHidden.value = selectedPeserta.join(',');
+                console.log('Debug - Updated hidden input value:', pesertaHidden.value);
+            } else {
+                console.log('Debug - pesertaHidden or parentNode not found, creating fallback hidden inputs');
+                
+                // Fallback: create hidden inputs in document body
+                selectedPeserta.forEach(id => {
+                    if (id && id.toString().trim() !== '') {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'participants[]';
+                        input.value = id.toString().trim();
+                        document.body.appendChild(input);
+                        console.log(`Debug - Created fallback hidden input for participant ${id}`);
+                    }
+                });
             }
             
             // Update table
             renderPesertaTable();
+            console.log('Debug - Table re-rendered');
+            
+            // Trigger custom event to notify parent page
+            const event = new CustomEvent('participantsUpdated', {
+                detail: { participants: selectedPeserta || [] }
+            });
+            document.dispatchEvent(event);
+            console.log('Debug - participantsUpdated event dispatched with participants:', selectedPeserta || []);
             
             // Close modal
-            if (modal) modal.style.display = 'none';
+            if (modal) {
+                modal.style.display = 'none';
+                console.log('Debug - Modal closed');
+            }
         });
     }
     
@@ -179,7 +278,77 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Initialize
-    renderPesertaTable();
-});
+                   // Event handler untuk tombol hapus peserta
+      document.addEventListener('click', function(e) {
+          if (e.target.closest('.remove-peserta-btn')) {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              const button = e.target.closest('.remove-peserta-btn');
+              const participantId = button.getAttribute('data-participant-id');
+              
+              console.log('Debug - Modal: Remove button clicked for participant ID:', participantId);
+              console.log('Debug - Modal: Before removal, selectedPeserta:', selectedPeserta);
+              
+              // Remove from selectedPeserta array
+              selectedPeserta = selectedPeserta.filter(id => id != participantId);
+              
+              console.log('Debug - Modal: After removal, selectedPeserta:', selectedPeserta);
+              
+              // Update hidden input
+              if (pesertaHidden && pesertaHidden.parentNode) {
+                  console.log('Debug - Modal: pesertaHidden found:', pesertaHidden);
+                  
+                  // Clear existing hidden inputs except the main one
+                  const existingInputs = document.querySelectorAll('input[name="participants[]"]');
+                  existingInputs.forEach(input => {
+                      if (input !== pesertaHidden) {
+                          input.remove();
+                      }
+                  });
+                  
+                  // Create new hidden inputs for each participant
+                  selectedPeserta.forEach(id => {
+                      if (id && id.toString().trim() !== '') {
+                          const input = document.createElement('input');
+                          input.type = 'hidden';
+                          input.name = 'participants[]';
+                          input.value = id.toString().trim();
+                          
+                          // Use pesertaHidden.parentNode if available, otherwise use document.body as fallback
+                          const targetParent = pesertaHidden.parentNode || document.body;
+                          targetParent.appendChild(input);
+                      }
+                  });
+                  
+                  // Also update the hidden value for backward compatibility
+                  pesertaHidden.value = selectedPeserta.join(',');
+                  
+                  console.log('Debug - Modal: Updated hidden inputs:', selectedPeserta);
+              } else {
+                  console.log('Debug - Modal: pesertaHidden or parentNode not found, creating fallback hidden inputs');
+                  
+                  // Fallback: create hidden inputs in document body
+                  selectedPeserta.forEach(id => {
+                      if (id && id.toString().trim() !== '') {
+                          const input = document.createElement('input');
+                          input.type = 'hidden';
+                          input.name = 'participants[]';
+                          input.value = id.toString().trim();
+                          document.body.appendChild(input);
+                          console.log(`Debug - Modal: Created fallback hidden input for participant ${id}`);
+                      }
+                  });
+              }
+              
+              // Re-render table
+              renderPesertaTable();
+              
+              console.log('Debug - Modal: Participant removed successfully');
+          }
+      });
+     
+     // Initialize
+     renderPesertaTable();
+ });
 </script> 

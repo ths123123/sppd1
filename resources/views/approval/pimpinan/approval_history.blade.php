@@ -293,11 +293,13 @@
                                         <i class="fas fa-times mr-1 text-base"></i>Tolak
                                     </button>
 
+                                    @if($request->status === 'in_review')
                                     <button type="button"
                                             class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs hover:bg-yellow-200 transition-colors"
                                             onclick="showRevisionModal('{{ $request->id }}', '{{ $request->kode_sppd }}')">
                                         <i class="fas fa-edit mr-1 text-base"></i>Revisi
                                     </button>
+                                    @endif
                                 @endif
                             </div>
                         </td>

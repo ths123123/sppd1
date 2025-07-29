@@ -350,7 +350,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Get monthly trends for SPPD count and budget
+     * Get monthly trends for SPPD count and budget with detailed status breakdown
      */
     private function getMonthlyTrends($startDate)
     {
@@ -358,7 +358,13 @@ class AnalyticsController extends Controller
                 DB::raw('EXTRACT(year FROM created_at) as year'),
                 DB::raw('EXTRACT(month FROM created_at) as month'),
                 DB::raw('COUNT(*) as sppd_count'),
-                DB::raw('SUM(biaya_transport + biaya_penginapan + uang_harian + biaya_lainnya) as total_budget')
+                DB::raw("COUNT(CASE WHEN status = 'completed' THEN 1 END) as approved_count"),
+                DB::raw("COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejected_count"),
+                DB::raw("COUNT(CASE WHEN status = 'in_review' THEN 1 END) as in_review_count"),
+                DB::raw("COUNT(CASE WHEN status = 'revision_minor' OR status = 'revision_major' THEN 1 END) as revision_count"),
+                DB::raw('SUM(biaya_transport + biaya_penginapan + uang_harian + biaya_lainnya) as total_budget'),
+                DB::raw('SUM(CASE WHEN status = \'completed\' THEN (biaya_transport + biaya_penginapan + uang_harian + biaya_lainnya) ELSE 0 END) as approved_budget'),
+                DB::raw('AVG(CASE WHEN status = \'completed\' THEN (biaya_transport + biaya_penginapan + uang_harian + biaya_lainnya) ELSE NULL END) as avg_approved_budget')
             )
             ->where('created_at', '>=', $startDate)
             ->groupBy('year', 'month')
@@ -367,11 +373,35 @@ class AnalyticsController extends Controller
             ->get()
             ->map(function($item) {
                 $date = Carbon::create((int)$item->year, (int)$item->month, 1);
+                $totalSppd = (int)$item->sppd_count;
+                $approvedCount = (int)$item->approved_count;
+                $rejectedCount = (int)$item->rejected_count;
+                $inReviewCount = (int)$item->in_review_count;
+                $revisionCount = (int)$item->revision_count;
+                
+                // Calculate approval rate
+                $approvalRate = $totalSppd > 0 ? round(($approvedCount / $totalSppd) * 100, 1) : 0;
+                $rejectionRate = $totalSppd > 0 ? round(($rejectedCount / $totalSppd) * 100, 1) : 0;
+                
                 return [
                     'period' => $date->format('M Y'),
                     'month_year' => $date->format('Y-m'),
-                    'sppd_count' => (int)$item->sppd_count,
+                    'sppd_count' => $totalSppd,
+                    'approved_count' => $approvedCount,
+                    'rejected_count' => $rejectedCount,
+                    'in_review_count' => $inReviewCount,
+                    'revision_count' => $revisionCount,
                     'total_budget' => (float)$item->total_budget,
+                    'approved_budget' => (float)$item->approved_budget,
+                    'avg_approved_budget' => (float)$item->avg_approved_budget,
+                    'approval_rate' => $approvalRate,
+                    'rejection_rate' => $rejectionRate,
+                    'status_breakdown' => [
+                        'approved' => $approvedCount,
+                        'rejected' => $rejectedCount,
+                        'in_review' => $inReviewCount,
+                        'revision' => $revisionCount
+                    ]
                 ];
             });
     }

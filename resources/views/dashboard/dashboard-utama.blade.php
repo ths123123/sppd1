@@ -56,6 +56,8 @@
         const dashboardData = {
             months: @json($months ?? []),
             monthlyApproved: @json($monthlyApproved ?? []),
+            monthlyInReview: @json($monthlyInReview ?? []),
+            monthlyRejected: @json($monthlyRejected ?? []),
             monthlySubmitted: @json($monthlySubmitted ?? []),
             statusDistribution: {
                 approved: {{ $approvedCount ?? 0 }},

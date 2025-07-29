@@ -67,7 +67,9 @@ describe('TravelRequest Model', function () {
     });
 
     test('it can be filtered by date range', function () {
-        // Arrange
+        // Arrange - Clean up existing data first
+        TravelRequest::where('tanggal_berangkat', '>=', '2025-07-01')->delete();
+        
         TravelRequest::factory()->create(['tanggal_berangkat' => '2025-07-01']);
         TravelRequest::factory()->create(['tanggal_berangkat' => '2025-07-15']);
         TravelRequest::factory()->create(['tanggal_berangkat' => '2025-08-01']);

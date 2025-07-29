@@ -11,8 +11,8 @@
             <div class="flex items-center space-x-2">
                 <div class="flex items-center">
                     <a href="{{ route('dashboard') }}" class="flex items-center">
-                        <div class="w-10 h-10 bg-[#8B0000] rounded-lg shadow-sm flex items-center justify-center mr-3 hover:shadow-md transition-all duration-300 transform hover:scale-105">
-                           <img src="{{ asset('images/logo.png') }}" alt="KPU Logo" class="w-6 h-6 object-contain">
+                        <div class="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center mr-3 hover:shadow-md transition-all duration-300 transform hover:scale-105">
+                           <img src="{{ asset('images/logo.png') }}" alt="KPU Logo" class="w-8 h-8 object-contain">
                         </div>
                         <!-- Logo text - tampil di semua ukuran layar -->
                         <div class="block">

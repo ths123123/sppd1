@@ -93,6 +93,7 @@
                             </svg>
                             <span>Tolak</span>
                         </button>
+                        @if($request->status === 'in_review')
                         <button type="button" 
                                 data-revision-btn 
                                 data-id="{{ $request->id }}" 
@@ -103,6 +104,7 @@
                             </svg>
                             <span>Revisi</span>
                         </button>
+                        @endif
                     </div>
                 </td>
             </tr>

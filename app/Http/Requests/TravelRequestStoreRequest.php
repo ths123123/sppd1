@@ -12,7 +12,8 @@ class TravelRequestStoreRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->user()->role === 'kasubbag';
+        $user = auth()->user();
+        return in_array($user->role, ['kasubbag', 'admin']);
     }
 
     /**
@@ -38,8 +39,8 @@ class TravelRequestStoreRequest extends FormRequest
             'catatan_pemohon' => 'nullable|string',
             'is_urgent' => 'nullable|boolean',
             'action' => 'nullable|string|in:save,submit',
-            'participants' => 'nullable|array',
-            'participants.*' => 'integer|exists:users,id',
+            'participants' => 'nullable',
+            'participants_hidden' => 'nullable|string',
             'dokumen_pendukung.*' => [
                 'nullable',
                 'file',
@@ -83,5 +84,96 @@ class TravelRequestStoreRequest extends FormRequest
             'biaya_lainnya' => 'biaya lainnya',
             'dokumen_pendukung' => 'dokumen pendukung',
         ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     * This method handles all possible formats of participants data to prevent recurring bugs.
+     */
+    protected function prepareForValidation()
+    {
+        $participants = $this->input('participants');
+        
+        // Handle various formats of participants data - ROBUST SOLUTION
+        if ($participants) {
+            $processedParticipants = $this->normalizeParticipantsData($participants);
+            $this->merge(['participants' => $processedParticipants]);
+        }
+    }
+
+    /**
+     * Normalize participants data from any format to array of valid user IDs
+     * This prevents all recurring bugs related to participants data format
+     */
+    private function normalizeParticipantsData($participants): array
+    {
+        $result = [];
+        
+        if (is_string($participants)) {
+            // Handle comma-separated string: "1,2,3" or "1, 2, 3"
+            if (str_contains($participants, ',')) {
+                $result = array_filter(
+                    array_map('trim', explode(',', $participants)),
+                    function($id) { return !empty($id) && is_numeric($id); }
+                );
+            } else {
+                // Single value: "1"
+                if (!empty($participants) && is_numeric($participants)) {
+                    $result = [$participants];
+                }
+            }
+        } elseif (is_array($participants)) {
+            foreach ($participants as $participant) {
+                if (is_string($participant)) {
+                    if (str_contains($participant, ',')) {
+                        // Handle array with comma strings: ["1,2,3"]
+                        $split = array_filter(
+                            array_map('trim', explode(',', $participant)),
+                            function($id) { return !empty($id) && is_numeric($id); }
+                        );
+                        $result = array_merge($result, $split);
+                    } else {
+                        // Handle normal array: ["1", "2", "3"]
+                        if (!empty($participant) && is_numeric($participant)) {
+                            $result[] = $participant;
+                        }
+                    }
+                } elseif (is_numeric($participant)) {
+                    // Handle numeric values: [1, 2, 3]
+                    $result[] = (string)$participant;
+                }
+            }
+        }
+        
+        // Remove duplicates and ensure all are strings
+        return array_unique(array_map('strval', $result));
+    }
+
+    /**
+     * Custom validation for participants after normalization
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $participants = $this->input('participants');
+            
+            if ($participants && is_array($participants)) {
+                foreach ($participants as $index => $participantId) {
+                    // Validate each participant ID
+                    if (!is_numeric($participantId)) {
+                        $validator->errors()->add("participants.{$index}", 'ID peserta harus berupa angka.');
+                        continue;
+                    }
+                    
+                    // Check if user exists and is not admin
+                    $user = \App\Models\User::find($participantId);
+                    if (!$user) {
+                        $validator->errors()->add("participants.{$index}", 'Peserta tidak ditemukan.');
+                    } elseif ($user->role === 'admin') {
+                        $validator->errors()->add("participants.{$index}", 'Admin tidak dapat dipilih sebagai peserta.');
+                    }
+                }
+            }
+        });
     }
 } 

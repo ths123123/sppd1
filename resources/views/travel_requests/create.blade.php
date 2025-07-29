@@ -54,7 +54,8 @@
                                 <i class="fas fa-users mr-2"></i> Pilih Peserta
                             </a>
                         </div>
-                        <input type="hidden" name="participants[]" id="participants-hidden">
+                        <!-- Hidden input untuk participants akan diisi oleh JavaScript -->
+                        <input type="hidden" id="participants-hidden" value="">
                         <div id="peserta-terpilih-table" class="mt-3"></div>
                     </div>
             </div>
@@ -164,6 +165,8 @@
             </div>
                 <!-- Tombol Submit -->
                 <div class="submit-section">
+                    <!-- Hidden input untuk action -->
+                    <input type="hidden" name="action" value="submit">
                     <!-- Perbaiki button submit -->
                     <button type="submit" class="submit-btn" aria-label="Ajukan SPPD">
                         <i class="fas fa-paper-plane"></i>

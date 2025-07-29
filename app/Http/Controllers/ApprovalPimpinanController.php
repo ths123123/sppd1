@@ -160,15 +160,14 @@ class ApprovalPimpinanController extends Controller
         }
 
         try {
-            // Validate input with proper rules
+            // Validate input with proper rules - perbaiki validasi target
             $validatedData = $this->validateApprovalRequest($request, [
-                'revision_reason' => 'required|min:10|max:1000|string|regex:/^[a-zA-Z0-9\s\.\,\-\_\(\)\:\;]+$/',
-                'target' => 'required|in:kasubbag',
+                'revision_reason' => 'required|min:10|max:1000|string',
+                'target' => 'required|in:kasubbag,sekretaris',
             ], [
                 'revision_reason.required' => 'Alasan revisi wajib diisi.',
                 'revision_reason.min' => 'Alasan revisi minimal 10 karakter.',
                 'revision_reason.max' => 'Alasan revisi maksimal 1000 karakter.',
-                'revision_reason.regex' => 'Alasan revisi mengandung karakter yang tidak diizinkan.',
                 'target.required' => 'Target revisi wajib dipilih.',
                 'target.in' => 'Target revisi tidak valid.',
             ]);
@@ -189,7 +188,8 @@ class ApprovalPimpinanController extends Controller
             );
 
             if ($success) {
-                $this->notificationService->notifySppdRevision($travelRequest, $user, $validatedData['revision_reason']);
+                // Perbaiki: tambahkan parameter target yang hilang
+                $this->notificationService->notifySppdRevision($travelRequest, $user, $validatedData['revision_reason'], $validatedData['target']);
                 return $this->handleResponse($request, true, 'Pengajuan telah dikembalikan untuk revisi.', 'approval.pimpinan.index');
             }
 
@@ -258,6 +258,11 @@ class ApprovalPimpinanController extends Controller
         // Admin can modify any request
         if ($user->role === 'admin') {
             return true;
+        }
+
+        // Jika SPPD dalam status revision, hanya kasubbag yang bisa melakukan aksi
+        if ($travelRequest->status === 'revision') {
+            return $user->role === 'kasubbag';
         }
 
         // Check if user is in the approval flow for this request
@@ -380,12 +385,11 @@ class ApprovalPimpinanController extends Controller
 
         try {
             $validatedData = $this->validateApprovalRequest($request, [
-                'rejection_reason' => 'required|min:10|max:1000|string|regex:/^[a-zA-Z0-9\s\.\,\-\_\(\)\:\;]+$/',
+                'rejection_reason' => 'required|min:10|max:1000|string',
             ], [
                 'rejection_reason.required' => 'Alasan penolakan wajib diisi.',
                 'rejection_reason.min' => 'Alasan penolakan minimal 10 karakter.',
                 'rejection_reason.max' => 'Alasan penolakan maksimal 1000 karakter.',
-                'rejection_reason.regex' => 'Alasan penolakan mengandung karakter yang tidak diizinkan.',
             ]);
 
             $travelRequest = TravelRequest::findOrFail($id);

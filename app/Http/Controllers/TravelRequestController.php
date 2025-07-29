@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Traits\BudgetCalculationTrait;
 use App\Services\DocumentService;
+use App\Services\ParticipantService;
 use App\Enums\TravelRequestStatus;
 
 class TravelRequestController extends Controller
@@ -39,19 +40,22 @@ class TravelRequestController extends Controller
     protected CalculationService $calculationService;
     protected NotificationService $notificationService;
     protected DocumentService $documentService;
+    protected ParticipantService $participantService;
 
     public function __construct(
         TravelRequestService $travelRequestService,
         ApprovalService $approvalService,
         CalculationService $calculationService,
         NotificationService $notificationService,
-        DocumentService $documentService
+        DocumentService $documentService,
+        ParticipantService $participantService
     ) {
         $this->travelRequestService = $travelRequestService;
         $this->approvalService = $approvalService;
         $this->calculationService = $calculationService;
         $this->notificationService = $notificationService;
         $this->documentService = $documentService;
+        $this->participantService = $participantService;
     }
 
     /**
@@ -176,7 +180,7 @@ class TravelRequestController extends Controller
     public function create()
     {
         $user = auth()->user();
-        $users = $this->getActiveUsersForSelection();
+        $users = $this->participantService->getAvailableUsers();
         return view('travel_requests.create', compact('user', 'users'));
     }
 
@@ -191,11 +195,8 @@ class TravelRequestController extends Controller
             // Log SPPD yang dibuat untuk debugging
             $this->logBudgetDebug('store', $travelRequest);
 
-            // Tambahkan peserta SPPD (jika ada)
-            if ($request->filled('participants')) {
-                $filteredParticipantIds = $this->parseAndFilterParticipants($request->participants);
-                $travelRequest->participants()->sync($filteredParticipantIds);
-            }
+            // Tambahkan peserta SPPD menggunakan service yang robust
+            $this->participantService->syncParticipants($travelRequest, $request->participants);
 
             // Upload dokumen pendukung (jika ada)
             $this->travelRequestService->handleDocumentUploads($travelRequest, $request, Auth::user());
@@ -236,6 +237,9 @@ class TravelRequestController extends Controller
         $currentUser = Auth::user();
         $travelRequest = TravelRequest::with(['user', 'participants'])->findOrFail($id);
 
+        // Refresh relasi participants untuk memastikan data ter-update
+        $travelRequest->load('participants');
+
         // IZINKAN AKSES JIKA: user adalah pengaju ATAU peserta ATAU role pimpinan/admin
         if (!$this->canAccessTravelRequest($travelRequest, $currentUser)) {
             abort(403, 'Unauthorized access to this travel request.');
@@ -246,15 +250,42 @@ class TravelRequestController extends Controller
 
     public function edit(string $id)
     {
-        $travelRequest = TravelRequest::findOrFail($id);
+        $travelRequest = TravelRequest::with(['participants', 'user'])->findOrFail($id);
         $user = auth()->user();
-        $users = $this->getActiveUsersForSelection();
+        $users = $this->participantService->getAvailableUsers();
         return view('travel_requests.edit', compact('travelRequest', 'user', 'users'));
     }
 
-    public function update(TravelRequestUpdateRequest $request, TravelRequest $travelRequest)
+    public function update(Request $request, TravelRequest $travelRequest)
     {
-        $validated = $request->validated();
+        // Debug: Log semua data yang diterima
+        \Log::info('Update SPPD - Raw request data:', [
+            'all_data' => $request->all(),
+            'participants' => $request->input('participants'),
+            'participants_array' => $request->input('participants', []),
+            'has_participants' => $request->has('participants'),
+            'participants_count' => count($request->input('participants', []))
+        ]);
+
+        // Validasi manual karena TravelRequestUpdateRequest tidak ada
+        $validated = $request->validate([
+            'tujuan' => 'required|string|max:255',
+            'keperluan' => 'required|string|max:500',
+            'tanggal_berangkat' => 'required|date',
+            'tanggal_kembali' => 'required|date|after_or_equal:tanggal_berangkat',
+            'transportasi' => 'required|string|max:100',
+            'tempat_berangkat' => 'required|string|max:255',
+            'tempat_menginap' => 'nullable|string|max:255',
+            'biaya_transport' => 'nullable|numeric|min:0',
+            'biaya_penginapan' => 'nullable|numeric|min:0',
+            'uang_harian' => 'nullable|numeric|min:0',
+            'biaya_lainnya' => 'nullable|numeric|min:0',
+            'total_biaya' => 'nullable|numeric|min:0',
+            'sumber_dana' => 'nullable|string|max:100',
+            'catatan_pemohon' => 'nullable|string|max:1000',
+            'participants' => 'nullable|array',
+            'participants.*' => 'nullable|integer|exists:users,id'
+        ]);
 
         // Auto-submit: Set status to 'in_review' (no draft)
         $validated['status'] = 'in_review';
@@ -271,11 +302,24 @@ class TravelRequestController extends Controller
             // Log SPPD yang diupdate untuk debugging
             $this->logBudgetDebug('update', $travelRequest);
 
-            // Update peserta SPPD (pivot table)
-            if (isset($validated['participants'])) {
-                $filteredParticipantIds = $this->parseAndFilterParticipants($validated['participants']);
-                $travelRequest->participants()->sync($filteredParticipantIds);
-            }
+            // Debug: Log data peserta sebelum sync
+            \Log::info('Update SPPD - Before sync participants:', [
+                'validated_participants' => $validated['participants'] ?? null,
+                'participants_type' => gettype($validated['participants'] ?? null),
+                'participants_count' => is_array($validated['participants'] ?? null) ? count($validated['participants']) : 0,
+                'raw_participants' => $request->input('participants'),
+                'all_participants_inputs' => $request->all('participants')
+            ]);
+
+            // Update peserta SPPD menggunakan service yang robust
+            $this->participantService->syncParticipants($travelRequest, $validated['participants'] ?? null);
+            
+            // Debug: Log setelah sync
+            \Log::info('Update SPPD - After sync participants:', [
+                'travel_request_id' => $travelRequest->id,
+                'participants_count_after_sync' => $travelRequest->participants()->count(),
+                'participants_after_sync' => $travelRequest->participants()->pluck('name')->toArray()
+            ]);
 
             // Upload dokumen pendukung jika ada
             if ($request->hasFile('dokumen_pendukung')) {
@@ -351,37 +395,85 @@ class TravelRequestController extends Controller
             return back()->with('error', 'Pengajuan tidak bisa diajukan ulang.');
         }
 
-        // HAPUS update manual current_approval_level di sini, cukup lewat ApprovalService
-        // $travelRequest->update([
-        //     'status' => 'in_review',
-        //     'submitted_at' => now(),
-        //     'current_approval_level' => 1,
-        // ]);
-        $travelRequest->update([
-            'status' => 'in_review',
-            'submitted_at' => now(),
-        ]);
-        
-        // Log SPPD status setelah update
-        \Log::info('SPPD resubmitted:', [
-            'id' => $travelRequest->id,
-            'status' => $travelRequest->fresh()->status,
-            'current_approval_level' => $travelRequest->fresh()->current_approval_level,
-            'submitter_role' => $currentUser->role
-        ]);
-        
-        // Inisialisasi approval workflow (JANGAN update current_approval_level manual di controller)
-        $this->approvalService->initializeApprovalWorkflow($travelRequest->fresh());
-        
-        // Log SPPD status setelah initializeApprovalWorkflow
-        \Log::info('SPPD after workflow initialization:', [
-            'id' => $travelRequest->id,
-            'status' => $travelRequest->fresh()->status,
-            'current_approval_level' => $travelRequest->fresh()->current_approval_level
-        ]);
+        try {
+            DB::beginTransaction();
+            
+            // Debug: Log request data
+            \Log::info('Submit SPPD - Request data:', [
+                'travel_request_id' => $travelRequest->id,
+                'request_all' => request()->all(),
+                'participants_from_request' => request()->input('participants'),
+                'participants_count' => count(request()->input('participants', []))
+            ]);
+            
+            // Update status SPPD
+            $travelRequest->update([
+                'status' => 'in_review',
+                'submitted_at' => now(),
+            ]);
+            
+            // Debug: Log data peserta sebelum sync
+            \Log::info('Submit SPPD - Current participants before sync:', [
+                'travel_request_id' => $travelRequest->id,
+                'current_participants_count' => $travelRequest->participants()->count(),
+                'current_participants' => $travelRequest->participants()->pluck('name')->toArray()
+            ]);
+            
+            // Gunakan data peserta dari request jika ada, jika tidak gunakan data yang sudah ada
+            $participantsToSync = request()->input('participants');
+            if (empty($participantsToSync)) {
+                $participantsToSync = $travelRequest->participants()->pluck('user_id')->toArray();
+                \Log::info('Submit SPPD - No participants in request, using existing data:', [
+                    'participants' => $participantsToSync
+                ]);
+            } else {
+                \Log::info('Submit SPPD - Using participants from request:', [
+                    'participants' => $participantsToSync
+                ]);
+            }
+            
+            // Sync participants dengan data yang benar
+            $this->participantService->syncParticipants($travelRequest, $participantsToSync);
+            
+            // Debug: Log data peserta setelah sync
+            \Log::info('Submit SPPD - After sync participants:', [
+                'travel_request_id' => $travelRequest->id,
+                'participants_count_after_sync' => $travelRequest->participants()->count(),
+                'participants_after_sync' => $travelRequest->participants()->pluck('name')->toArray()
+            ]);
+            
+            DB::commit();
+            
+            // Log SPPD status setelah update
+            \Log::info('SPPD resubmitted:', [
+                'id' => $travelRequest->id,
+                'status' => $travelRequest->fresh()->status,
+                'current_approval_level' => $travelRequest->fresh()->current_approval_level,
+                'submitter_role' => $currentUser->role
+            ]);
+            
+            // Inisialisasi approval workflow (JANGAN update current_approval_level manual di controller)
+            $this->approvalService->initializeApprovalWorkflow($travelRequest->fresh());
+            
+            // Log SPPD status setelah initializeApprovalWorkflow
+            \Log::info('SPPD after workflow initialization:', [
+                'id' => $travelRequest->id,
+                'status' => $travelRequest->fresh()->status,
+                'current_approval_level' => $travelRequest->fresh()->current_approval_level
+            ]);
 
-        return redirect()->route('travel-requests.index')
-            ->with('success', 'Pengajuan SPPD berhasil diajukan ulang.');
+            return redirect()->route('travel-requests.index')
+                ->with('success', 'Pengajuan SPPD berhasil diajukan ulang.');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error submitting travel request: ' . $e->getMessage(), [
+                'exception' => get_class($e),
+                'trace' => $e->getTraceAsString(),
+                'travel_request_id' => $travelRequest->id
+            ]);
+            return back()->with('error', 'Gagal mengajukan ulang SPPD: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -401,21 +493,24 @@ class TravelRequestController extends Controller
      */
     private function handleSubmission(TravelRequest $travelRequest): void
     {
-        // Generate kode SPPD
-        $kodeSppd = $this->travelRequestService->generateKodeSppd();
-        $travelRequest->update(['kode_sppd' => $kodeSppd]);
-        
         // Log SPPD submitted
         \Log::info('SPPD submitted:', [
             'id' => $travelRequest->id,
-            'kode_sppd' => $kodeSppd,
             'status' => $travelRequest->status,
             'current_approval_level' => $travelRequest->current_approval_level,
             'submitter_role' => Auth::user()->role
         ]);
         
-        // Inisialisasi approval workflow
-        $this->approvalService->initializeApprovalWorkflow($travelRequest->fresh());
+        // Check if this is a resubmission after revision
+        $hasPreviousApprovals = $travelRequest->approvals()->where('status', 'approved')->exists();
+        
+        if ($hasPreviousApprovals) {
+            // Use smart workflow initialization for resubmission
+            $this->approvalService->initializeApprovalWorkflowAfterRevision($travelRequest->fresh());
+        } else {
+            // Use normal workflow initialization for new submission
+            $this->approvalService->initializeApprovalWorkflow($travelRequest->fresh());
+        }
         
         // Log SPPD status setelah initializeApprovalWorkflow
         \Log::info('SPPD after workflow initialization:', [
@@ -468,58 +563,36 @@ class TravelRequestController extends Controller
         }
     }
 
+    public function downloadApprovalLetter($id)
+    {
+        try {
+            $travelRequest = \App\Models\TravelRequest::with(['user', 'approvals.approver'])->findOrFail($id);
+            $currentUser = \Auth::user();
+            if ($travelRequest->status !== \App\Enums\TravelRequestStatus::COMPLETED->value) {
+                abort(403, 'Surat persetujuan hanya bisa diunduh jika status sudah completed.');
+            }
+            if (!$this->canAccessTravelRequest($travelRequest, $currentUser)) {
+                abort(403, 'Unauthorized access to this travel request.');
+            }
+            // Data for the approval letter
+            $pegawai = $travelRequest->user;
+            $approval = $travelRequest->approvals->where('role', 'sekretaris')->first();
+            $data = [
+                'travelRequest' => $travelRequest,
+                'pegawai' => $pegawai,
+                'approval' => $approval,
+            ];
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('travel_requests.partials.surat_persetujuan', $data);
+            return $pdf->download('Surat-Persetujuan-' . ($pegawai->name ?? 'pegawai') . '.pdf');
+        } catch (\Exception $e) {
+            $this->logError('downloadApprovalLetter', $e, ['travel_request_id' => $id]);
+            return back()->with('error', 'Terjadi kesalahan saat export surat persetujuan: ' . $e->getMessage());
+        }
+    }
+
     // ==================== PRIVATE HELPER METHODS ====================
 
-    /**
-     * Parse and filter participants from request
-     */
-    private function parseAndFilterParticipants(string|array $participants): array
-    {
-        $participantIds = collect();
-        
-        if (is_string($participants)) {
-            $participantIds = collect(explode(',', $participants))
-                ->map(fn($id) => trim($id))
-                ->filter(fn($id) => !empty($id) && is_numeric($id))
-                ->map(fn($id) => (int)$id);
-        } elseif (is_array($participants)) {
-            if (count($participants) === 1 && is_string($participants[0]) && str_contains($participants[0], ',')) {
-                $participantIds = collect(explode(',', $participants[0]))
-                    ->map(fn($id) => trim($id))
-                    ->filter(fn($id) => !empty($id) && is_numeric($id))
-                    ->map(fn($id) => (int)$id);
-            } else {
-                $participantIds = collect($participants)
-                    ->filter(fn($id) => !empty($id) && is_numeric($id))
-                    ->map(fn($id) => (int)$id);
-            }
-        }
 
-        return $participantIds->filter(function ($id) {
-            $user = \App\Models\User::find($id);
-            return $user && $user->role !== 'admin' && $user->id !== Auth::id();
-        })->values()->all();
-    }
-
-    /**
-     * Get active users for selection dropdowns
-     */
-    private function getActiveUsersForSelection(): Collection
-    {
-        return \App\Models\User::where('is_active', true)
-            ->where('role', '!=', 'admin')
-            ->where('id', '!=', auth()->id())
-            ->orderBy('name')
-            ->get()
-            ->map(function($u) {
-                return [
-                    'id' => $u->id,
-                    'name' => $u->name,
-                    'role' => $u->role,
-                    'avatar_url' => $u->avatar_url,
-                ];
-            })->values();
-    }
 
     /**
      * Check if user can access travel request

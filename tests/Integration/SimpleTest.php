@@ -10,7 +10,7 @@ uses(TestCase::class, RefreshDatabase::class);
 describe('Simple Integration Test', function () {
     test('user can access profile edit page', function () {
         // Create roles first
-        $this->artisan('db:seed', ['--class' => 'RoleSeeder']);
+        $this->artisan('db:seed', ['--class' => 'UserRoleSeeder']);
 
         // Arrange
         $user = User::factory()->create();
@@ -25,7 +25,7 @@ describe('Simple Integration Test', function () {
 
     test('user can update profile data via ajax', function () {
         // Create roles first
-        $this->artisan('db:seed', ['--class' => 'RoleSeeder']);
+        $this->artisan('db:seed', ['--class' => 'UserRoleSeeder']);
 
         // Arrange
         $user = User::factory()->create();
@@ -61,7 +61,7 @@ describe('Simple Integration Test', function () {
 
     test('user can update password via ajax', function () {
         // Create roles first
-        $this->artisan('db:seed', ['--class' => 'RoleSeeder']);
+        $this->artisan('db:seed', ['--class' => 'UserRoleSeeder']);
 
         // Arrange
         $user = User::factory()->create(['password' => Hash::make('oldpassword')]);

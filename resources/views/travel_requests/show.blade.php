@@ -162,14 +162,28 @@
                                 }
                             @endphp
                             <div class="flex items-start space-x-3">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center
-                                    @if($stepStatus === 'done') bg-green-50 border-green-500
-                                    @elseif($stepStatus === 'rejected') bg-red-50 border-red-500
-                                    @elseif($stepStatus === 'revision') bg-yellow-50 border-yellow-500
-                                    @elseif($stepStatus === 'waiting') bg-blue-50 border-blue-500
-                                    @else bg-gray-50 border-gray-300 @endif">
-                                    <i class="fas {{ $icon }} text-sm {{ $iconClass }}"></i>
-                                </div>
+                                @if($stepStatus === 'done' && isset($stepData['approver_avatar']))
+                                    <div class="flex-shrink-0">
+                                        <img src="{{ $stepData['approver_avatar'] }}" alt="{{ $stepData['approved_by'] ?? 'Approver' }}" class="w-8 h-8 rounded-full object-cover border-2 border-green-500">
+                                    </div>
+                                @elseif($stepStatus === 'rejected' && isset($stepData['approver_avatar']))
+                                    <div class="flex-shrink-0">
+                                        <img src="{{ $stepData['approver_avatar'] }}" alt="{{ $stepData['approved_by'] ?? 'Approver' }}" class="w-8 h-8 rounded-full object-cover border-2 border-red-500">
+                                    </div>
+                                @elseif($stepStatus === 'revision' && isset($stepData['approver_avatar']))
+                                    <div class="flex-shrink-0">
+                                        <img src="{{ $stepData['approver_avatar'] }}" alt="{{ $stepData['approved_by'] ?? 'Approver' }}" class="w-8 h-8 rounded-full object-cover border-2 border-yellow-500">
+                                    </div>
+                                @else
+                                    <div class="flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center
+                                        @if($stepStatus === 'done') bg-green-50 border-green-500
+                                        @elseif($stepStatus === 'rejected') bg-red-50 border-red-500
+                                        @elseif($stepStatus === 'revision') bg-yellow-50 border-yellow-500
+                                        @elseif($stepStatus === 'waiting') bg-blue-50 border-blue-500
+                                        @else bg-gray-50 border-gray-300 @endif">
+                                        <i class="fas {{ $icon }} text-sm {{ $iconClass }}"></i>
+                                    </div>
+                                @endif
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium {{ $textClass }}">
                                         {{ $roleLabel }}
@@ -237,81 +251,112 @@
                         </div>
                     </div>
                 </div>
-                <!-- Peserta SPPD -->
-                <div class="bg-white rounded-lg border border-gray-200 p-6">
-                    <h2 class="text-base font-semibold text-gray-900 mb-6">Peserta SPPD</h2>
-                    @php $peserta = $travelRequest->participants ?? []; @endphp
-                    @if(count($peserta))
-                        <ul class="space-y-2">
-                            @foreach($peserta as $p)
-                                <li class="flex items-center gap-3">
-                                    <i class="fas fa-user text-gray-500"></i>
-                                    <span class="font-medium text-gray-900">{{ $p->name }}</span>
-                                    <span class="text-xs text-gray-500">({{ $p->role === 'ppk' ? 'Pejabat Pembuat Komitmen' : $p->role }})</span>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @else
-                        <p class="text-gray-500">Tidak ada peserta terdaftar.</p>
+
+
+                <!-- Travel Details & Budget Information Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Travel Details -->
+                    <div class="bg-white rounded-lg border border-gray-200 p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-route text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-semibold text-gray-900">Detail Perjalanan</h2>
+                                <p class="text-sm text-gray-600">Informasi jadwal dan keperluan</p>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Keperluan</label>
+                                <p class="text-gray-900 leading-relaxed text-sm">{{ $travelRequest->keperluan }}</p>
+                            </div>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-calendar-alt text-blue-500"></i>
+                                        <span class="text-sm font-medium text-gray-700">Tanggal Keberangkatan</span>
+                                    </div>
+                                    <span class="text-sm font-semibold text-gray-900">{{ \Carbon\Carbon::parse($travelRequest->tanggal_berangkat)->format('d F Y') }}</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-calendar-alt text-green-500"></i>
+                                        <span class="text-sm font-medium text-gray-700">Tanggal Kembali</span>
+                                    </div>
+                                    <span class="text-sm font-semibold text-gray-900">{{ \Carbon\Carbon::parse($travelRequest->tanggal_kembali)->format('d F Y') }}</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-clock text-orange-500"></i>
+                                        <span class="text-sm font-medium text-gray-700">Durasi</span>
+                                    </div>
+                                    @php
+                                        $start = \Carbon\Carbon::parse($travelRequest->tanggal_berangkat);
+                                        $end = \Carbon\Carbon::parse($travelRequest->tanggal_kembali);
+                                        $duration = $start->diffInDays($end) + 1;
+                                    @endphp
+                                    <span class="text-sm font-semibold text-gray-900">{{ $duration }} hari</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Budget Information -->
+                    @if($travelRequest->total_biaya > 0)
+                    <div class="bg-white rounded-lg border border-gray-200 p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-money-bill-wave text-green-600"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-semibold text-gray-900">Rincian Biaya</h2>
+                                <p class="text-sm text-gray-600">Estimasi anggaran perjalanan</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md">
+                                <span class="text-sm font-medium text-gray-700">Biaya Transportasi</span>
+                                <span class="text-sm font-semibold text-gray-900">
+                                    Rp {{ number_format($travelRequest->biaya_transport ?? 0, 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md">
+                                <span class="text-sm font-medium text-gray-700">Biaya Penginapan</span>
+                                <span class="text-sm font-semibold text-gray-900">
+                                    Rp {{ number_format($travelRequest->biaya_penginapan ?? 0, 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md">
+                                <span class="text-sm font-medium text-gray-700">Uang Harian</span>
+                                <span class="text-sm font-semibold text-gray-900">
+                                    Rp {{ number_format($travelRequest->uang_harian ?? 0, 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md">
+                                <span class="text-sm font-medium text-gray-700">Biaya Lainnya</span>
+                                <span class="text-sm font-semibold text-gray-900">
+                                    Rp {{ number_format($travelRequest->biaya_lainnya ?? 0, 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <div class="border-t pt-3">
+                                <div class="flex justify-between items-center p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+                                    <span class="text-base font-semibold text-gray-900">Total Biaya</span>
+                                    <span class="text-lg font-bold text-green-600">
+                                        Rp {{ number_format($travelRequest->total_biaya ?? 0, 0, ',', '.') }}
+                                    </span>
+                                </div>
+                            </div>
+                            @if($travelRequest->sumber_dana)
+                            <div class="mt-3 p-3 bg-blue-50 rounded-md border border-blue-200">
+                                <label class="block text-xs font-medium text-blue-700 mb-1">Sumber Dana</label>
+                                <p class="text-sm font-medium text-blue-900">{{ $travelRequest->sumber_dana }}</p>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
                     @endif
                 </div>
-
-                <!-- Travel Details -->
-                <div class="bg-white rounded-lg border border-gray-200 p-6">
-                    <h2 class="text-base font-semibold text-gray-900 mb-6">Detail Perjalanan</h2>
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Keperluan</label>
-                            <p class="text-gray-900 leading-relaxed">{{ $travelRequest->keperluan }}</p>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Keberangkatan</label>
-                                <div class="flex items-center space-x-2 text-gray-900">
-                                    <i class="fas fa-calendar-alt text-blue-500"></i>
-                                    <span>{{ \Carbon\Carbon::parse($travelRequest->tanggal_berangkat)->format('d F Y') }}</span>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Kembali</label>
-                                <div class="flex items-center space-x-2 text-gray-900">
-                                    <i class="fas fa-calendar-alt text-green-500"></i>
-                                    <span>{{ \Carbon\Carbon::parse($travelRequest->tanggal_kembali)->format('d F Y') }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Durasi</label>
-                            @php
-                                $start = \Carbon\Carbon::parse($travelRequest->tanggal_berangkat);
-                                $end = \Carbon\Carbon::parse($travelRequest->tanggal_kembali);
-                                $duration = $start->diffInDays($end) + 1;
-                            @endphp
-                            <div class="flex items-center space-x-2 text-gray-900">
-                                <i class="fas fa-clock text-orange-500"></i>
-                                <span>{{ $duration }} hari</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Budget Information -->
-                @if($travelRequest->total_biaya > 0)
-                <div class="bg-white rounded-lg border border-gray-200 p-6">
-                    <h2 class="text-base font-semibold text-gray-900 mb-6">Informasi Anggaran</h2>
-                    <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-blue-900">Total Biaya Perjalanan</p>
-                                <p class="text-2xl font-bold text-blue-900">Rp {{ number_format($travelRequest->total_biaya, 0, ',', '.') }}</p>
-                            </div>
-                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-money-bill-wave text-blue-600"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endif
             </div>
 
             <!-- Sidebar -->
@@ -332,12 +377,13 @@
                             <button onclick="exportSPPDZIP({{ $travelRequest->id }})" class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
                                 <i class="fas fa-file-archive mr-2"></i>Download ZIP
                             </button>
-
+                            <a href="{{ route('travel-requests.download-approval', $travelRequest->id) }}" class="w-full inline-flex items-center justify-center px-4 py-2 border border-blue-500 rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors" target="_blank">
+                                <img src="/images/logo.png" alt="Logo KPU" class="h-5 w-5 mr-2 inline">Download Surat Persetujuan Perjalanan Dinas
+                            </a>
                         @else
                             <button class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-400 bg-gray-100 cursor-not-allowed" title="Download hanya tersedia jika SPPD sudah disetujui" disabled>
                                 <i class="fas fa-file-pdf mr-2"></i>Download (Terkunci)
                             </button>
-
                         @endif
                     </div>
                 </div>
@@ -388,8 +434,47 @@
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm text-gray-600">Terakhir Update</span>
+                            <span class="text-sm text-gray-900">{{ $travelRequest->updated_at->format('d/m/Y H:i') }}</span>
                         </div>
                     </div>
+                </div>
+
+                <!-- Peserta SPPD -->
+                <div class="bg-white rounded-lg border border-gray-200 p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-users text-purple-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-semibold text-gray-900">Peserta SPPD</h3>
+                            <p class="text-sm text-gray-600">Daftar peserta perjalanan dinas</p>
+                        </div>
+                    </div>
+                    @php $peserta = $travelRequest->participants ?? []; @endphp
+                    @if(count($peserta))
+                        <div class="space-y-3">
+                            @foreach($peserta as $p)
+                                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
+                                    <img src="{{ $p->avatar_url }}" alt="{{ $p->name }}" class="w-10 h-10 rounded-full object-cover border border-gray-200">
+                                    <div class="flex-1">
+                                        <span class="font-medium text-gray-900 text-sm">{{ $p->name }}</span>
+                                        <span class="text-xs text-gray-500 block">({{ $p->role === 'ppk' ? 'Pejabat Pembuat Komitmen' : $p->role }})</span>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
+                                <img src="{{ $travelRequest->user->avatar_url }}" alt="{{ $travelRequest->user->name }}" class="w-10 h-10 rounded-full object-cover border border-gray-200">
+                                <div class="flex-1">
+                                    <span class="font-medium text-gray-900 text-sm">{{ $travelRequest->user->name }}</span>
+                                    <span class="text-xs text-gray-500 block">({{ $travelRequest->user->role === 'ppk' ? 'Pejabat Pembuat Komitmen' : $travelRequest->user->role }}) - Pengaju</span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-500 italic text-center">Tidak ada peserta tambahan - pengaju sendiri yang melakukan perjalanan dinas</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

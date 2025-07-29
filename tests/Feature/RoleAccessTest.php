@@ -53,13 +53,18 @@ class RoleAccessTest extends TestCase
         // Test profile
         $response = $this->get('/profile');
         $response->assertStatus(200);
+        
+        // Clean output buffer
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
     }
 
     // ==================== KASUBBAG ROLE TESTS ====================
     
     public function test_kasubbag_can_access_approval_features()
     {
-        $kasubbag = User::where('email', 'kasubbag.umum@kpu.go.id')->first();
+        $kasubbag = User::where('email', 'kasubbag1@kpu.go.id')->first();
         
         if (!$kasubbag) {
             $this->markTestSkipped('Kasubbag user not found in database');
@@ -95,6 +100,11 @@ class RoleAccessTest extends TestCase
         // Should have access to settings
         $response = $this->get('/settings');
         $response->assertStatus(200);
+        
+        // Clean output buffer
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
     }
 
     // ==================== SEKRETARIS ROLE TESTS ====================
@@ -126,10 +136,9 @@ class RoleAccessTest extends TestCase
         $response = $this->get('/profile');
         $response->assertStatus(200);
         
-        // Test create travel request (sekretaris cannot)
+        // Test create travel request (sekretaris can)
         $response = $this->get('/travel-requests/create');
-        // Allow both 403 and 200 as valid responses (middleware might not be strict)
-        $this->assertTrue(in_array($response->status(), [403, 200]));
+        $response->assertStatus(200);
         
         // Should have access to user management (based on middleware)
         $response = $this->get('/users');
@@ -138,6 +147,11 @@ class RoleAccessTest extends TestCase
         // Should have access to settings
         $response = $this->get('/settings');
         $response->assertStatus(200);
+        
+        // Clean output buffer
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
     }
 
     // ==================== PPK ROLE TESTS ====================
@@ -256,7 +270,7 @@ class RoleAccessTest extends TestCase
     {
         $this->withoutMiddleware();
         // Create a travel request first
-        $kasubbag = User::where('email', 'kasubbag.umum@kpu.go.id')->first();
+        $kasubbag = User::where('email', 'kasubbag1@kpu.go.id')->first();
         
         if (!$kasubbag) {
             $this->markTestSkipped('Kasubbag user not found in database');
@@ -302,7 +316,7 @@ class RoleAccessTest extends TestCase
     {
         $this->withoutMiddleware();
         // Create a travel request first
-        $kasubbag = User::where('email', 'kasubbag.umum@kpu.go.id')->first();
+        $kasubbag = User::where('email', 'kasubbag1@kpu.go.id')->first();
         
         if (!$kasubbag) {
             $this->markTestSkipped('Kasubbag user not found in database');
@@ -347,7 +361,7 @@ class RoleAccessTest extends TestCase
     {
         $this->withoutMiddleware();
         // Kasubbag mengajukan SPPD
-        $kasubbag = User::where('email', 'kasubbag.umum@kpu.go.id')->first();
+        $kasubbag = User::where('email', 'kasubbag1@kpu.go.id')->first();
         $sekretaris = User::where('email', 'sekretaris@kpu.go.id')->first();
         
         if (!$kasubbag || !$sekretaris) {

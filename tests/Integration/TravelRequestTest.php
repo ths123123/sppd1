@@ -16,7 +16,7 @@ beforeEach(function () {
 describe('Travel Request Integration', function () {
     test('authenticated user can create travel request', function () {
         // Arrange
-        $user = User::where('email', 'kasubbag.umum@kpu.go.id')->first();
+        $user = User::where('email', 'kasubbag1@kpu.go.id')->first();
         
         if (!$user) {
             $this->markTestSkipped('Kasubbag user not found in database');
@@ -120,7 +120,7 @@ describe('Travel Request Integration', function () {
 
     test('only admins can view all travel requests', function () {
         // Arrange
-        $admin = User::where('email', 'kasubbag.umum@kpu.go.id')->first();
+        $admin = User::where('email', 'admin@kpu.go.id')->first();
         $user = User::where('email', 'staff1@kpu.go.id')->first();
         
         if (!$admin || !$user) {
@@ -138,7 +138,7 @@ describe('Travel Request Integration', function () {
 
     test('user can submit travel request for approval', function () {
         // Arrange
-        $user = User::where('email', 'kasubbag.umum@kpu.go.id')->first();
+        $user = User::where('email', 'kasubbag1@kpu.go.id')->first();
         
         if (!$user) {
             $this->markTestSkipped('Kasubbag user not found in database');
@@ -165,7 +165,7 @@ describe('Travel Request Integration', function () {
 
     test('travel request validation works correctly', function () {
         // Arrange
-        $user = User::where('email', 'kasubbag.umum@kpu.go.id')->first();
+        $user = User::where('email', 'kasubbag1@kpu.go.id')->first();
         
         if (!$user) {
             $this->markTestSkipped('Kasubbag user not found in database');
@@ -189,7 +189,7 @@ describe('Travel Request Integration', function () {
 
     test('travel request calculates total budget correctly', function () {
         // Arrange
-        $user = User::where('email', 'kasubbag.umum@kpu.go.id')->first();
+        $user = User::where('email', 'kasubbag1@kpu.go.id')->first();
         
         if (!$user) {
             $this->markTestSkipped('Kasubbag user not found in database');
@@ -226,7 +226,7 @@ describe('Travel Request Integration', function () {
 
     test('unauthenticated user cannot access travel request routes', function () {
         // Arrange
-        $user = User::where('email', 'kasubbag.umum@kpu.go.id')->first();
+        $user = User::where('email', 'kasubbag1@kpu.go.id')->first();
         
         if (!$user) {
             $this->markTestSkipped('Kasubbag user not found in database');

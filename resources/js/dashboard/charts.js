@@ -50,6 +50,8 @@ class DashboardCharts {
         // Use real data or fallback
         const months = this.data.months.length > 0 ? this.data.months : this.getDefaultMonths();
         const approved = this.data.monthlyApproved.length > 0 ? this.data.monthlyApproved : this.getDefaultData();
+        const inReview = this.data.monthlyInReview.length > 0 ? this.data.monthlyInReview : this.getDefaultData();
+        const rejected = this.data.monthlyRejected.length > 0 ? this.data.monthlyRejected : this.getDefaultData();
         const submitted = this.data.monthlySubmitted.length > 0 ? this.data.monthlySubmitted : this.getDefaultData();
 
         this.charts.monthly = new Chart(ctx.getContext('2d'), {
@@ -60,25 +62,51 @@ class DashboardCharts {
                     {
                         label: 'SPPD Disetujui',
                         data: approved,
-                        borderColor: '#3B82F6',
-                        backgroundColor: 'rgba(59,130,246,0.1)',
-                        tension: 0.4,
-                        fill: true,
-                        borderWidth: 3,
-                        pointBackgroundColor: '#3B82F6',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 5
-                    },
-                    {
-                        label: 'SPPD Diajukan',
-                        data: submitted,
                         borderColor: '#10B981',
                         backgroundColor: 'rgba(16,185,129,0.1)',
                         tension: 0.4,
                         fill: true,
                         borderWidth: 3,
                         pointBackgroundColor: '#10B981',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    },
+                    {
+                        label: 'SPPD Diajukan',
+                        data: inReview,
+                        borderColor: '#F59E0B',
+                        backgroundColor: 'rgba(245,158,11,0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#F59E0B',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    },
+                    {
+                        label: 'SPPD Ditolak',
+                        data: rejected,
+                        borderColor: '#EF4444',
+                        backgroundColor: 'rgba(239,68,68,0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#EF4444',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    },
+                    {
+                        label: 'Total Diajukan',
+                        data: submitted,
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59,130,246,0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#3B82F6',
                         pointBorderColor: '#ffffff',
                         pointBorderWidth: 2,
                         pointRadius: 5

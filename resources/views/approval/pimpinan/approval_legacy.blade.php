@@ -410,11 +410,13 @@
                                             </form>
 
                                             <!-- Tombol Revisi -->
+                                            @if($request->status === 'in_review')
                                             <button type="button"
                                                     onclick="openRevisionModal({{ $request->id }}, '{{ optional($request->user)->name ?? '-' }}', '{{ $request->kode_sppd }}')"
                                                     class="inline-flex items-center px-2 py-1 border border-yellow-300 text-xs font-medium rounded-md text-yellow-700 bg-yellow-50 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors">
                                                 <i class="fas fa-edit mr-1"></i>Revisi
                                             </button>
+                                            @endif
 
                                             <!-- Tombol Tolak -->
                                             <button type="button"
