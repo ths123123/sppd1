@@ -569,7 +569,7 @@ class TravelRequestController extends Controller
             $travelRequest = \App\Models\TravelRequest::with(['user', 'approvals.approver'])->findOrFail($id);
             $currentUser = \Auth::user();
             if ($travelRequest->status !== \App\Enums\TravelRequestStatus::COMPLETED->value) {
-                abort(403, 'Surat persetujuan hanya bisa diunduh jika status sudah completed.');
+                abort(403, 'Surat tugas hanya bisa diunduh jika status sudah completed.');
             }
             if (!$this->canAccessTravelRequest($travelRequest, $currentUser)) {
                 abort(403, 'Unauthorized access to this travel request.');
@@ -583,10 +583,10 @@ class TravelRequestController extends Controller
                 'approval' => $approval,
             ];
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('travel_requests.partials.surat_persetujuan', $data);
-            return $pdf->download('Surat-Persetujuan-' . ($pegawai->name ?? 'pegawai') . '.pdf');
+            return $pdf->download('Surat-Tugas-' . ($pegawai->name ?? 'pegawai') . '.pdf');
         } catch (\Exception $e) {
             $this->logError('downloadApprovalLetter', $e, ['travel_request_id' => $id]);
-            return back()->with('error', 'Terjadi kesalahan saat export surat persetujuan: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat export surat tugas: ' . $e->getMessage());
         }
     }
 

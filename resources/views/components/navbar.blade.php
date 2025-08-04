@@ -91,7 +91,7 @@
                             x-transition:leave-end="opacity-0 scale-95" 
                             class="absolute left-0 mt-2 min-w-[180px] max-w-xs bg-white rounded-lg shadow-xl z-50 border border-gray-200 py-1">
                             <a href="{{ route('analytics.index') }}" class="block px-5 py-2 text-gray-800 text-base font-medium hover:bg-gray-100 rounded-md transition-colors duration-200">Analytics</a>
-                            <a href="{{ route('laporan.index') }}" class="block px-5 py-2 text-gray-800 text-base font-medium hover:bg-gray-100 rounded-md transition-colors duration-200">Laporan</a>
+                            <a href="{{ route('laporan.daftar') }}" class="block px-5 py-2 text-gray-800 text-base font-medium hover:bg-gray-100 rounded-md transition-colors duration-200">Laporan</a>
                         </div>
                     </div>
                     @endif

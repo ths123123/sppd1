@@ -114,10 +114,7 @@
                     </h3>
                     <div class="flex space-x-2">
                         <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200">
-                            <i class="fas fa-file-excel mr-2"></i>Export Excel
-                        </button>
-                        <button class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200">
-                            <i class="fas fa-file-pdf mr-2"></i>Export PDF
+                            <i class="fas fa-file-csv mr-2"></i>Export CSV
                         </button>
                     </div>
                 </div>

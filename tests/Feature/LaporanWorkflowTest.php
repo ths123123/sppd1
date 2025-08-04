@@ -326,31 +326,31 @@ class LaporanWorkflowTest extends TestCase
         // Test 1: Admin can access laporan export Excel route
         $this->actingAs($this->admin);
         $response = $this->get('/laporan/export/excel');
-        $response->assertStatus(500); // Error due to missing Excel interface
+        $response->assertStatus(302); // Redirect to laporan page if no jenis parameter
         echo "✅ Test 1: Admin can access laporan export Excel route\n";
 
         // Test 2: Kasubbag can access laporan export Excel route
         $this->actingAs($this->kasubbag);
         $response = $this->get('/laporan/export/excel');
-        $response->assertStatus(500); // Error due to missing Excel interface
+        $response->assertStatus(302); // Redirect to laporan page if no jenis parameter
         echo "✅ Test 2: Kasubbag can access laporan export Excel route\n";
 
         // Test 3: Sekretaris can access laporan export Excel route
         $this->actingAs($this->sekretaris);
         $response = $this->get('/laporan/export/excel');
-        $response->assertStatus(500); // Error due to missing Excel interface
+        $response->assertStatus(302); // Redirect to laporan page if no jenis parameter
         echo "✅ Test 3: Sekretaris can access laporan export Excel route\n";
 
         // Test 4: PPK can access laporan export Excel route
         $this->actingAs($this->ppk);
         $response = $this->get('/laporan/export/excel');
-        $response->assertStatus(500); // Error due to missing Excel interface
+        $response->assertStatus(302); // Redirect to laporan page if no jenis parameter
         echo "✅ Test 4: PPK can access laporan export Excel route\n";
 
         // Test 5: Staff can access laporan export Excel route (if allowed)
         $this->actingAs($this->staff1);
         $response = $this->get('/laporan/export/excel');
-        $response->assertStatus(500); // Error due to missing Excel interface
+        $response->assertStatus(302); // Redirect to laporan page if no jenis parameter
         echo "✅ Test 5: Staff access to laporan export Excel route tested\n";
     }
 
@@ -556,7 +556,7 @@ class LaporanWorkflowTest extends TestCase
 
         // Test Excel export
         $response = $this->get('/laporan/export/excel?status=completed');
-        $response->assertStatus(500); // Error due to missing Excel interface
+        $response->assertStatus(302); // Redirect to laporan page if no jenis parameter
         echo "✅ Test 6: Excel export with status filter works\n";
     }
 

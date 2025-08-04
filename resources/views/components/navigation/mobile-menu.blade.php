@@ -131,7 +131,7 @@
                 </button>
                 <div x-show="analyticsOpen" x-transition class="pl-10 space-y-1">
                     <a href="{{ route('analytics.index') }}" class="mobile-menu-item text-black">Analytics</a>
-                    <a href="{{ route('laporan.index') }}" class="mobile-menu-item text-black">Laporan</a>
+                    <a href="{{ route('laporan.daftar') }}" class="mobile-menu-item text-black">Laporan</a>
                 </div>
                 @endif
                 <!-- Dokumen Group -->

@@ -1,183 +1,182 @@
-# SPPD-KPU - Sistem Pengelolaan Perjalanan Dinas KPU Kabupaten Cirebon
+# SPPD KPU Kabupaten Cirebon
 
-## 📋 Deskripsi Proyek
+Sistem Pengelolaan Perjalanan Dinas (SPPD) untuk Komisi Pemilihan Umum Kabupaten Cirebon.
 
-SPPD-KPU adalah sistem web untuk mengelola perjalanan dinas pegawai KPU Kabupaten Cirebon. Sistem ini memungkinkan pengajuan, persetujuan, dan monitoring perjalanan dinas dengan workflow yang terstruktur.
+## 🚀 Features
 
-## ✨ Fitur Utama
+- **User Management**: Multi-role system (Admin, Pimpinan, Staff)
+- **SPPD Management**: Create, edit, approve travel requests
+- **Document Management**: Upload and manage supporting documents
+- **Approval Workflow**: Multi-level approval system
+- **Reporting**: Excel export with professional styling
+- **Real-time Dashboard**: Live statistics and analytics
+- **WhatsApp Integration**: Automated notifications
 
-### 🔐 **Manajemen User & Role**
-- Multi-role system (Admin, Sekretaris, Kasubbag, PPK, Staff)
-- Role-based access control
-- User profile management
+## 🛠️ Tech Stack
 
-### 📝 **Pengelolaan SPPD**
-- Form pengajuan SPPD yang lengkap
-- Workflow persetujuan bertingkat
-- Tracking status real-time
-- Export PDF SPPD
+- **Backend**: Laravel 10 (PHP 8.1)
+- **Frontend**: Blade Templates + Tailwind CSS
+- **Database**: PostgreSQL/MySQL
+- **Export**: Maatwebsite Excel
+- **Charts**: Chart.js
+- **Deployment**: Render/Railway/VPS
 
-### 📊 **Analytics & Laporan**
-- Dashboard analytics
-- Laporan perjalanan dinas
-- Export data (Excel, PDF)
-- Filter dan pencarian advanced
+## 📋 Requirements
 
-### 📁 **Manajemen Dokumen**
-- Upload dokumen pendukung
-- Dokumen SPPD pribadi
-- Rekap seluruh dokumen (admin/sekretaris/kasubbag/ppk)
-- Download dengan validasi akses
-
-### ✅ **Workflow Persetujuan**
-- Multi-level approval (Sekretaris → PPK)
-- Status tracking (Diajukan → Disetujui/Ditolak/Revisi)
-- Notifikasi real-time
-- History persetujuan
-
-## 🛠️ Teknologi yang Digunakan
-
-- **Backend**: Laravel 10.x
-- **Database**: PostgreSQL
-- **Frontend**: Blade Templates, Tailwind CSS
-- **Authentication**: Laravel Breeze
-- **File Storage**: Laravel Storage
-- **PDF Generation**: DomPDF
-- **Testing**: PHPUnit
-
-## 📦 Instalasi
-
-### Prerequisites
-- PHP 8.1+
+- PHP >= 8.1
 - Composer
-- PostgreSQL
-- Node.js & NPM (untuk asset compilation)
+- Node.js & NPM
+- PostgreSQL/MySQL
+- Web Server (Apache/Nginx)
 
-### Langkah Instalasi
+## 🚀 Quick Start
 
-1. **Clone Repository**
+### 1. Clone Repository
 ```bash
-git clone https://github.com/username/SPPD-KPU.git
-cd SPPD-KPU
+git clone https://github.com/your-username/sppd-kpu-cirebon.git
+cd sppd-kpu-cirebon
 ```
 
-2. **Install Dependencies**
+### 2. Install Dependencies
 ```bash
 composer install
 npm install
 ```
 
-3. **Setup Environment**
+### 3. Environment Setup
 ```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-4. **Konfigurasi Database**
-Edit file `.env` dan sesuaikan konfigurasi database:
-```env
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=sppd_kpu
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
-```
-
-5. **Run Migrations & Seeders**
+### 4. Database Setup
 ```bash
 php artisan migrate
 php artisan db:seed
 ```
 
-6. **Setup Storage**
+### 5. Build Assets
 ```bash
-php artisan storage:link
+npm run build
 ```
 
-7. **Compile Assets**
-```bash
-npm run dev
-```
-
-8. **Start Server**
+### 6. Start Development Server
 ```bash
 php artisan serve
 ```
 
-## 👥 Default Users
+## 🌐 Deployment
 
-Setelah menjalankan seeder, tersedia user default:
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@kpu.go.id | password |
-| Sekretaris | sekretaris@kpu.go.id | password |
-| Kasubbag | kasubbag@kpu.go.id | password |
-| PPK | ppk@kpu.go.id | password |
-| Staff | staff@kpu.go.id | password |
-
-## 🧪 Testing
-
+### Render (Recommended)
 ```bash
-# Run semua test
-php artisan test
-
-# Run test specific
-php artisan test --filter=DocumentWorkflowTest
+# 1. Connect GitHub repository to Render
+# 2. Create Web Service
+# 3. Add PostgreSQL database
+# 4. Deploy automatically
 ```
 
-## 📁 Struktur Proyek
+### Railway
+```bash
+# 1. Login with GitHub
+# 2. Connect repository
+# 3. Auto-deploy
+```
+
+### VPS Setup
+```bash
+# Install LAMP Stack
+sudo apt update
+sudo apt install apache2 mysql-server php8.1 php8.1-mysql php8.1-xml php8.1-curl
+
+# Deploy Laravel
+cd /var/www/html
+git clone [repository]
+composer install --no-dev --optimize-autoloader
+php artisan key:generate
+php artisan migrate
+```
+
+## 📁 Project Structure
 
 ```
 SPPD-KPU/
 ├── app/
-│   ├── Http/Controllers/    # Controllers
-│   ├── Models/             # Eloquent Models
-│   ├── Services/           # Business Logic
-│   └── Traits/             # Reusable Traits
-├── database/
-│   ├── migrations/         # Database migrations
-│   └── seeders/           # Database seeders
+│   ├── Http/Controllers/
+│   ├── Models/
+│   ├── Services/
+│   └── Exports/
 ├── resources/
-│   └── views/             # Blade templates
-├── routes/
-│   └── web.php           # Web routes
-└── tests/                # Test files
+│   ├── views/
+│   ├── css/
+│   └── js/
+├── database/
+│   ├── migrations/
+│   └── seeders/
+├── public/
+│   ├── images/
+│   └── js/
+└── docs/
+    └── fixes/
 ```
 
-## 🔧 Konfigurasi
+## 🔧 Configuration
 
 ### Environment Variables
-- `APP_ENV`: Environment (local, production)
-- `DB_*`: Database configuration
-- `MAIL_*`: Email configuration
-- `FILESYSTEM_DISK`: File storage configuration
+```env
+APP_NAME="SPPD KPU Cirebon"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://your-domain.com
 
-### Storage Configuration
-- Documents disimpan di `storage/app/documents/`
-- Public access melalui `public/storage/`
+DB_CONNECTION=pgsql
+DB_HOST=your-db-host
+DB_PORT=5432
+DB_DATABASE=your-database
+DB_USERNAME=your-username
+DB_PASSWORD=your-password
+```
 
-## 🚀 Deployment
+## 📊 Features Detail
 
-### Production Checklist
-- [ ] Set `APP_ENV=production`
-- [ ] Set `APP_DEBUG=false`
-- [ ] Configure database
-- [ ] Setup file storage
-- [ ] Configure email
-- [ ] Setup SSL certificate
-- [ ] Configure web server (Apache/Nginx)
+### User Management
+- Multi-role authentication
+- Profile management
+- Password reset
 
-## 📝 License
+### SPPD Management
+- Create travel requests
+- Participant management
+- Budget calculation
+- Document upload
 
-Proyek ini dikembangkan untuk KPU Kabupaten Cirebon.
+### Approval Workflow
+- Multi-level approval
+- Status tracking
+- Email notifications
+- WhatsApp integration
 
-## 👨‍💻 Developer
+### Reporting
+- Excel export with KPU logo
+- Professional styling
+- Real-time data
+- Multiple report types
 
-Dikembangkan dengan ❤️ untuk KPU Kabupaten Cirebon
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch
+3. Commit changes
+4. Push to branch
+5. Create Pull Request
+
+## 📄 License
+
+This project is developed for KPU Kabupaten Cirebon.
+
+## 📞 Support
+
+For support, email: support@kpu-cirebon.go.id
 
 ---
 
-**Versi**: 1.0.0  
-**Update Terakhir**: Juli 2025
+**SPPD KPU Kabupaten Cirebon** - Sistem Pengelolaan Perjalanan Dinas yang Profesional 

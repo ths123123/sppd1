@@ -288,11 +288,12 @@
                 <div class="space-y-3">
                     @php
                         $isApproverParticipant = $request->participants->contains('id', auth()->user()->id);
+                        $isSekretarisOrPpk = in_array(auth()->user()->role, ['sekretaris', 'ppk']);
                     @endphp
                     @if(auth()->user()->role !== 'admin')
                     <form method="POST" action="{{ route('approval.pimpinan.approve', $request->id) }}" class="w-full">
                         @csrf
-                        @if($isApproverParticipant)
+                        @if($isApproverParticipant && !$isSekretarisOrPpk)
                             <div class="mb-4">
                                 <label for="plt_name" class="block text-sm font-semibold text-gray-700 mb-2">Nama Plt/Plh Approver <span class="text-red-500">*</span></label>
                                 <input type="text" name="plt_name" id="plt_name" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" required placeholder="Masukkan nama Plt/Plh yang menandatangani">

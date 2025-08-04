@@ -333,13 +333,13 @@ class ApprovalPimpinanController extends Controller
 
             // Check if approver is also participant
             $isApproverParticipant = $travelRequest->participants->contains('id', $user->id);
-            if ($isApproverParticipant && empty($validatedData['plt_name'])) {
+            $isSekretarisOrPpk = in_array($user->role, ['sekretaris', 'ppk']);
+            if ($isApproverParticipant && !$isSekretarisOrPpk && empty($validatedData['plt_name'])) {
                 return $this->handleResponse($request, false, 'Anda adalah peserta SPPD ini. Approval harus dilakukan oleh Plt/Plh. Silakan masukkan nama Plt/Plh.');
             }
-
             // Prepare comments with PLT information
             $finalComments = $validatedData['comments'] ?? '';
-            if ($isApproverParticipant && !empty($validatedData['plt_name'])) {
+            if ($isApproverParticipant && !$isSekretarisOrPpk && !empty($validatedData['plt_name'])) {
                 $finalComments = '[PLT/PLH: ' . $validatedData['plt_name'] . '] ' . $finalComments;
             }
 

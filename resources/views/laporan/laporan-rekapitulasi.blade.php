@@ -255,10 +255,6 @@ function laporanAnalitik() {
             this.initCharts();
         },
 
-        exportPDF() {
-            window.open('{{ route("laporan.export.pdf") }}', '_blank');
-        },
-
         exportExcel() {
             window.open('{{ route("laporan.export.excel") }}', '_blank');
         },

@@ -72,3 +72,8 @@ yarn-error.log*
 # Laravel specific
 .env.local
 .env.*.local
+
+# Project specific folders
+/skripsi_files/
+/diagram_files/
+/python_scripts/

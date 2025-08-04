@@ -89,9 +89,12 @@ Route::middleware(['auth'])->group(function () {
         ->name('approval.fix-inconsistent-data');
 
     // Report routes
-    Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
-    Route::get('/laporan/export/pdf', [LaporanController::class, 'exportPdf'])->name('laporan.export.pdf');
-    Route::get('/laporan/export/excel', [LaporanController::class, 'exportExcel'])->name('laporan.export.excel');
+    Route::get('/laporan', [LaporanController::class, 'daftar'])->name('laporan.daftar');
+    Route::get('/laporan/rekapitulasi', [LaporanController::class, 'index'])->name('laporan.rekapitulasi');
+    Route::get('/laporan/export/excel/{jenis}', [LaporanController::class, 'exportExcel'])->name('laporan.export.excel');
+    Route::get('/laporan/export/pdf/{jenis}', [LaporanController::class, 'exportPdf'])->name('laporan.export.pdf');
+    Route::get('/laporan/export/excel', [LaporanController::class, 'exportExcel'])->name('laporan.export.excel.default');
+    Route::get('/laporan/export/pdf', [LaporanController::class, 'exportPdf'])->name('laporan.export.pdf.default');
     Route::get('/laporan/ajax', [\App\Http\Controllers\LaporanController::class, 'ajaxRekap'])->name('laporan.ajax');
 
     // Analytics routes

@@ -378,7 +378,7 @@
                                 <i class="fas fa-file-archive mr-2"></i>Download ZIP
                             </button>
                             <a href="{{ route('travel-requests.download-approval', $travelRequest->id) }}" class="w-full inline-flex items-center justify-center px-4 py-2 border border-blue-500 rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors" target="_blank">
-                                <img src="/images/logo.png" alt="Logo KPU" class="h-5 w-5 mr-2 inline">Download Surat Persetujuan Perjalanan Dinas
+                                <img src="/images/logo.png" alt="Logo KPU" class="h-5 w-5 mr-2 inline">Download Surat Tugas
                             </a>
                         @else
                             <button class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-400 bg-gray-100 cursor-not-allowed" title="Download hanya tersedia jika SPPD sudah disetujui" disabled>
