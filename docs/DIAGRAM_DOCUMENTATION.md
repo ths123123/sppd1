@@ -15,10 +15,11 @@ DFD Level 3 yang telah disederhanakan namun tetap sesuai standar DFD Level 3 den
 ### Komponen Utama
 
 #### 1. External Entities (Entitas Eksternal)
-- **Kasubbag Staff**: Staff yang membuat dan mengelola SPPD
+- **Kasubbag**: Staff yang membuat dan mengelola SPPD (HANYA ROLE INI YANG BISA MENGAJUKAN)
 - **Sekretaris**: Pihak yang menyetujui SPPD (Level 1)
 - **PPK**: Pejabat Pembuat Komitmen yang menyetujui SPPD (Level 2)
-- **Admin**: Administrator sistem
+- **Admin**: Administrator sistem (monitoring only)
+- **Staff**: Peserta SPPD (view only)
 
 #### 2. Data Stores (Penyimpanan Data)
 - **Users Database**: Database pengguna sistem
@@ -134,59 +135,101 @@ DFD Level 3 yang telah disederhanakan namun tetap sesuai standar DFD Level 3 den
 ## Use Case Diagram
 
 ### Deskripsi
-Use case diagram menggambarkan interaksi antara aktor (pengguna) dengan sistem SPPD KPU. Diagram ini menunjukkan semua fitur yang tersedia untuk setiap jenis pengguna.
+Use case diagram menggambarkan interaksi antara aktor (pengguna) dengan sistem SPPD KPU. Diagram ini menunjukkan semua fitur yang tersedia untuk setiap jenis pengguna sesuai dengan alur approval yang benar.
 
 ### Aktor (Actors)
-- **Kasubbag Staff**: Staff yang membuat dan mengelola SPPD
-- **Sekretaris**: Pihak yang menyetujui SPPD
-- **PPK**: Pejabat Pembuat Komitmen
-- **Admin**: Administrator sistem
+- **Kasubbag**: Staff yang membuat dan mengelola SPPD (HANYA ROLE INI YANG BISA MENGAJUKAN)
+- **Sekretaris**: Pihak yang menyetujui SPPD (Approval Level 1)
+- **PPK**: Pejabat Pembuat Komitmen (Approval Level 2)
+- **Admin**: Administrator sistem (monitoring only)
+- **Staff**: Peserta SPPD (view only, tidak bisa mengajukan)
 
 ### Use Cases (Kasus Penggunaan)
 
 #### 1. SPPD Management
-- **Create SPPD**: Membuat SPPD baru
-- **Edit SPPD**: Mengedit SPPD yang ada
-- **Submit SPPD**: Mengirim SPPD untuk persetujuan
+- **Create SPPD**: Membuat SPPD baru (Hanya Kasubbag)
+- **Edit SPPD**: Mengedit SPPD yang ada (Hanya Kasubbag)
+- **Submit SPPD**: Mengirim SPPD untuk persetujuan (Hanya Kasubbag)
 - **View SPPD List**: Melihat daftar SPPD
 - **View SPPD Detail**: Melihat detail SPPD
 
 #### 2. Approval Process
-- **Approve SPPD**: Menyetujui SPPD
-- **Reject SPPD**: Menolak SPPD
-- **View Approval Queue**: Melihat antrian persetujuan
-- **Generate Document**: Menghasilkan dokumen SPPD
+- **Approve SPPD**: Menyetujui SPPD (Sekretaris & PPK)
+- **Reject SPPD**: Menolak SPPD (Sekretaris & PPK)
+- **View Approval Queue**: Melihat antrian persetujuan (Sekretaris & PPK)
+- **Generate Document**: Menghasilkan dokumen SPPD (Sekretaris & PPK)
 
 #### 3. Document Management
-- **Upload Documents**: Mengunggah dokumen
-- **Download Documents**: Mengunduh dokumen
-- **View Document List**: Melihat daftar dokumen
+- **Upload Documents**: Mengunggah dokumen (Kasubbag)
+- **Download Documents**: Mengunduh dokumen (Semua role)
+- **View Document List**: Melihat daftar dokumen (Semua role)
 
 #### 4. User Management
-- **Create User**: Membuat pengguna baru
-- **Edit User**: Mengedit data pengguna
-- **View User List**: Melihat daftar pengguna
-- **Assign Roles**: Menetapkan peran pengguna
+- **Create User**: Membuat pengguna baru (Admin)
+- **Edit User**: Mengedit data pengguna (Admin)
+- **View User List**: Melihat daftar pengguna (Admin)
+- **Assign Roles**: Menetapkan peran pengguna (Admin)
 
 #### 5. Notification System
-- **Send Notifications**: Mengirim notifikasi
-- **View Notifications**: Melihat notifikasi
-- **Mark as Read**: Menandai notifikasi sebagai telah dibaca
+- **Send Notifications**: Mengirim notifikasi (Admin)
+- **View Notifications**: Melihat notifikasi (Semua role)
+- **Mark as Read**: Menandai notifikasi sebagai telah dibaca (Semua role)
 
 #### 6. Analytics & Reports
-- **View Dashboard**: Melihat dashboard
-- **Generate Reports**: Menghasilkan laporan
-- **Export PDF**: Mengekspor laporan PDF
+- **View Dashboard**: Melihat dashboard (Semua role)
+- **Generate Reports**: Menghasilkan laporan (Admin)
+- **Export PDF**: Mengekspor laporan PDF (Admin)
 
 ### Relasi Antar Use Case
 - **Include Relationship**: Use case yang harus dilakukan sebelum use case lain
 - **Extend Relationship**: Use case opsional yang dapat dilakukan
 
 ### Hak Akses Aktor
-- **Kasubbag Staff**: Akses penuh ke SPPD Management, Document Management, dan Notification System
-- **Sekretaris**: Akses ke Approval Process dan Notification System
-- **PPK**: Akses ke Approval Process dan Notification System
-- **Admin**: Akses penuh ke semua fitur sistem
+
+#### **Kasubbag (HANYA ROLE INI YANG BISA MENGAJUKAN SPPD)**
+- ✅ Akses penuh ke SPPD Management (Create, Edit, Submit)
+- ✅ Akses ke Document Management
+- ✅ Akses ke Notification System
+- ✅ Akses ke Dashboard
+
+#### **Sekretaris (Approval Level 1)**
+- ❌ Tidak bisa mengajukan SPPD
+- ✅ Akses ke Approval Process (Approve, Reject, View Queue)
+- ✅ Akses ke Document Management (Download, View)
+- ✅ Akses ke Notification System
+- ✅ Akses ke Dashboard
+
+#### **PPK (Approval Level 2)**
+- ❌ Tidak bisa mengajukan SPPD
+- ✅ Akses ke Approval Process (Approve, Reject, View Queue)
+- ✅ Akses ke Document Management (Download, View)
+- ✅ Akses ke Notification System
+- ✅ Akses ke Dashboard
+
+#### **Admin (Monitoring Only)**
+- ❌ Tidak bisa mengajukan SPPD
+- ❌ Tidak bisa approve/reject SPPD
+- ✅ Akses penuh ke User Management
+- ✅ Akses ke Notification System
+- ✅ Akses ke Analytics & Reports
+
+#### **Staff (View Only)**
+- ❌ Tidak bisa mengajukan SPPD
+- ❌ Tidak bisa approve/reject SPPD
+- ✅ Akses ke Document Management (Download, View)
+- ✅ Akses ke Notification System
+- ✅ Akses ke Dashboard
+
+### Alur Approval yang Benar
+```
+Kasubbag → Submit SPPD → Sekretaris (Level 1) → PPK (Level 2) → Completed
+```
+
+**Catatan Penting:**
+- **Hanya Kasubbag** yang bisa mengajukan SPPD
+- **Staff** hanya bisa melihat SPPD sebagai peserta
+- **Admin** hanya monitoring, tidak bisa approve/reject
+- **Approval berjenjang**: Sekretaris → PPK
 
 ---
 
@@ -200,23 +243,13 @@ Use case diagram menggambarkan interaksi antara aktor (pengguna) dengan sistem S
 
 **Versi A4 Vertikal (Direkomendasikan untuk A4 Portrait):**
 - **usecase_diagram_a4_vertical.mmd**: File source use case diagram A4 vertikal
-- **usecase_diagram_a4_vertical.svg**: File gambar use case diagram A4 vertikal (49KB)
-
-**Versi Vertikal (Alternatif):**
-- **usecase_diagram_vertical.mmd**: File source use case diagram vertikal
-- **usecase_diagram_vertical.svg**: File gambar use case diagram vertikal (51KB)
-
-**Versi Standar (Format Restaurant):**
-- **usecase_diagram_standard.mmd**: File source use case diagram standar
-- **usecase_diagram_standard.svg**: File gambar use case diagram standar (53KB)
+- **usecase_diagram_a4_vertical.png**: File gambar use case diagram A4 vertikal (124KB) - **KUALITAS TINGGI**
+- **usecase_diagram_a4_vertical.svg**: File gambar use case diagram A4 vertikal (57KB) - **VECTOR SCALABLE**
 
 **Versi Sederhana (Alternatif untuk A4):**
 - **usecase_diagram_simple.mmd**: File source use case diagram sederhana
-- **usecase_diagram_simple.svg**: File gambar use case diagram sederhana (54KB)
-
-**Versi Lengkap (Untuk referensi):**
-- **usecase_diagram.mmd**: File source use case diagram lengkap
-- **usecase_diagram.svg**: File gambar use case diagram lengkap (75KB)
+- **usecase_diagram_simple.png**: File gambar use case diagram sederhana (86KB) - **KUALITAS TINGGI**
+- **usecase_diagram_simple.svg**: File gambar use case diagram sederhana (47KB) - **VECTOR SCALABLE**
 
 ## Penggunaan untuk Skripsi
 
@@ -232,36 +265,24 @@ Use case diagram menggambarkan interaksi antara aktor (pengguna) dengan sistem S
 - ✅ **Aktor di atas** tersusun horizontal compact
 - ✅ **Use case di bawah** tersusun vertikal dari atas ke bawah
 - ✅ **Layout benar-benar vertikal** tanpa melebar ke samping
-- ✅ **Ukuran yang paling efisien** (49KB)
+- ✅ **Ukuran yang paling efisien** (124KB PNG / 57KB SVG)
 - ✅ **Muat sempurna di A4 portrait**
-
-**Versi Vertikal (Alternatif):**
-- ✅ **22 use case** dengan layout vertikal
-- ✅ **Aktor di kiri** dan use case di kanan
-- ✅ **Tersusun vertikal** dari atas ke bawah
-- ✅ **Ukuran yang efisien** (51KB)
-
-**Versi Standar (Format Restaurant):**
-- ✅ **22 use case** dengan format standar UML
-- ✅ **System boundary** yang jelas seperti gambar restaurant
-- ✅ **Ukuran yang muat di A4** (53KB)
-- ✅ **Layout yang profesional** dan mudah dibaca
-- ✅ **Format yang sesuai standar** UML use case diagram
+- ✅ **Alur approval yang benar** sesuai sistem
+- ✅ **KUALITAS TINGGI** dengan tulisan bold dan resolusi tinggi
+- ✅ **TULISAN BOLD** untuk semua elemen agar mudah dibaca
 
 **Versi Sederhana (Alternatif untuk A4):**
-- ✅ **22 use case** yang lebih compact
-- ✅ **Ukuran yang muat di A4** (54KB)
+- ✅ **18 use case** yang lebih compact
+- ✅ **Ukuran yang muat di A4** (86KB PNG / 47KB SVG)
 - ✅ **Elemen yang mudah dibaca**
-
-**Versi Lengkap (Untuk referensi):**
-- ✅ **35 use case** yang lebih detail
-- ✅ **Ukuran lebih besar** (75KB)
-- ✅ **Informasi yang lebih lengkap**
+- ✅ **Alur approval yang benar** sesuai sistem
+- ✅ **KUALITAS TINGGI** dengan tulisan bold dan resolusi tinggi
+- ✅ **TULISAN BOLD** untuk semua elemen agar mudah dibaca
 
 ### Rekomendasi Penggunaan:
-1. **Untuk skripsi**: Gunakan `usecase_diagram_a4_vertical.svg` dengan layout vertikal yang benar untuk A4 portrait
-2. **Untuk alternatif**: `usecase_diagram_vertical.svg` untuk versi vertikal lainnya
-3. **Untuk referensi**: `usecase_diagram.svg` untuk detail lengkap
+1. **Untuk skripsi**: Gunakan `usecase_diagram_a4_vertical.png` dengan kualitas tinggi dan tulisan bold
+2. **Untuk presentasi**: Gunakan `usecase_diagram_a4_vertical.svg` untuk scaling yang sempurna
+3. **Untuk alternatif**: `usecase_diagram_simple.png` untuk versi yang lebih compact
 4. **Untuk DFD**: `dfdlevel3_simple.svg` yang sesuai standar Level 3
 
 ### Keunggulan Versi A4 Vertikal:
@@ -269,5 +290,9 @@ Use case diagram menggambarkan interaksi antara aktor (pengguna) dengan sistem S
 - 👆 **Aktor di atas** tersusun horizontal compact
 - 📋 **Use case di bawah** tersusun vertikal dari atas ke bawah
 - 📏 **Muat sempurna di A4 portrait**
-- 🎯 **Ukuran paling efisien** (49KB) untuk skripsi
-- 👀 **Mudah dibaca** dari atas ke bawah 
+- 🎯 **Ukuran paling efisien** (124KB PNG / 57KB SVG) untuk skripsi
+- 👀 **Mudah dibaca** dari atas ke bawah
+- ✅ **Alur approval yang benar** sesuai sistem implementasi
+- 🎨 **KUALITAS TINGGI** dengan resolusi 1200x800 dan scale 2x
+- **TULISAN BOLD** untuk semua elemen (aktor, use case, label)
+- 🎯 **Font size 16px** dengan Arial bold untuk keterbacaan maksimal 
