@@ -35,10 +35,6 @@ return [
         ],
     ],
 
-    'whatsapp' => [
-        'enabled' => env('WHATSAPP_ENABLED', false),
-        'api_url' => env('WHATSAPP_API_URL', 'https://api.fonnte.com/send'),
-        'api_key' => env('WHATSAPP_API_KEY'),
-    ],
+    // WhatsApp service telah dihapus karena tidak digunakan
 
 ];

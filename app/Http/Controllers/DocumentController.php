@@ -34,19 +34,64 @@ class DocumentController extends Controller
     }
 
     // Rekap seluruh dokumen (hanya untuk sekretaris, kasubbag, dan ppk)
-    public function allDocuments()
+    public function allDocuments(Request $request)
     {
-
         $user = Auth::user();
         // Cek akses sesuai middleware (role di field users)
         if (!in_array($user->role, ['sekretaris', 'kasubbag', 'ppk', 'admin'])) {
             abort(403, 'Akses ditolak. Hanya sekretaris, kasubbag, dan ppk yang dapat mengakses halaman ini.');
         }
 
-        // Ambil semua dokumen dengan informasi pengaju
-        $documents = Document::with(['travelRequest.user', 'uploader'])
-            ->orderByDesc('created_at')
-            ->paginate(20);
+        // Validasi input request
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'status' => 'nullable|string|in:in_review,completed,rejected,revision',
+            'document_type' => 'nullable|string',
+        ]);
+
+        // Query dasar
+        $query = Document::with(['travelRequest.user', 'uploader']);
+
+        // Filter berdasarkan pencarian
+        if (!empty($validated['search'])) {
+            $search = $validated['search'];
+            $query->where(function($q) use ($search) {
+                // Cari berdasarkan nama file
+                $q->where('original_filename', 'like', "%{$search}%")
+                  // Atau berdasarkan kode SPPD
+                  ->orWhereHas('travelRequest', function($subq) use ($search) {
+                      $subq->where('kode_sppd', 'like', "%{$search}%")
+                          // Atau berdasarkan nama pengaju
+                          ->orWhereHas('user', function($userq) use ($search) {
+                              $userq->where('name', 'like', "%{$search}%");
+                          })
+                          // Atau berdasarkan nama peserta
+                          ->orWhereHas('participants', function($participantq) use ($search) {
+                              $participantq->where('name', 'like', "%{$search}%");
+                          });
+                  });
+            });
+        }
+
+        // Filter berdasarkan status SPPD
+        if (!empty($validated['status'])) {
+            $query->whereHas('travelRequest', function($q) use ($validated) {
+                $q->where('status', $validated['status']);
+            });
+        }
+
+        // Filter berdasarkan jenis dokumen
+        if (!empty($validated['document_type'])) {
+            $query->where('document_type', $validated['document_type']);
+        }
+
+        // Ambil data dokumen
+        $documents = $query->orderByDesc('created_at')->paginate(20)->withQueryString();
+
+        // Jika request AJAX, kembalikan hanya bagian tabel
+        if ($request->ajax()) {
+            return view('documents.partials.documents_table', compact('documents'))->render();
+        }
 
         return view('documents.rekap-dokumen', compact('documents'));
     }
@@ -71,7 +116,8 @@ class DocumentController extends Controller
         }
 
         // Download file
-        return Storage::disk('local')->download($document->file_path, $document->original_filename);
+        $filePath = Storage::disk('local')->path($document->file_path);
+        return response()->download($filePath, $document->original_filename);
     }
 
     /**

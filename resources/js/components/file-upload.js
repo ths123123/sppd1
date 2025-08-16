@@ -29,6 +29,9 @@ export class FileUpload {
     }
 
     createUploadArea() {
+        const multipleAttr = this.options.multiple ? 'multiple' : '';
+        const acceptAttr = this.options.accept;
+        
         this.element.innerHTML = `
             <div class="sppd-file-upload" id="fileUploadArea">
                 <div class="sppd-file-upload-icon">
@@ -42,8 +45,8 @@ export class FileUpload {
                 </div>
                 <input type="file"
                        id="fileInput"
-                       ${this.options.multiple ? 'multiple' : ''}
-                       accept="${this.options.accept}"
+                       ${multipleAttr}
+                       accept="${acceptAttr}"
                        style="display: none;">
             </div>
             <div class="sppd-file-list" id="fileList"></div>

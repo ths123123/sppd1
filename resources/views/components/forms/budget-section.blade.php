@@ -42,12 +42,12 @@
                        class="sppd-form-input"
                        placeholder="0" autocomplete="off" inputmode="numeric">
             </div>
-            @error('biaya_transport')
+            @if(isset($errors) && $errors->has('biaya_transport'))
                 <p class="sppd-text-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    {{ $message }}
+                    {{ $errors->first('biaya_transport') }}
                 </p>
-            @enderror
+            @endif
             <div class="sppd-text-info">
                 <i class="fas fa-info-circle"></i>
                 <span>Otomatis terhitung berdasarkan transportasi</span>
@@ -66,12 +66,12 @@
                        class="sppd-form-input"
                        placeholder="Masukkan biaya penginapan" autocomplete="off" inputmode="numeric">
             </div>
-            @error('biaya_penginapan')
+            @if(isset($errors) && $errors->has('biaya_penginapan'))
                 <p class="sppd-text-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    {{ $message }}
+                    {{ $errors->first('biaya_penginapan') }}
                 </p>
-            @enderror
+            @endif
             <div class="sppd-text-info">
                 <i class="fas fa-bed"></i>
                 <span>Hotel standar: Rp 500-800rb/malam</span>
@@ -89,12 +89,12 @@
                        class="sppd-form-input"
                        placeholder="0" autocomplete="off" inputmode="numeric">
             </div>
-            @error('uang_harian')
+            @if(isset($errors) && $errors->has('uang_harian'))
                 <p class="sppd-text-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    {{ $message }}
+                    {{ $errors->first('uang_harian') }}
                 </p>
-            @enderror
+            @endif
             <div class="sppd-text-info">
                 <i class="fas fa-info-circle"></i>
                 <span>Otomatis terhitung berdasarkan durasi perjalanan</span>
@@ -104,7 +104,7 @@
         <div class="sppd-budget-card">
             <label for="biaya_lainnya" class="sppd-form-label">
                 <i class="fas fa-plus-circle mr-2 text-orange-500"></i>
-                Biaya Lainnya
+                Biaya Lainnya <span class="text-xs text-gray-500 ml-2">(misal: tol, parkir, konsumsi, ATK, dll.)</span>
             </label>
             <div class="sppd-currency-input">
                 <input type="text" id="biaya_lainnya" name="biaya_lainnya" 
@@ -112,15 +112,15 @@
                        class="sppd-form-input"
                        placeholder="0" autocomplete="off" inputmode="numeric">
             </div>
-            @error('biaya_lainnya')
+            @if(isset($errors) && $errors->has('biaya_lainnya'))
                 <p class="sppd-text-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    {{ $message }}
+                    {{ $errors->first('biaya_lainnya') }}
                 </p>
-            @enderror
+            @endif
             <div class="sppd-text-info">
                 <i class="fas fa-info-circle"></i>
-                <span>Biaya tambahan seperti parkir, tol, dll</span>
+                <span>Biaya tambahan seperti tol, parkir, konsumsi, ATK, dll.</span>
             </div>
         </div>
     </div>
@@ -153,11 +153,11 @@
             <option value="APBN" {{ old('sumber_dana') == 'APBN' ? 'selected' : '' }}>APBN</option>
             <option value="Dana Lainnya" {{ old('sumber_dana') == 'Dana Lainnya' ? 'selected' : '' }}>Dana Lainnya</option>
         </select>
-        @error('sumber_dana')
-            <p class="sppd-text-error">
-                <i class="fas fa-exclamation-circle"></i>
-                {{ $message }}
-            </p>
-        @enderror
+        @if(isset($errors) && $errors->has('sumber_dana'))
+                <p class="sppd-text-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ $errors->first('sumber_dana') }}
+                </p>
+            @endif
     </div>
 </div>

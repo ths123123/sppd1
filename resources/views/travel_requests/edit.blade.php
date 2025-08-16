@@ -238,7 +238,7 @@
                             <input type="text" id="uang_harian" name="uang_harian" class="form-input biaya-input" min="0" value="{{ old('uang_harian', (int)$travelRequest->uang_harian) }}" placeholder="0">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Biaya Lainnya</label>
+                            <label class="form-label">Biaya Lainnya <span class=\"text-xs text-gray-500 ml-2\">(misal: tol, parkir, konsumsi, ATK, dll.)</span></label>
                             <input type="text" id="biaya_lainnya" name="biaya_lainnya" class="form-input biaya-input" min="0" value="{{ old('biaya_lainnya', (int)$travelRequest->biaya_lainnya) }}" placeholder="0">
                         </div>
                         <div class="form-group">
@@ -552,21 +552,57 @@ $(document).ready(function() {
             console.log('Debug - No participants to add or selectedPeserta is empty');
         }
         
+        // PERBAIKAN: Salin semua input dari form edit ke form submit
+        console.log('Debug - Copying all inputs from edit form to submit form');
+        
+        // Daftar field yang perlu disalin dari form edit ke form submit
+        const fieldsToSync = [
+            'tujuan', 'keperluan', 'tanggal_berangkat', 'tanggal_kembali', 'transportasi', 
+            'tempat_berangkat', 'tempat_menginap', 'biaya_transport', 'biaya_penginapan', 
+            'uang_harian', 'biaya_lainnya', 'total_biaya', 'sumber_dana', 'catatan_pemohon'
+        ];
+        
+        // Salin nilai dari form edit ke form submit
+        fieldsToSync.forEach(function(fieldName) {
+            const fieldValue = $(`#sppd-form [name="${fieldName}"]`).val();
+            console.log(`Debug - Copying field ${fieldName} with value:`, fieldValue);
+            
+            // Hapus input yang sudah ada (jika ada)
+            $(`#submit-form input[name="${fieldName}"]`).remove();
+            
+            // Buat input baru dengan nilai dari form edit
+            if (fieldValue !== undefined && fieldValue !== null) {
+                const input = $('<input>')
+                    .attr('type', 'hidden')
+                    .attr('name', fieldName)
+                    .val(fieldValue);
+                $('#submit-form').append(input);
+                console.log(`Debug - Added hidden input for ${fieldName}:`, fieldValue);
+            }
+        });
+        
+        // Salin checkbox is_urgent jika dicentang
+        if ($('#sppd-form [name="is_urgent"]').is(':checked')) {
+            $('#submit-form input[name="is_urgent"]').remove();
+            const input = $('<input>')
+                .attr('type', 'hidden')
+                .attr('name', 'is_urgent')
+                .val('1');
+            $('#submit-form').append(input);
+            console.log('Debug - Added hidden input for is_urgent: 1');
+        }
+        
         // Log all hidden inputs before submission
-        const submitHiddenInputs = $('#submit-form input[name="participants[]"]');
+        const submitHiddenInputs = $('#submit-form input');
         console.log('Debug - Submit form hidden inputs before submission:', submitHiddenInputs.length);
         submitHiddenInputs.each(function(index) {
-            console.log(`Debug - Submit form hidden input ${index}:`, $(this).val());
+            console.log(`Debug - Submit form input ${index}: name="${$(this).attr('name')}", value="${$(this).val()}"`);
         });
         
         // CRITICAL: Ensure form data is properly set before submission
         console.log('Debug - Final check before submission:');
         console.log('Debug - Form action:', $('#submit-form').attr('action'));
         console.log('Debug - Form method:', $('#submit-form').attr('method'));
-        console.log('Debug - All form inputs:');
-        $('#submit-form input').each(function(index) {
-            console.log(`Debug - Input ${index}: name="${$(this).attr('name')}", value="${$(this).val()}"`);
-        });
         
         // Continue with form submission
         console.log('Debug - Proceeding with submit form submission');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\DashboardService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 
 class DashboardController extends Controller
 {
@@ -22,9 +23,12 @@ class DashboardController extends Controller
         // Get dashboard data based on user role
         $dashboardData = $this->dashboardService->getUserDashboardData($user->role, $user->id);
 
-                return view('dashboard.dashboard-utama', [
+        // Ensure we have the submitted count
+        $submittedCount = $dashboardData['statistics']['submitted'] ?? 0;
+        
+        return view('dashboard.dashboard-utama', [
             'approvedCount' => $dashboardData['statistics']['completed'],
-            'pendingCount' => $dashboardData['statistics']['pending'],
+            'submittedCount' => $submittedCount,
             'reviewCount' => $dashboardData['statistics']['review'],
             'documentCount' => $dashboardData['statistics']['documents'],
             'rejectedCount' => $dashboardData['statistics']['rejected'],
@@ -40,6 +44,21 @@ class DashboardController extends Controller
             'mySspdCount' => $dashboardData['my_sppd_count'] ?? 0,
             'myPendingCount' => $dashboardData['my_pending_count'] ?? 0,
         ]);
+    }
+    
+    /**
+     * Get recent activities for API
+     *
+     * @return JsonResponse
+     */
+    public function getRecentActivities(): JsonResponse
+    {
+        try {
+            $activities = $this->dashboardService->getFormattedRecentActivities(10);
+            return response()->json($activities);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Gagal memuat aktivitas terbaru'], 500);
+        }
     }
 
     /**

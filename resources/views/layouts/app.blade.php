@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="user-name" content="{{ Auth::user()->name ?? 'User' }}">
+    <meta name="user-role" content="{{ Auth::user()->role ?? 'staff' }}">
 
-    <title>{{ config('app.name', 'SPPD KPU Kabupaten Cirebon') }}</title>
+    <title>{{ config('app.name', 'Laravel') }}</title>
     <!-- Favicon KPU -->
     <link rel="icon" type="image/png" href="/images/logo.png" sizes="32x32">
     <link rel="shortcut icon" href="/images/logo.png" type="image/png">
@@ -101,10 +101,32 @@
             color: #ffffff;
             transform: scale(1.1);
         }
+
+        /* Notifikasi Styling */
+        .notification-item {
+            transition: all 0.3s ease;
+        }
+        .notification-item:hover {
+            transform: translateX(5px);
+        }
+        .notification-badge {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .notification-icon {
+            transition: all 0.3s ease;
+        }
+        .notification-icon:hover {
+            transform: rotate(15deg);
+        }
     </style>
     @stack('styles')
 </head>
-<body class="font-sans antialiased min-h-screen overflow-x-hidden">
+<body class="font-sans antialiased min-h-screen overflow-x-hidden" data-user-role="{{ Auth::user()->role ?? 'staff' }}">
     {{-- Navbar utama --}}
     <div class="navbar-fixed">
         @include('components.navbar')
@@ -129,9 +151,12 @@
     <!-- Navbar Profile Updater -->
     <script src="{{ asset('js/navbar-profile-updater.js') }}"></script>
 
+    <!-- Navbar Access Control -->
+    <script src="{{ asset('js/navbar-access-control.js') }}"></script>
+
     <!-- Professional Navbar Manager -->
     @vite(['resources/js/app.js'])
-    
+
     <script>
         // Initialize Professional Navbar Manager
         document.addEventListener('DOMContentLoaded', function() {
@@ -140,6 +165,103 @@
             }
         });
     </script>
+
+    <style>
+        /* Animasi untuk notifikasi real-time */
+        @keyframes pulseOnce {
+            0% { opacity: 0.5; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1.02); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .animate-pulse-once {
+            animation: pulseOnce 1s ease-in-out;
+        }
+
+        /* Animasi badge notifikasi */
+        @keyframes badgePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .notification-badge {
+            animation: badgePulse 2s infinite;
+        }
+
+        /* Efek hover untuk item notifikasi */
+        .notification-item:hover {
+            transform: translateX(3px);
+        }
+
+        /* Mencegah hover effect yang tidak diinginkan pada menu tanpa akses */
+        a[data-access-restricted="true"]:hover,
+        a[data-access-restricted="true"]:focus {
+            background-color: transparent !important;
+            color: inherit !important;
+            text-decoration: none !important;
+        }
+
+        /* Mencegah hover effect pada menu yang dibatasi akses */
+        a.opacity-50.cursor-not-allowed:hover,
+        a.opacity-50.cursor-not-allowed:focus {
+            background-color: transparent !important;
+            color: inherit !important;
+            text-decoration: none !important;
+            transform: none !important;
+        }
+
+        /* Mencegah hover effect pada mobile menu yang dibatasi */
+        .mobile-menu-item.opacity-50.cursor-not-allowed:hover {
+            background: none !important;
+            color: #222 !important;
+        }
+
+        /* Mencegah hover effect pada desktop navbar yang dibatasi */
+        .text-white.opacity-50.cursor-not-allowed:hover {
+            background-color: transparent !important;
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+        /* High-Resolution Chart Styling */
+        .chart-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-container canvas {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        /* Ensure chart text is crisp */
+        .chart-container canvas * {
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* High DPI support for chart elements */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .chart-container canvas {
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: crisp-edges;
+            }
+        }
+
+        /* Ultra high DPI support */
+        @media (-webkit-min-device-pixel-ratio: 3), (min-resolution: 288dpi) {
+            .chart-container canvas {
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: crisp-edges;
+            }
+        }
+    </style>
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])

@@ -244,16 +244,16 @@
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     @if($user->is_active)
-                                    <button onclick="toggleUserStatus({{ $user->id }}, '{{ $user->name }}')"
+                                    <button onclick="toggleUserStatus({{ $user->id }}, '{{ $user->name }}', false)"
                                             class="p-2 bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700 rounded-lg transition-all duration-200 flex items-center justify-center"
-                                            title="Deactivate">
-                                        <i class="fas fa-ban"></i>
+                                            title="Nonaktif">
+                                        <span class="text-xs font-medium">Nonaktif</span>
                                     </button>
                                     @else
-                                    <button onclick="toggleUserStatus({{ $user->id }}, '{{ $user->name }}')"
+                                    <button onclick="toggleUserStatus({{ $user->id }}, '{{ $user->name }}', true)"
                                             class="p-2 bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 rounded-lg transition-all duration-200 flex items-center justify-center"
-                                            title="Activate">
-                                        <i class="fas fa-check-circle"></i>
+                                            title="Aktif">
+                                        <span class="text-xs font-medium">Aktif</span>
                                     </button>
                                     @endif
                                 </div>
@@ -594,33 +594,35 @@ async function submitAddUser(event) {
 }
 
 // Toggle user status
-async function toggleUserStatus(userId, userName) {
-    const action = event.target.closest('button').title === 'Deactivate' ? 'menonaktifkan' : 'mengaktifkan';
+async function toggleUserStatus(userId, userName, activateUser) {
+    const action = activateUser ? 'mengaktifkan' : 'menonaktifkan';
 
     if (!confirm(`Apakah kamu yakin untuk ${action} ${userName}?`)) {
         return;
     }
 
     try {
-        const response = await fetch(`{{ url('users/toggle-status') }}/${userId}`, {
+        const response = await fetch(`{{ url('/users') }}/${userId}/toggle-status`, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'X-HTTP-Method-Override': 'PATCH'
             }
         });
 
         const result = await response.json();
 
         if (result.success) {
-            showNotification('success', result.message || `${action} ${userName} berhasil!`);
-            setTimeout(() => location.reload(), 1500);
+            showNotification('success', result.message);
+            // Reload halaman untuk menampilkan perubahan status
+            setTimeout(() => location.reload(), 1000);
         } else {
-            showNotification('error', result.message || `${action} ${userName} gagal!`);
+            showNotification('error', result.message || `Gagal ${action} ${userName}!`);
         }
     } catch (error) {
         console.error('Error:', error);
-        showNotification('error', 'An error occurred while toggling user status');
+        showNotification('error', `Terjadi kesalahan saat ${action} ${userName}`);
     }
 }
 

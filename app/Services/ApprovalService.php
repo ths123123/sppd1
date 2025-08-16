@@ -19,7 +19,6 @@ class ApprovalService
     /**
      * Determine approval flow based on submitter role
      *
-     * @param User $submitter
      * @return array
      */
     public function getApprovalFlow(): array
@@ -128,14 +127,14 @@ class ApprovalService
 
     /**
      * Process approval for travel request
-     * 
+     *
      * WORKFLOW LOGIC:
-     * 
+     *
      * KASUBBAG submits SPPD:
      * 1. Kasubbag submits SPPD → status: 'in_review', current_approval_level: 1
      * 2. Sekretaris approves → status: 'in_review', current_approval_level: 2
      * 3. PPK approves → status: 'completed' ✅
-     * 
+     *
      * Status 'completed' is ONLY set when ALL required approvals are completed.
      *
      * @param TravelRequest $travelRequest
@@ -156,7 +155,7 @@ class ApprovalService
             $approval = Approval::where('travel_request_id', $travelRequest->id)
                 ->where('level', $this->getApprovalLevel($approver->role, $travelRequest))
                 ->first();
-            
+
             if ($approval) {
                 // Update approval yang sudah ada
                 $approval->update([
@@ -188,7 +187,7 @@ class ApprovalService
             $currentLevel = $travelRequest->current_approval_level;
             $nextLevel = $currentLevel + 1;
             $maxLevel = count($flow);
-            
+
             // Check if all required approvals are completed
             $allApprovalsCompleted = true;
             for ($level = 1; $level <= $maxLevel; $level++) {
@@ -201,7 +200,7 @@ class ApprovalService
                     break;
                 }
             }
-            
+
             if ($allApprovalsCompleted) {
                 // All approvals completed, set status to completed
                 // Generate kode SPD jika belum ada
@@ -262,7 +261,7 @@ class ApprovalService
             $approval = Approval::where('travel_request_id', $travelRequest->id)
                 ->where('level', $this->getApprovalLevel($approver->role, $travelRequest))
                 ->first();
-            
+
             if ($approval) {
                 // Update approval yang sudah ada
                 $approval->update([
@@ -328,7 +327,7 @@ class ApprovalService
             $approval = Approval::where('travel_request_id', $travelRequest->id)
                 ->where('level', $this->getApprovalLevel($approver->role, $travelRequest))
                 ->first();
-            
+
             if ($approval) {
                 // Update approval yang sudah ada
                 $approval->update([
@@ -355,15 +354,9 @@ class ApprovalService
             $this->updateApprovalHistory($travelRequest, $approver, 'revision', $reason, $target);
 
             // Tentukan target level berdasarkan target revisi
-            if ($target === 'kasubbag') {
-                // Revisi ke kasubbag - status revision, level 0
-                $targetLevel = 0;
-                $newStatus = 'revision';
-            } else {
-                // Revisi ke sekretaris - status in_review, level 1
-                $targetLevel = 1;
-                $newStatus = 'in_review';
-            }
+            // Semua revisi dari sekertaris maupun ppk targetnya langsung ke kasubbag
+            $targetLevel = 0;
+            $newStatus = 'revision';
 
             $travelRequest->update([
                 'status' => $newStatus,
@@ -446,7 +439,18 @@ class ApprovalService
         $submitterRole = $travelRequest->user->role;
         $flow = $this->getApprovalFlowForSubmitter($submitterRole);
         
-        \Log::info('Initializing approval workflow:', [
+        // Cek apakah ini pengajuan ulang setelah revisi
+        $isResubmission = $travelRequest->approvals()->exists();
+        
+        // Jika ini pengajuan ulang, gunakan initializeApprovalWorkflowAfterRevision
+        if ($isResubmission) {
+            Log::warning('initializeApprovalWorkflow called for SPPD ID: ' . $travelRequest->id . ' but it has previous approvals. Should use initializeApprovalWorkflowAfterRevision instead.');
+            // Redirect ke metode yang benar
+            $this->initializeApprovalWorkflowAfterRevision($travelRequest);
+            return;
+        }
+
+        Log::info('Initializing approval workflow:', [
             'sppd_id' => $travelRequest->id,
             'submitter_role' => $submitterRole,
             'approval_flow' => $flow,
@@ -460,8 +464,8 @@ class ApprovalService
                 'status' => 'completed',
                 'approved_at' => now(),
             ]);
-            
-            \Log::info('No approval flow found, marking as completed:', [
+
+            Log::info('No approval flow found, marking as completed:', [
                 'sppd_id' => $travelRequest->id,
                 'after_status' => 'completed'
             ]);
@@ -473,8 +477,8 @@ class ApprovalService
             'status' => 'in_review',
             'current_approval_level' => 1,
         ]);
-        
-        \Log::info('Approval workflow initialized:', [
+
+        Log::info('Approval workflow initialized:', [
             'sppd_id' => $travelRequest->id,
             'after_status' => 'in_review',
             'after_approval_level' => 1,
@@ -490,14 +494,70 @@ class ApprovalService
     {
         $submitterRole = $travelRequest->user->role;
         $flow = $this->getApprovalFlowForSubmitter($submitterRole);
+
+        // Cari approval terakhir dengan status revision_minor
+        $lastRevisionApproval = $travelRequest->approvals()
+            ->where('status', 'revision_minor')
+            ->orderByDesc('rejected_at')
+            ->first();
+
+        // Cari approval yang sudah disetujui oleh sekretaris (level 1)
+        $sekretarisApproval = $travelRequest->approvals()
+            ->where('status', 'approved')
+            ->where('role', 'sekretaris')
+            ->first();
+
+        // Cari approval yang sudah disetujui oleh ppk (level 2)
+        $ppkApproval = $travelRequest->approvals()
+            ->where('status', 'approved')
+            ->where('role', 'ppk')
+            ->first();
+
+        // Default ke sekretaris (level 1)
+        $nextLevel = 1;
+        $newStatus = 'in_review';
+        if ($lastRevisionApproval) {
+            // Jika revisi terakhir oleh kasubbag, status tetap revision dan level 0
+            if ($lastRevisionApproval->role === 'kasubbag') {
+                $nextLevel = 0;
+                $newStatus = 'revision';
+            } else if ($lastRevisionApproval->role === 'ppk') {
+                // Jika revisi terakhir oleh PPK, langsung ke PPK (level 2)
+                $nextLevel = 2;
+                $newStatus = 'in_review';
+            } else if ($lastRevisionApproval->role === 'sekretaris') {
+                // Jika revisi terakhir oleh sekretaris, ke sekretaris (level 1)
+                $nextLevel = 1;
+                $newStatus = 'in_review';
+            } else {
+                // Default: ke level revisi terakhir
+                $nextLevel = $lastRevisionApproval->level;
+                $newStatus = 'in_review';
+            }
+        }
         
-        \Log::info('Initializing approval workflow after revision:', [
-            'sppd_id' => $travelRequest->id,
-            'submitter_role' => $submitterRole,
-            'approval_flow' => $flow,
-            'before_status' => $travelRequest->status,
-            'before_approval_level' => $travelRequest->current_approval_level
+        // Jika sekretaris sudah menyetujui dan level berikutnya adalah 1 (sekretaris),
+        // maka langsung ke level 2 (ppk)
+        if ($sekretarisApproval) {
+            $nextLevel = 2;
+            Log::info('Sekretaris sudah menyetujui sebelumnya, langsung ke PPK (level 2)');
+        }
+        
+        // Jika ini pengajuan ulang dari kasubbag setelah revisi oleh PPK,
+        // pastikan level persetujuan tetap ke PPK (level 2)
+        if ($lastRevisionApproval && $lastRevisionApproval->role === 'ppk' && $submitterRole === 'kasubbag') {
+            $nextLevel = 2;
+            Log::info('Pengajuan ulang dari kasubbag setelah revisi oleh PPK, langsung ke PPK (level 2)');
+        }
+        
+        // Log semua approval yang ada untuk debugging
+        Log::info('Existing approvals for SPPD ID: ' . $travelRequest->id, [
+            'sekretaris_approval' => $sekretarisApproval ? 'Yes' : 'No',
+            'ppk_approval' => $ppkApproval ? 'Yes' : 'No',
+            'last_revision' => $lastRevisionApproval ? $lastRevisionApproval->role : 'None'
         ]);
+
+        Log::info('INIT WORKFLOW AFTER REVISION: SPPD ID ' . $travelRequest->id . ' nextLevel=' . $nextLevel . ' status=' . $newStatus);
 
         if (empty($flow)) {
             // No approval needed, mark as completed immediately
@@ -505,49 +565,24 @@ class ApprovalService
                 'status' => 'completed',
                 'approved_at' => now(),
             ]);
-            
-            \Log::info('No approval flow found, marking as completed:', [
+            Log::info('No approval flow found, marking as completed:', [
                 'sppd_id' => $travelRequest->id,
                 'after_status' => 'completed'
             ]);
             return;
         }
 
-        // Check current approval level and determine where to send
-        $currentLevel = $travelRequest->current_approval_level;
-        
-        // Get the flow for this submitter
-        $flow = $this->getApprovalFlowForSubmitter($submitterRole);
-        
-        // Determine the next approval level based on current level
-        $nextLevel = $this->determineNextApprovalLevelAfterRevision($travelRequest, $currentLevel, $flow);
-        
-        \Log::info('Revision workflow analysis:', [
-            'sppd_id' => $travelRequest->id,
-            'current_level' => $currentLevel,
-            'next_level' => $nextLevel,
-            'flow' => $flow
-        ]);
-
-        // If all approvals are done, mark as completed
-        if ($travelRequest->status === 'completed') {
-            \Log::info('SPPD already marked as completed:', [
-                'sppd_id' => $travelRequest->id,
-                'status' => $travelRequest->status
-            ]);
-            return;
-        }
-
+        // Set ke approver sesuai level revisi terakhir
         $travelRequest->update([
-            'status' => 'in_review',
+            'status' => $newStatus,
             'current_approval_level' => $nextLevel,
         ]);
-        
-        \Log::info('Approval workflow initialized after revision:', [
+
+        Log::info('Approval workflow after revision initialized:', [
             'sppd_id' => $travelRequest->id,
-            'after_status' => 'in_review',
+            'after_status' => $newStatus,
             'after_approval_level' => $nextLevel,
-            'next_approver_role' => $flow[$nextLevel] ?? null
+            'last_revision_role' => $lastRevisionApproval->role ?? null
         ]);
     }
 
@@ -563,28 +598,28 @@ class ApprovalService
 
         // Find the highest approved level
         $highestApprovedLevel = max($approvedLevels);
-        
+
         // Get the next level in the flow
         $nextLevel = $highestApprovedLevel + 1;
-        
+
         // Check if this level exists in the flow
         if (isset($flow[$nextLevel])) {
             return $nextLevel;
         }
-        
+
         // If next level doesn't exist, it means all approvals are done
         // Mark as completed
         $travelRequest->update([
             'status' => 'completed',
             'approved_at' => now(),
         ]);
-        
-        \Log::info('All approvals completed, marking as completed:', [
+
+        Log::info('All approvals completed, marking as completed:', [
             'sppd_id' => $travelRequest->id,
             'highest_approved_level' => $highestApprovedLevel,
             'flow' => $flow
         ]);
-        
+
         return 0; // Return 0 to indicate completed
     }
 
@@ -611,13 +646,13 @@ class ApprovalService
             'status' => 'completed',
             'approved_at' => now(),
         ]);
-        
-        \Log::info('All approvals completed after revision, marking as completed:', [
+
+        Log::info('All approvals completed after revision, marking as completed:', [
             'sppd_id' => $travelRequest->id,
             'current_level' => $currentLevel,
             'flow' => $flow
         ]);
-        
+
         return 0; // Return 0 to indicate completed
     }
 

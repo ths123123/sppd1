@@ -19,12 +19,12 @@
             <textarea id="catatan_pemohon" name="catatan_pemohon" rows="3"
                       class="sppd-form-input"
                       placeholder="Catatan atau keterangan tambahan (opsional)">{{ old('catatan_pemohon') }}</textarea>
-            @error('catatan_pemohon')
+            @if(isset($errors) && $errors->has('catatan_pemohon'))
                 <p class="sppd-text-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    {{ $message }}
+                    {{ $errors->first('catatan_pemohon') }}
                 </p>
-            @enderror
+            @endif
         </div>
 
         <div class="sppd-form-group">

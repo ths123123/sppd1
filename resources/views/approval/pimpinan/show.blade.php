@@ -460,18 +460,13 @@
 
                     <div class="space-y-4">
                         <div>
-                            <label for="target" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Kirim Revisi Ke:
                             </label>
-                            <select name="target" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Pilih Target</option>
-                                @if(auth()->user()->role === 'sekretaris')
-                                    <option value="kasubbag">Kembali ke Kasubbag</option>
-                                @elseif(auth()->user()->role === 'ppk')
-                                    <option value="sekretaris">Kembali ke Sekretaris</option>
-                                    <option value="kasubbag">Kembali ke Kasubbag</option>
-                                @endif
-                            </select>
+                            <div class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700">
+                                Kembali ke Kasubbag
+                            </div>
+                            <input type="hidden" name="target" value="kasubbag">
                         </div>
 
                         <div>

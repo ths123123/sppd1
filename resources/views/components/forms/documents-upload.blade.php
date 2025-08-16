@@ -17,12 +17,12 @@
         </label>
         <input type="file" id="dokumen_pendukung" name="dokumen_pendukung[]" multiple accept=".pdf,.jpg,.jpeg,.png"
                class="sppd-form-input">
-        @error('dokumen_pendukung')
-            <p class="sppd-text-error">
-                <i class="fas fa-exclamation-circle"></i>
-                {{ $message }}
-            </p>
-        @enderror
+        @if(isset($errors) && $errors->has('dokumen_pendukung'))
+                <p class="sppd-text-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ $errors->first('dokumen_pendukung') }}
+                </p>
+            @endif
         @if($errors->has('dokumen_pendukung.*'))
             @foreach($errors->get('dokumen_pendukung.*') as $messages)
                 @foreach($messages as $msg)

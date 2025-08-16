@@ -32,66 +32,20 @@ class AnalyticsPage {
             console.log('All required elements found');
         }
         
-        if (this.periodSelector) {
-            this.periodSelector.addEventListener('change', (e) => {
-                this.fetchAndRender(e.target.value);
-            });
-        }
-        
-        // Initialize chart type selector
-        this.initChartTypeSelector();
-        
-        // Initialize timeframe selector
-        this.initTimeframeSelector();
-        
-        // Initial load
-        this.fetchAndRender(this.periodSelector ? this.periodSelector.value : '12');
+        // Initial load - menggunakan 'all' untuk menampilkan semua data
+        this.fetchAndRender('all');
         this.bindChartClicks();
         this.bindModalClose();
         
         console.log('AnalyticsPage init completed');
     }
 
-    // Initialize chart type selector
-    initChartTypeSelector() {
-        const chartTypeSelector = document.getElementById('chartTypeSelector');
-        if (chartTypeSelector) {
-            console.log('Chart type selector found, adding event listener');
-            chartTypeSelector.addEventListener('change', (e) => {
-                console.log('Chart type changed to:', e.target.value);
-                // Re-render chart with new type
-                this.renderMonthlyTrends(this.currentData?.monthlyTrends || []);
-            });
-        } else {
-            console.error('Chart type selector not found');
-        }
-    }
+    // Menghapus initChartTypeSelector dan initTimeframeSelector karena tidak diperlukan lagi
 
-    // Initialize timeframe selector
-    initTimeframeSelector() {
-        const timeframeButtons = document.querySelectorAll('.timeframe-btn');
-        timeframeButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                // Remove active class from all buttons
-                timeframeButtons.forEach(b => {
-                    b.classList.remove('active', 'bg-indigo-600', 'text-white');
-                    b.classList.add('bg-gray-100', 'text-gray-700');
-                });
-                
-                // Add active class to clicked button
-                btn.classList.add('active', 'bg-indigo-600', 'text-white');
-                btn.classList.remove('bg-gray-100', 'text-gray-700');
-                
-                // Fetch data for selected period
-                const period = btn.getAttribute('data-period');
-                this.fetchAndRender(period);
-            });
-        });
-    }
-
-    async fetchAndRender(period) {
+    async fetchAndRender(period = 'all') {
         try {
-            const res = await fetch(`/analytics/data?period=${period}`);
+            // Selalu menggunakan 'all' untuk menampilkan semua data
+            const res = await fetch(`/analytics/data?period=all`);
             const data = await res.json();
             if (data.error) throw new Error(data.error);
             this.currentData = data; // Store data for updateSummaryCards
@@ -112,20 +66,14 @@ class AnalyticsPage {
     renderAll(data) {
         console.log('renderAll called with data:', data);
         
-        this.renderMonthlyTrends(data.monthlyTrends);
-        this.renderBudgetTrends(data.monthlyTrends);
-        this.renderStatusDistribution(data.statusDistribution);
-        this.renderDepartmentAnalysis(data.departmentAnalysis);
-        this.renderApprovalPerformance(data.approvalPerformance);
-        this.renderTopDestinations(data.trendingData.top_destinations);
-        this.renderBudgetUtilization(data.overview && data.overview.budget_utilization ? data.overview.budget_utilization : null);
-        this.renderInsights(data);
+        // Update semua chart dan insight dengan data terbaru
+        this.updateData(data);
         
         // Ensure summary cards are updated with the latest data
         this.updateSummaryCards(data.monthlyTrends);
     }
 
-    // Enhanced Monthly Trends Chart with CoinMarketCap-style features
+    // Enhanced Monthly Trends Chart - Selalu menampilkan data SPPD tanpa memperhatikan filter
     renderMonthlyTrends(monthlyTrends) {
         console.log('renderMonthlyTrends called with:', monthlyTrends);
         
@@ -141,11 +89,9 @@ class AnalyticsPage {
         const rejected = (monthlyTrends || []).map(x => x.rejected_count || 0);
         const inReview = (monthlyTrends || []).map(x => x.in_review_count || 0);
         const revision = (monthlyTrends || []).map(x => x.revision_count || 0);
-        const budget = (monthlyTrends || []).map(x => x.total_budget || 0);
-        const approvalRate = (monthlyTrends || []).map(x => x.approval_rate || 0);
         
         console.log('Processed data:', {
-                labels,
+            labels,
             totalSppd,
             approved,
             rejected,
@@ -153,134 +99,89 @@ class AnalyticsPage {
             revision
         });
         
-        // Get current chart type from selector
-        const chartTypeSelector = document.getElementById('chartTypeSelector');
-        const currentChartType = chartTypeSelector ? chartTypeSelector.value : 'sppd_count';
+        // Selalu menggunakan tipe chart SPPD count tanpa memperhatikan selector
+        const currentChartType = 'sppd_count';
         
-        console.log('Current chart type:', currentChartType);
+        console.log('Using fixed chart type:', currentChartType);
         
-        // Prepare datasets based on chart type
-        let datasets = [];
-        
-        switch(currentChartType) {
-            case 'sppd_count':
-                datasets = [
-                    {
-                        label: 'Disetujui',
-                        data: approved,
-                        borderColor: 'rgb(34, 197, 94)',
-                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                        tension: 0.4,
-                        borderWidth: 3,
-                        pointBackgroundColor: 'rgb(34, 197, 94)',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                        fill: false,
-                        order: 1
-                    },
-                    {
-                        label: 'Ditolak',
-                        data: rejected,
-                        borderColor: 'rgb(239, 68, 68)',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        tension: 0.4,
-                        borderWidth: 3,
-                        pointBackgroundColor: 'rgb(239, 68, 68)',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                        fill: false,
-                        order: 2
-                    },
-                    {
-                        label: 'Dalam Review',
-                        data: inReview,
-                        borderColor: 'rgb(245, 158, 11)',
-                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                        tension: 0.4,
-                        borderWidth: 3,
-                        pointBackgroundColor: 'rgb(245, 158, 11)',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                        fill: false,
-                        order: 3
-                    },
-                    {
-                        label: 'Revisi',
-                        data: revision,
-                        borderColor: 'rgb(168, 85, 247)',
-                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
-                        tension: 0.4,
-                        borderWidth: 3,
-                        pointBackgroundColor: 'rgb(168, 85, 247)',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                        fill: false,
-                        order: 4
-                    },
-                    {
-                        label: 'Total SPPD',
-                        data: totalSppd,
-                        borderColor: 'rgba(59, 130, 246, 0.1)',
-                        backgroundColor: 'transparent',
-                        tension: 0.4,
-                        borderWidth: 1,
-                        pointBackgroundColor: 'transparent',
-                        pointBorderColor: 'rgba(59, 130, 246, 0.1)',
-                        pointBorderWidth: 1,
-                        pointRadius: 2,
-                        pointHoverRadius: 3,
-                        fill: false,
-                        order: 5
-                    }
-                ];
-                break;
-                
-            case 'budget':
-                datasets = [
-                    {
-                        label: 'Total Anggaran (Rp)',
-                        data: budget,
-                        borderColor: 'rgb(16, 185, 129)',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        tension: 0.4,
-                        borderWidth: 3,
-                        pointBackgroundColor: 'rgb(16, 185, 129)',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                        fill: false
-                    }
-                ];
-                break;
-                
-            case 'approval_rate':
-                datasets = [
-                    {
-                        label: 'Tingkat Approval (%)',
-                        data: approvalRate,
-                        borderColor: 'rgb(236, 72, 153)',
-                        backgroundColor: 'rgba(236, 72, 153, 0.1)',
-                        tension: 0.4,
-                        borderWidth: 3,
-                        pointBackgroundColor: 'rgb(236, 72, 153)',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                        fill: false
-                    }
-                ];
-                break;
-        }
+        // Prepare datasets - selalu menggunakan dataset SPPD count
+        const datasets = [
+            {
+                label: 'Disetujui',
+                data: approved,
+                borderColor: 'rgb(34, 197, 94)',
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                tension: 0.4,
+                borderWidth: 3,
+                pointBackgroundColor: 'rgb(34, 197, 94)',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                fill: false,
+                order: 1
+            },
+            {
+                label: 'Ditolak',
+                data: rejected,
+                borderColor: 'rgb(239, 68, 68)',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                tension: 0.4,
+                borderWidth: 3,
+                pointBackgroundColor: 'rgb(239, 68, 68)',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                fill: false,
+                order: 2
+            },
+            {
+                label: 'Dalam Review',
+                data: inReview,
+                borderColor: 'rgb(245, 158, 11)',
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                tension: 0.4,
+                borderWidth: 3,
+                pointBackgroundColor: 'rgb(245, 158, 11)',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                fill: false,
+                order: 3
+            },
+            {
+                label: 'Revisi',
+                data: revision,
+                borderColor: 'rgb(168, 85, 247)',
+                backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                tension: 0.4,
+                borderWidth: 3,
+                pointBackgroundColor: 'rgb(168, 85, 247)',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                fill: false,
+                order: 4
+            },
+            {
+                label: 'Total SPPD',
+                data: totalSppd,
+                borderColor: 'rgba(59, 130, 246, 0.1)',
+                backgroundColor: 'transparent',
+                tension: 0.4,
+                borderWidth: 1,
+                pointBackgroundColor: 'transparent',
+                pointBorderColor: 'rgba(59, 130, 246, 0.1)',
+                pointBorderWidth: 1,
+                pointRadius: 2,
+                pointHoverRadius: 3,
+                fill: false,
+                order: 5
+            }
+        ];
         
         // Destroy existing charts
         if (this.charts.monthlyTrends) {
@@ -332,13 +233,7 @@ class AnalyticsPage {
                                     label += ': ';
                                 }
                                 if (context.parsed.y !== null) {
-                                    if (currentChartType === 'budget') {
-                                        label += 'Rp ' + context.parsed.y.toLocaleString();
-                                    } else if (currentChartType === 'approval_rate') {
-                                        label += context.parsed.y.toFixed(1) + '%';
-                                    } else {
-                                        label += context.parsed.y + ' SPPD';
-                                    }
+                                    label += context.parsed.y + ' SPPD';
                                 }
                                 return label;
                             }
@@ -360,8 +255,7 @@ class AnalyticsPage {
                         display: true,
                         title: {
                             display: true,
-                            text: currentChartType === 'budget' ? 'Anggaran (Rp)' : 
-                                  currentChartType === 'approval_rate' ? 'Tingkat Approval (%)' : 'Jumlah SPPD'
+                            text: 'Jumlah SPPD'
                         },
                         grid: {
                             color: 'rgba(0, 0, 0, 0.1)'
@@ -384,30 +278,19 @@ class AnalyticsPage {
         // Update summary cards with real data
         this.updateSummaryCards(monthlyTrends);
         
-        // Update insight
+        // Update insight dengan informasi yang lebih detail dan komprehensif
         this.updateMonthlyInsight(monthlyTrends);
     }
 
-    // Enhanced monthly insight with comprehensive analysis
+    // Enhanced monthly insight with comprehensive analysis dan penjelasan yang lebih detail
     updateMonthlyInsight(monthlyTrends) {
         if (!monthlyTrends || monthlyTrends.length === 0) return;
         
         const latest = monthlyTrends[monthlyTrends.length - 1];
         const previous = monthlyTrends.length > 1 ? monthlyTrends[monthlyTrends.length - 2] : null;
         
-        let insight = '';
-        
-        // Get current chart type
-        const chartTypeSelector = document.getElementById('chartTypeSelector');
-        const currentChartType = chartTypeSelector ? chartTypeSelector.value : 'sppd_count';
-        
-        if (currentChartType === 'sppd_count') {
-            insight = this.generateSppdCountInsight(latest, previous, monthlyTrends);
-        } else if (currentChartType === 'budget') {
-            insight = this.generateBudgetInsight(latest, previous, monthlyTrends);
-        } else if (currentChartType === 'approval_rate') {
-            insight = this.generateApprovalRateInsight(latest, previous, monthlyTrends);
-        }
+        // Selalu menggunakan insight untuk SPPD count karena chart type selector sudah dihapus
+        const insight = this.generateSppdCountInsight(latest, previous, monthlyTrends);
         
         const insightElement = document.getElementById('insight-monthly');
         if (insightElement) {
@@ -415,34 +298,127 @@ class AnalyticsPage {
         }
     }
 
-    // Generate insight for SPPD count
+    // Generate insight for SPPD count dengan penjelasan yang lebih detail
     generateSppdCountInsight(latest, previous, allData) {
-        const totalSppd = latest.sppd_count || 0;
+        const totalSppd = latest.total_count || 0;
         const approvedCount = latest.approved_count || 0;
         const rejectedCount = latest.rejected_count || 0;
         const inReviewCount = latest.in_review_count || 0;
         const revisionCount = latest.revision_count || 0;
         
-        let insight = `📊 <strong>Analisis Tren SPPD Bulanan:</strong><br>`;
-        insight += `• Total SPPD periode ini: <strong>${totalSppd}</strong> SPPD<br>`;
-        insight += `• Breakdown: Disetujui <strong>${approvedCount}</strong>, Ditolak <strong>${rejectedCount}</strong>, Review <strong>${inReviewCount}</strong>, Revisi <strong>${revisionCount}</strong><br>`;
+        let insight = `<div class="space-y-3">`;
+        insight += `<p class="text-gray-800 font-medium text-base">📊 <strong>Analisis Tren SPPD Bulanan:</strong></p>`;
+        
+        // Informasi dasar dengan format yang lebih baik
+        insight += `<div class="bg-gray-50 p-3 rounded-lg border border-gray-200">`;
+        insight += `<p class="text-gray-700 mb-2">Total SPPD periode ini: <span class="font-medium text-indigo-600">${totalSppd}</span> SPPD</p>`;
+        
+        // Breakdown dengan visual yang lebih baik
+        insight += `<div class="grid grid-cols-2 gap-2 text-sm">`;
+        insight += `<div class="bg-green-50 p-2 rounded border border-green-200">`;
+        insight += `<span class="text-green-700">Disetujui:</span> <span class="font-medium text-green-700">${approvedCount}</span>`;
+        insight += `</div>`;
+        
+        insight += `<div class="bg-red-50 p-2 rounded border border-red-200">`;
+        insight += `<span class="text-red-700">Ditolak:</span> <span class="font-medium text-red-700">${rejectedCount}</span>`;
+        insight += `</div>`;
+        
+        insight += `<div class="bg-amber-50 p-2 rounded border border-amber-200">`;
+        insight += `<span class="text-amber-700">Review:</span> <span class="font-medium text-amber-700">${inReviewCount}</span>`;
+        insight += `</div>`;
+        
+        insight += `<div class="bg-purple-50 p-2 rounded border border-purple-200">`;
+        insight += `<span class="text-purple-700">Revisi:</span> <span class="font-medium text-purple-700">${revisionCount}</span>`;
+        insight += `</div>`;
+        insight += `</div>`; // End grid
+        insight += `</div>`; // End info box
         
         if (previous) {
-            const totalChange = ((totalSppd - previous.sppd_count) / previous.sppd_count * 100).toFixed(1);
+            const prevTotalSppd = previous.total_count || 0;
+            const prevApprovedCount = previous.approved_count || 0;
+            const prevRejectedCount = previous.rejected_count || 0;
+            
+            // Hitung perubahan
+            const totalChange = prevTotalSppd > 0 ? ((totalSppd - prevTotalSppd) / prevTotalSppd * 100).toFixed(1) : 0;
             const approvalRate = totalSppd > 0 ? ((approvedCount / totalSppd) * 100).toFixed(1) : 0;
             const rejectionRate = totalSppd > 0 ? ((rejectedCount / totalSppd) * 100).toFixed(1) : 0;
             
-            insight += `• Perubahan dari bulan lalu: <strong>${totalChange}%</strong><br>`;
-            insight += `• Tingkat approval: <strong>${approvalRate}%</strong>, Tingkat rejection: <strong>${rejectionRate}%</strong><br>`;
+            // Perubahan dari bulan sebelumnya
+            const isIncrease = totalSppd > prevTotalSppd;
+            const changeClass = isIncrease ? 'text-green-600' : 'text-red-600';
+            const changeIcon = isIncrease ? '↑' : '↓';
+            
+            insight += `<div class="bg-gray-50 p-3 rounded-lg border border-gray-200 mt-3">`;
+            insight += `<p class="text-gray-700 mb-2">Perbandingan dengan periode sebelumnya:</p>`;
+            
+            insight += `<div class="space-y-2 text-sm">`;
+            insight += `<p>Perubahan total SPPD: <span class="font-medium ${changeClass}">${changeIcon} ${Math.abs(totalChange)}%</span></p>`;
+            insight += `<p>Tingkat persetujuan: <span class="font-medium text-green-600">${approvalRate}%</span></p>`;
+            insight += `<p>Tingkat penolakan: <span class="font-medium text-red-600">${rejectionRate}%</span></p>`;
+            
+            // Perubahan detail
+            const approvedChange = approvedCount - prevApprovedCount;
+            const rejectedChange = rejectedCount - prevRejectedCount;
+            
+            insight += `<div class="mt-2 pt-2 border-t border-gray-200">`;
+            insight += `<p class="mb-1 text-gray-600">Perubahan detail:</p>`;
+            
+            insight += `<p>SPPD disetujui: ${prevApprovedCount} → ${approvedCount} `;
+            if (approvedChange > 0) {
+                insight += `<span class="text-green-600">(+${approvedChange})</span>`;
+            } else if (approvedChange < 0) {
+                insight += `<span class="text-red-600">(${approvedChange})</span>`;
+            } else {
+                insight += `<span class="text-gray-500">(tetap)</span>`;
+            }
+            insight += `</p>`;
+            
+            insight += `<p>SPPD ditolak: ${prevRejectedCount} → ${rejectedCount} `;
+            if (rejectedChange > 0) {
+                insight += `<span class="text-red-600">(+${rejectedChange})</span>`;
+            } else if (rejectedChange < 0) {
+                insight += `<span class="text-green-600">(${rejectedChange})</span>`;
+            } else {
+                insight += `<span class="text-gray-500">(tetap)</span>`;
+            }
+            insight += `</p>`;
+            
+            insight += `</div>`; // End perubahan detail
+            insight += `</div>`; // End space-y-2
+            insight += `</div>`; // End comparison box
         }
         
-        // Trend analysis
+        // Trend analysis dengan penjelasan yang lebih detail
         if (allData.length >= 3) {
             const recent = allData.slice(-3);
-            const avgRecent = recent.reduce((sum, item) => sum + (item.sppd_count || 0), 0) / recent.length;
-            const trend = avgRecent > (totalSppd * 1.1) ? 'meningkat' : avgRecent < (totalSppd * 0.9) ? 'menurun' : 'stabil';
-            insight += `• Tren 3 bulan terakhir: <strong>${trend}</strong> (rata-rata ${avgRecent.toFixed(1)} SPPD/bulan)`;
+            const avgRecent = recent.reduce((sum, item) => sum + (item.total_count || 0), 0) / recent.length;
+            
+            let trendText = '';
+            let trendClass = '';
+            let trendAnalysis = '';
+            
+            if (avgRecent > (totalSppd * 1.1)) {
+                trendText = 'menurun';
+                trendClass = 'text-red-600';
+                trendAnalysis = 'Terjadi penurunan jumlah SPPD dibandingkan rata-rata 3 bulan terakhir. Hal ini mungkin menunjukkan pengurangan aktivitas perjalanan dinas atau perubahan kebijakan.';
+            } else if (avgRecent < (totalSppd * 0.9)) {
+                trendText = 'meningkat';
+                trendClass = 'text-green-600';
+                trendAnalysis = 'Terjadi peningkatan jumlah SPPD dibandingkan rata-rata 3 bulan terakhir. Hal ini menunjukkan adanya peningkatan aktivitas perjalanan dinas.';
+            } else {
+                trendText = 'stabil';
+                trendClass = 'text-blue-600';
+                trendAnalysis = 'Jumlah SPPD relatif stabil dibandingkan rata-rata 3 bulan terakhir. Hal ini menunjukkan konsistensi dalam aktivitas perjalanan dinas.';
+            }
+            
+            insight += `<div class="bg-gray-50 p-3 rounded-lg border border-gray-200 mt-3">`;
+            insight += `<p class="text-gray-700 mb-2">Analisis tren 3 bulan terakhir:</p>`;
+            insight += `<p>Tren: <span class="font-medium ${trendClass}">${trendText}</span> (rata-rata ${avgRecent.toFixed(1)} SPPD/bulan)</p>`;
+            insight += `<p class="text-sm text-gray-600 mt-1">${trendAnalysis}</p>`;
+            insight += `</div>`;
         }
+        
+        insight += `</div>`; // End space-y-3
         
         return insight;
     }
@@ -499,45 +475,7 @@ class AnalyticsPage {
         return insight;
     }
 
-    // 2. Grafik Tren Anggaran Bulanan (Bar Chart)
-    renderBudgetTrends(monthlyTrends) {
-        const ctx = document.getElementById('budgetTrendsChart');
-        if (!ctx) return;
-        const labels = (monthlyTrends || []).map(x => x.period);
-        const budget = (monthlyTrends || []).map(x => x.total_budget);
-        if (this.charts.budgetTrends) this.charts.budgetTrends.destroy();
-        this.charts.budgetTrends = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels,
-                datasets: [
-                    {
-                        label: 'Anggaran (Rp)',
-                        data: budget,
-                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
-                        borderColor: 'rgb(16, 185, 129)',
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return 'Rp ' + value.toLocaleString();
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        if (!labels.length) this.showEmpty(ctx, 'Tidak ada data anggaran');
-    }
+    // Menghapus fungsi renderBudgetTrends
 
     // 3. Grafik Distribusi Status SPPD (Doughnut Chart)
     renderStatusDistribution(statusDistribution) {
@@ -671,17 +609,15 @@ class AnalyticsPage {
         const ctx = document.getElementById('budgetUtilizationChart');
         if (!ctx || !util) return;
         const used = util.used || 0;
-        const remaining = util.remaining || 0;
         if (this.charts.budgetUtilization) this.charts.budgetUtilization.destroy();
         this.charts.budgetUtilization = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Terpakai', 'Sisa'],
+                labels: ['Total Anggaran'],
                 datasets: [{
-                    data: [used, remaining],
+                    data: [used],
                     backgroundColor: [
-                        'rgba(34, 197, 94, 0.8)',
-                        'rgba(59, 130, 246, 0.8)'
+                        'rgba(34, 197, 94, 0.8)'
                     ],
                     borderWidth: 2,
                     borderColor: '#fff'
@@ -695,94 +631,489 @@ class AnalyticsPage {
         });
     }
 
-    // Analisis/Insight Otomatis Bahasa Indonesia
-    renderInsights(data) {
-        // 1. Insight Tren Bulanan
-        const monthly = data.monthlyTrends || [];
-        let insightMonthly = 'Belum ada data SPPD.';
-        if (monthly.length > 1) {
-            const last = monthly[monthly.length-1];
-            const prev = monthly[monthly.length-2];
-            const diff = last.sppd_count - prev.sppd_count;
-            if (diff > 0) {
-                insightMonthly = `Jumlah SPPD bulan ${last.period} meningkat ${diff} dibanding bulan sebelumnya.`;
-            } else if (diff < 0) {
-                insightMonthly = `Jumlah SPPD bulan ${last.period} menurun ${Math.abs(diff)} dibanding bulan sebelumnya.`;
+    // Update data dan insight dengan informasi yang lebih detail dan komprehensif
+    updateData(data) {
+        // Update semua insight dan chart berdasarkan data terbaru
+        this.renderMonthlyTrends(data.monthlyTrends);
+        this.renderStatusDistribution(data.statusDistribution);
+        this.renderDepartmentAnalysis(data.departmentAnalysis);
+        this.renderApprovalPerformance(data.approvalPerformance);
+        this.renderTopDestinations(data.trendingData?.top_destinations);
+        this.renderBudgetUtilization(data.overview?.budget_utilization);
+        
+        // Update insight dengan informasi yang lebih detail dan komprehensif
+        this.updateMonthlyInsight(data.monthlyTrends);
+        this.updateStatusInsight(data.statusDistribution);
+        this.updateDepartmentInsight(data.departmentAnalysis);
+        this.updateApprovalInsight(data.approvalPerformance);
+        this.updateDestinationInsight(data.trendingData?.top_destinations);
+        this.updateBudgetUtilizationInsight(data.overview?.budget_utilization);
+    }
+    
+    // Update budget utilization insight dengan penjelasan yang lebih detail dan komprehensif
+    updateBudgetUtilizationInsight(budgetData) {
+        if (!budgetData) {
+            document.getElementById('insight-utilization').innerHTML = 'Belum ada data anggaran.';
+            return;
+        }
+        
+        const totalBudget = budgetData.used || 0;
+        const formattedTotal = this.formatCurrency(totalBudget);
+        
+        let insight = `<div class="space-y-3">`;
+        insight += `<p class="text-gray-800 font-medium text-base">💰 <strong>Analisis Anggaran SPPD:</strong></p>`;
+        
+        // Informasi dasar dengan format yang lebih baik
+        insight += `<div class="bg-gray-50 p-3 rounded-lg border border-gray-200">`;
+        insight += `<p class="text-gray-700 mb-2">Total anggaran SPPD: <span class="font-medium text-indigo-600">${formattedTotal}</span></p>`;
+        
+        // Tambahkan informasi tentang jumlah SPPD dan rata-rata per SPPD jika tersedia
+        if (budgetData.total_sppd && budgetData.avg_per_sppd) {
+            insight += `<div class="grid grid-cols-2 gap-2 text-sm mt-2">`;
+            insight += `<div class="bg-blue-50 p-2 rounded border border-blue-200">`;
+            insight += `<span class="text-blue-700">Jumlah SPPD:</span> <span class="font-medium text-blue-700">${budgetData.total_sppd}</span>`;
+            insight += `</div>`;
+            
+            insight += `<div class="bg-purple-50 p-2 rounded border border-purple-200">`;
+            insight += `<span class="text-purple-700">Rata-rata per SPPD:</span> <span class="font-medium text-purple-700">${this.formatCurrency(budgetData.avg_per_sppd)}</span>`;
+            insight += `</div>`;
+            insight += `</div>`; // End grid
+        }
+        
+        // Tambahkan informasi tentang distribusi anggaran berdasarkan kategori jika tersedia
+        if (budgetData.categories && budgetData.categories.length > 0) {
+            insight += `<div class="mt-3 pt-2 border-t border-gray-200">`;
+            insight += `<p class="text-gray-700 mb-2">Distribusi anggaran:</p>`;
+            insight += `<div class="overflow-x-auto">`;
+            insight += `<table class="min-w-full text-sm">`;
+            insight += `<thead><tr class="bg-gray-100">`;
+            insight += `<th class="px-2 py-1 text-left">Kategori</th>`;
+            insight += `<th class="px-2 py-1 text-right">Jumlah</th>`;
+            insight += `<th class="px-2 py-1 text-right">Persentase</th>`;
+            insight += `</tr></thead><tbody>`;
+            
+            budgetData.categories.forEach(cat => {
+                const percentage = ((cat.amount / totalBudget) * 100).toFixed(1);
+                insight += `<tr class="border-t border-gray-200">`;
+                insight += `<td class="px-2 py-1">${cat.name}</td>`;
+                insight += `<td class="px-2 py-1 text-right">${this.formatCurrency(cat.amount)}</td>`;
+                insight += `<td class="px-2 py-1 text-right">${percentage}%</td>`;
+                insight += `</tr>`;
+            });
+            
+            insight += `</tbody></table>`;
+            insight += `</div>`; // End overflow-x-auto
+            insight += `</div>`; // End distribusi anggaran
+        }
+        
+        // Perbandingan dengan periode sebelumnya jika tersedia
+        if (budgetData.previous_total) {
+            const prevTotal = budgetData.previous_total || 0;
+            const change = totalBudget - prevTotal;
+            const changePercent = prevTotal > 0 ? ((change / prevTotal) * 100).toFixed(1) : 0;
+            const isIncrease = change >= 0;
+            const changeClass = isIncrease ? 'text-green-600' : 'text-red-600';
+            const changeIcon = isIncrease ? '↑' : '↓';
+            const changeDirection = isIncrease ? 'meningkat' : 'menurun';
+            
+            insight += `<div class="bg-gray-50 p-3 rounded-lg border border-gray-200 mt-3">`;
+            insight += `<p class="text-gray-700 mb-2">Perbandingan dengan periode sebelumnya:</p>`;
+            
+            insight += `<div class="space-y-2 text-sm">`;
+            insight += `<p>Perubahan total anggaran: <span class="font-medium ${changeClass}">${changeIcon} ${Math.abs(changePercent)}%</span></p>`;
+            insight += `<p>Perubahan nominal: <span class="font-medium ${changeClass}">${this.formatCurrency(Math.abs(change))}</span></p>`;
+            
+            // Tambahkan analisis perubahan
+            insight += `<div class="mt-2 pt-2 border-t border-gray-200">`;
+            insight += `<p class="text-sm text-gray-600">Anggaran SPPD ${changeDirection} sebesar ${this.formatCurrency(Math.abs(change))} (${Math.abs(changePercent)}%) dibandingkan periode sebelumnya. `;
+            
+            if (isIncrease) {
+                insight += `Peningkatan ini menunjukkan adanya kenaikan aktivitas perjalanan dinas atau kenaikan biaya perjalanan rata-rata.</p>`;
             } else {
-                insightMonthly = `Jumlah SPPD bulan ${last.period} sama dengan bulan sebelumnya.`;
+                insight += `Penurunan ini menunjukkan adanya pengurangan aktivitas perjalanan dinas atau efisiensi dalam biaya perjalanan.</p>`;
             }
-        } else if (monthly.length === 1) {
-            insightMonthly = `Terdapat ${monthly[0].sppd_count} SPPD pada ${monthly[0].period}.`;
+            insight += `</div>`; // End analisis perubahan
+            
+            insight += `</div>`; // End space-y-2
+            insight += `</div>`; // End comparison box
         }
-        document.getElementById('insight-monthly').innerText = insightMonthly;
-
-        // Helper untuk format rupiah dengan titik dan koma
-        function formatRupiah(num) {
-            return 'Rp ' + Number(num).toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        
+        insight += `</div>`; // End info box
+        insight += `</div>`; // End space-y-3
+        
+        const insightElement = document.getElementById('insight-utilization');
+        if (insightElement) {
+            insightElement.innerHTML = insight;
         }
-
-        // 2. Insight Anggaran
-        let insightBudget = 'Belum ada data anggaran.';
-        if (monthly.length > 1) {
-            const last = monthly[monthly.length-1];
-            const prev = monthly[monthly.length-2];
-            const diff = last.total_budget - prev.total_budget;
-            if (diff > 0) {
-                insightBudget = `Total anggaran bulan ${last.period} naik ${formatRupiah(diff)} dibanding bulan sebelumnya.`;
-            } else if (diff < 0) {
-                insightBudget = `Total anggaran bulan ${last.period} turun ${formatRupiah(Math.abs(diff))} dibanding bulan sebelumnya.`;
-            } else {
-                insightBudget = `Total anggaran bulan ${last.period} sama dengan bulan sebelumnya.`;
+    }
+    
+    // Update status insight dengan penjelasan yang lebih detail dan komprehensif
+    updateStatusInsight(statusData) {
+        if (!statusData || Object.keys(statusData).length === 0) {
+            document.getElementById('insight-status').innerHTML = 'Belum ada data status.';
+            return;
+        }
+        
+        // Konversi data status ke format array untuk memudahkan pengolahan
+        const statusArray = Object.entries(statusData).map(([status, count]) => ({ status, count }));
+        // Sort by count descending
+        const sortedData = [...statusArray].sort((a, b) => b.count - a.count);
+        const total = sortedData.reduce((sum, item) => sum + item.count, 0);
+        
+        let insight = `<div class="space-y-3">`;
+        insight += `<p class="text-gray-800 font-medium text-base">📋 <strong>Analisis Status SPPD:</strong></p>`;
+        
+        // Informasi dasar dengan format yang lebih baik
+        insight += `<div class="bg-gray-50 p-3 rounded-lg border border-gray-200">`;
+        insight += `<p class="text-gray-700 mb-2">Total SPPD: <span class="font-medium text-indigo-600">${total}</span></p>`;
+        
+        // Tabel distribusi status
+        insight += `<div class="overflow-x-auto mt-2">`;
+        insight += `<table class="min-w-full text-sm">`;
+        insight += `<thead><tr class="bg-gray-100">`;
+        insight += `<th class="px-2 py-1 text-left">Status</th>`;
+        insight += `<th class="px-2 py-1 text-right">Jumlah</th>`;
+        insight += `<th class="px-2 py-1 text-right">Persentase</th>`;
+        insight += `</tr></thead><tbody>`;
+        
+        // Warna untuk status berbeda
+        const statusColors = {
+            'Disetujui': 'bg-green-50 text-green-700',
+            'Ditolak': 'bg-red-50 text-red-700',
+            'Dalam Review': 'bg-amber-50 text-amber-700',
+            'Revisi': 'bg-purple-50 text-purple-700',
+            'Draft': 'bg-gray-50 text-gray-700'
+        };
+        
+        sortedData.forEach(status => {
+            const percentage = ((status.count / total) * 100).toFixed(1);
+            const colorClass = statusColors[status.status] || 'bg-gray-50 text-gray-700';
+            
+            insight += `<tr class="border-t border-gray-200 ${colorClass}">`;
+            insight += `<td class="px-2 py-1">${status.status}</td>`;
+            insight += `<td class="px-2 py-1 text-right font-medium">${status.count}</td>`;
+            insight += `<td class="px-2 py-1 text-right">${percentage}%</td>`;
+            insight += `</tr>`;
+        });
+        
+        insight += `</tbody></table>`;
+        insight += `</div>`; // End overflow-x-auto
+        insight += `</div>`; // End info box
+        
+        // Analisis tingkat persetujuan dan penolakan
+        const approved = sortedData.find(s => s.status === 'Disetujui');
+        const rejected = sortedData.find(s => s.status === 'Ditolak');
+        const inReview = sortedData.find(s => s.status === 'Dalam Review');
+        
+        if (approved || rejected) {
+            insight += `<div class="bg-gray-50 p-3 rounded-lg border border-gray-200 mt-3">`;
+            insight += `<p class="text-gray-700 mb-2">Analisis tingkat persetujuan:</p>`;
+            
+            const approvalRate = approved ? ((approved.count / total) * 100).toFixed(1) : 0;
+            const rejectionRate = rejected ? ((rejected.count / total) * 100).toFixed(1) : 0;
+            const inReviewRate = inReview ? ((inReview.count / total) * 100).toFixed(1) : 0;
+            
+            insight += `<div class="space-y-2 text-sm">`;
+            
+            if (approved) {
+                insight += `<p>Tingkat persetujuan: <span class="font-medium text-green-600">${approvalRate}%</span></p>`;
             }
-        } else if (monthly.length === 1) {
-            insightBudget = `Total anggaran bulan ${monthly[0].period}: ${formatRupiah(monthly[0].total_budget)}.`;
+            
+            if (rejected) {
+                insight += `<p>Tingkat penolakan: <span class="font-medium text-red-600">${rejectionRate}%</span></p>`;
+            }
+            
+            if (inReview) {
+                insight += `<p>Dalam proses review: <span class="font-medium text-amber-600">${inReviewRate}%</span></p>`;
+            }
+            
+            // Tambahkan analisis perbandingan
+            insight += `<div class="mt-2 pt-2 border-t border-gray-200">`;
+            insight += `<p class="text-sm text-gray-600">`;
+            
+            if (approved && rejected) {
+                if (approved.count > rejected.count) {
+                    const ratio = (approved.count / (rejected.count || 1)).toFixed(1);
+                    insight += `Tingkat persetujuan ${approvalRate}% lebih tinggi dibandingkan tingkat penolakan ${rejectionRate}%. `;
+                    insight += `Rasio persetujuan:penolakan adalah ${ratio}:1, menunjukkan mayoritas SPPD disetujui.`;
+                } else if (rejected.count > approved.count) {
+                    const ratio = (rejected.count / (approved.count || 1)).toFixed(1);
+                    insight += `Tingkat penolakan ${rejectionRate}% lebih tinggi dibandingkan tingkat persetujuan ${approvalRate}%. `;
+                    insight += `Rasio penolakan:persetujuan adalah ${ratio}:1, menunjukkan mayoritas SPPD ditolak.`;
+                } else {
+                    insight += `Tingkat persetujuan dan penolakan seimbang pada ${approvalRate}%, menunjukkan distribusi yang merata.`;
+                }
+            } else if (approved) {
+                insight += `Tingkat persetujuan ${approvalRate}% dengan tidak ada penolakan, menunjukkan semua SPPD yang diproses telah disetujui.`;
+            } else if (rejected) {
+                insight += `Tingkat penolakan ${rejectionRate}% dengan tidak ada persetujuan, menunjukkan semua SPPD yang diproses telah ditolak.`;
+            }
+            
+            insight += `</p>`;
+            insight += `</div>`; // End analisis perbandingan
+            
+            insight += `</div>`; // End space-y-2
+            insight += `</div>`; // End approval analysis box
         }
-        document.getElementById('insight-budget').innerText = insightBudget;
-
-        // 3. Insight Status
-        const status = data.statusDistribution || {};
-        let maxStatus = null, maxVal = 0, totalStatus = 0;
-        Object.entries(status).forEach(([k,v])=>{if(v>maxVal){maxVal=v;maxStatus=k;} totalStatus+=v;});
-        let insightStatus = 'Belum ada data status.';
-        if (maxStatus) {
-            insightStatus = `Status SPPD terbanyak adalah "${maxStatus}" (${maxVal} dari ${totalStatus} SPPD).`;
+        
+        insight += `</div>`; // End space-y-3
+        
+        const insightElement = document.getElementById('insight-status');
+        if (insightElement) {
+            insightElement.innerHTML = insight;
         }
-        document.getElementById('insight-status').innerText = insightStatus;
-
-        // 4. Insight Departemen
-        const dept = data.departmentAnalysis || [];
-        let insightDept = 'Belum ada data departemen.';
-        if (dept.length > 0) {
-            const top = dept.reduce((a,b)=>a.total_requests>b.total_requests?a:b);
-            insightDept = `Departemen dengan SPPD terbanyak: ${top.department} (${top.total_requests} SPPD).`;
+    }
+    
+    // Update department insight dengan penjelasan yang lebih detail dan komprehensif
+    updateDepartmentInsight(departmentData) {
+        if (!departmentData || departmentData.length === 0) {
+            document.getElementById('insight-department').innerHTML = 'Belum ada data departemen.';
+            return;
         }
-        document.getElementById('insight-department').innerText = insightDept;
-
-        // 5. Insight Approval
-        const approval = data.approvalPerformance || [];
-        let insightApproval = 'Belum ada data approval.';
-        if (approval.length > 0) {
-            const top = approval.reduce((a,b)=>a.total_approvals>b.total_approvals?a:b);
-            insightApproval = `Approval terbanyak oleh ${top.approver_name} (${top.total_approvals} approval).`;
+        
+        // Sort by total requests descending
+        const sortedData = [...departmentData].sort((a, b) => b.total_requests - a.total_requests);
+        const topDept = sortedData[0];
+        const totalSppd = sortedData.reduce((sum, dept) => sum + dept.total_requests, 0);
+        
+        let insight = `<div class="space-y-3">`;
+        insight += `<p class="text-gray-800 font-medium text-base">🏢 <strong>Analisis Departemen:</strong></p>`;
+        
+        // Informasi dasar dengan format yang lebih baik
+        insight += `<div class="bg-gray-50 p-3 rounded-lg border border-gray-200">`;
+        insight += `<p class="text-gray-700 mb-2">Total SPPD dari semua departemen: <span class="font-medium text-indigo-600">${totalSppd}</span></p>`;
+        
+        // Informasi departemen teratas
+        const topDeptApprovalRate = topDept.total_requests > 0 ? 
+            ((topDept.approved_count / topDept.total_requests) * 100).toFixed(1) : 0;
+        
+        insight += `<div class="bg-blue-50 p-2 rounded border border-blue-200 mt-2">`;
+        insight += `<p class="text-blue-700 font-medium">Departemen Teratas: ${topDept.department}</p>`;
+        insight += `<div class="grid grid-cols-2 gap-2 text-sm mt-1">`;
+        insight += `<div><span class="text-gray-600">Total SPPD:</span> <span class="font-medium">${topDept.total_requests}</span></div>`;
+        insight += `<div><span class="text-gray-600">Disetujui:</span> <span class="font-medium text-green-600">${topDept.approved_count}</span></div>`;
+        insight += `<div><span class="text-gray-600">Tingkat persetujuan:</span> <span class="font-medium">${topDeptApprovalRate}%</span></div>`;
+        insight += `<div><span class="text-gray-600">Persentase dari total:</span> <span class="font-medium">${((topDept.total_requests / totalSppd) * 100).toFixed(1)}%</span></div>`;
+        insight += `</div>`; // End grid
+        insight += `</div>`; // End top dept box
+        
+        // Tabel perbandingan departemen
+        insight += `<div class="overflow-x-auto mt-3">`;
+        insight += `<table class="min-w-full text-sm">`;
+        insight += `<thead><tr class="bg-gray-100">`;
+        insight += `<th class="px-2 py-1 text-left">Departemen</th>`;
+        insight += `<th class="px-2 py-1 text-right">Total</th>`;
+        insight += `<th class="px-2 py-1 text-right">Disetujui</th>`;
+        insight += `<th class="px-2 py-1 text-right">Tingkat</th>`;
+        insight += `</tr></thead><tbody>`;
+        
+        sortedData.slice(0, 5).forEach(dept => {
+            const approvalRate = dept.total_requests > 0 ? 
+                ((dept.approved_count / dept.total_requests) * 100).toFixed(1) : 0;
+            
+            insight += `<tr class="border-t border-gray-200">`;
+            insight += `<td class="px-2 py-1">${dept.department}</td>`;
+            insight += `<td class="px-2 py-1 text-right">${dept.total_requests}</td>`;
+            insight += `<td class="px-2 py-1 text-right">${dept.approved_count}</td>`;
+            insight += `<td class="px-2 py-1 text-right">${approvalRate}%</td>`;
+            insight += `</tr>`;
+        });
+        
+        insight += `</tbody></table>`;
+        insight += `</div>`; // End overflow-x-auto
+        
+        // Analisis distribusi departemen
+        insight += `<div class="mt-3 pt-2 border-t border-gray-200">`;
+        insight += `<p class="text-sm text-gray-600">`;
+        insight += `Departemen ${topDept.department} memiliki jumlah SPPD tertinggi dengan ${topDept.total_requests} permintaan `;
+        insight += `(${((topDept.total_requests / totalSppd) * 100).toFixed(1)}% dari total). `;
+        
+        if (sortedData.length > 1) {
+            const secondDept = sortedData[1];
+            const difference = topDept.total_requests - secondDept.total_requests;
+            const percentDiff = ((difference / secondDept.total_requests) * 100).toFixed(1);
+            
+            insight += `Jumlah ini ${percentDiff}% lebih tinggi dibandingkan departemen ${secondDept.department} `;
+            insight += `yang berada di posisi kedua dengan ${secondDept.total_requests} permintaan.`;
         }
-        document.getElementById('insight-approval').innerText = insightApproval;
-
-        // 6. Insight Destinasi
-        const dest = data.trendingData && data.trendingData.top_destinations ? data.trendingData.top_destinations : [];
-        let insightDest = 'Belum ada data destinasi.';
-        if (dest.length > 0) {
-            const top = dest[0];
-            insightDest = `Destinasi paling populer: ${top.tujuan} (${top.count} kali perjalanan).`;
+        
+        insight += `</p>`;
+        insight += `</div>`; // End analisis distribusi
+        
+        insight += `</div>`; // End info box
+        insight += `</div>`; // End space-y-3
+        
+        const insightElement = document.getElementById('insight-department');
+        if (insightElement) {
+            insightElement.innerHTML = insight;
         }
-        document.getElementById('insight-destination').innerText = insightDest;
-
-        // 7. Insight Utilisasi Anggaran
-        const util = data.overview && data.overview.budget_utilization ? data.overview.budget_utilization : null;
-        let insightUtil = 'Belum ada data utilisasi anggaran.';
-        if (util) {
-            insightUtil = `Anggaran terpakai: ${formatRupiah(util.used)} dari total alokasi ${formatRupiah(util.allocated)} (${util.utilization_rate}% terpakai).`;
+    }
+    
+    // Update approval insight dengan penjelasan yang lebih detail dan komprehensif
+    updateApprovalInsight(approvalData) {
+        if (!approvalData || approvalData.length === 0) {
+            document.getElementById('insight-approval').innerHTML = 'Belum ada data approval.';
+            return;
         }
-        document.getElementById('insight-utilization').innerText = insightUtil;
+        
+        // Sort by total approvals descending
+        const sortedData = [...approvalData].sort((a, b) => b.total_approvals - a.total_approvals);
+        const topApprover = sortedData[0];
+        const totalApprovals = sortedData.reduce((sum, approver) => sum + approver.total_approvals, 0);
+        
+        let insight = `<div class="space-y-3">`;
+        insight += `<p class="text-gray-800 font-medium text-base">✅ <strong>Analisis Performa Approval:</strong></p>`;
+        
+        // Informasi dasar dengan format yang lebih baik
+        insight += `<div class="bg-gray-50 p-3 rounded-lg border border-gray-200">`;
+        insight += `<p class="text-gray-700 mb-2">Total approval: <span class="font-medium text-indigo-600">${totalApprovals}</span></p>`;
+        
+        // Informasi approver teratas
+        insight += `<div class="bg-green-50 p-2 rounded border border-green-200 mt-2">`;
+        insight += `<p class="text-green-700 font-medium">Approver Teratas: ${topApprover.approver_name}</p>`;
+        insight += `<div class="grid grid-cols-2 gap-2 text-sm mt-1">`;
+        insight += `<div><span class="text-gray-600">Total approval:</span> <span class="font-medium">${topApprover.total_approvals}</span></div>`;
+        insight += `<div><span class="text-gray-600">Persentase dari total:</span> <span class="font-medium">${((topApprover.total_approvals / totalApprovals) * 100).toFixed(1)}%</span></div>`;
+        
+        if (topApprover.avg_time_to_approve) {
+            insight += `<div><span class="text-gray-600">Rata-rata waktu approval:</span> <span class="font-medium">${topApprover.avg_time_to_approve}</span></div>`;
+        }
+        
+        insight += `</div>`; // End grid
+        insight += `</div>`; // End top approver box
+        
+        // Tabel perbandingan approver
+        insight += `<div class="overflow-x-auto mt-3">`;
+        insight += `<table class="min-w-full text-sm">`;
+        insight += `<thead><tr class="bg-gray-100">`;
+        insight += `<th class="px-2 py-1 text-left">Approver</th>`;
+        insight += `<th class="px-2 py-1 text-right">Total</th>`;
+        insight += `<th class="px-2 py-1 text-right">Persentase</th>`;
+        insight += `</tr></thead><tbody>`;
+        
+        sortedData.forEach(approver => {
+            const percentage = ((approver.total_approvals / totalApprovals) * 100).toFixed(1);
+            
+            insight += `<tr class="border-t border-gray-200">`;
+            insight += `<td class="px-2 py-1">${approver.approver_name}</td>`;
+            insight += `<td class="px-2 py-1 text-right">${approver.total_approvals}</td>`;
+            insight += `<td class="px-2 py-1 text-right">${percentage}%</td>`;
+            insight += `</tr>`;
+        });
+        
+        insight += `</tbody></table>`;
+        insight += `</div>`; // End overflow-x-auto
+        
+        // Analisis distribusi approval
+        if (sortedData.length > 1) {
+            insight += `<div class="mt-3 pt-2 border-t border-gray-200">`;
+            insight += `<p class="text-sm text-gray-600">`;
+            insight += `${topApprover.approver_name} telah melakukan ${topApprover.total_approvals} approval `;
+            insight += `(${((topApprover.total_approvals / totalApprovals) * 100).toFixed(1)}% dari total). `;
+            
+            const secondApprover = sortedData[1];
+            const difference = topApprover.total_approvals - secondApprover.total_approvals;
+            const percentDiff = ((difference / secondApprover.total_approvals) * 100).toFixed(1);
+            
+            insight += `Jumlah ini ${percentDiff}% lebih tinggi dibandingkan ${secondApprover.approver_name} `;
+            insight += `yang berada di posisi kedua dengan ${secondApprover.total_approvals} approval.`;
+            
+            insight += `</p>`;
+            insight += `</div>`; // End analisis distribusi
+        }
+        
+        insight += `</div>`; // End info box
+        insight += `</div>`; // End space-y-3
+        
+        const insightElement = document.getElementById('insight-approval');
+        if (insightElement) {
+            insightElement.innerHTML = insight;
+        }
+    }
+    
+    // Update destination insight dengan penjelasan yang lebih detail dan komprehensif
+    updateDestinationInsight(destinationData) {
+        if (!destinationData || destinationData.length === 0) {
+            document.getElementById('insight-destination').innerHTML = 'Belum ada data destinasi.';
+            return;
+        }
+        
+        const topDestination = destinationData[0];
+        const totalTrips = destinationData.reduce((sum, dest) => sum + dest.count, 0);
+        
+        let insight = `<div class="space-y-3">`;
+        insight += `<p class="text-gray-800 font-medium text-base">🌍 <strong>Analisis Destinasi SPPD:</strong></p>`;
+        
+        // Informasi dasar dengan format yang lebih baik
+        insight += `<div class="bg-gray-50 p-3 rounded-lg border border-gray-200">`;
+        insight += `<p class="text-gray-700 mb-2">Total perjalanan: <span class="font-medium text-indigo-600">${totalTrips}</span></p>`;
+        
+        // Informasi destinasi teratas
+        insight += `<div class="bg-amber-50 p-2 rounded border border-amber-200 mt-2">`;
+        insight += `<p class="text-amber-700 font-medium">Destinasi Terpopuler: ${topDestination.tujuan}</p>`;
+        insight += `<div class="grid grid-cols-2 gap-2 text-sm mt-1">`;
+        insight += `<div><span class="text-gray-600">Jumlah kunjungan:</span> <span class="font-medium">${topDestination.count}</span></div>`;
+        insight += `<div><span class="text-gray-600">Persentase dari total:</span> <span class="font-medium">${((topDestination.count / totalTrips) * 100).toFixed(1)}%</span></div>`;
+        insight += `</div>`; // End grid
+        insight += `</div>`; // End top destination box
+        
+        // Tabel perbandingan destinasi
+        insight += `<div class="overflow-x-auto mt-3">`;
+        insight += `<table class="min-w-full text-sm">`;
+        insight += `<thead><tr class="bg-gray-100">`;
+        insight += `<th class="px-2 py-1 text-left">Destinasi</th>`;
+        insight += `<th class="px-2 py-1 text-right">Jumlah</th>`;
+        insight += `<th class="px-2 py-1 text-right">Persentase</th>`;
+        insight += `</tr></thead><tbody>`;
+        
+        destinationData.slice(0, 5).forEach(dest => {
+            const percentage = ((dest.count / totalTrips) * 100).toFixed(1);
+            
+            insight += `<tr class="border-t border-gray-200">`;
+            insight += `<td class="px-2 py-1">${dest.tujuan}</td>`;
+            insight += `<td class="px-2 py-1 text-right">${dest.count}</td>`;
+            insight += `<td class="px-2 py-1 text-right">${percentage}%</td>`;
+            insight += `</tr>`;
+        });
+        
+        insight += `</tbody></table>`;
+        insight += `</div>`; // End overflow-x-auto
+        
+        // Analisis distribusi destinasi
+        insight += `<div class="mt-3 pt-2 border-t border-gray-200">`;
+        insight += `<p class="text-sm text-gray-600">`;
+        insight += `${topDestination.tujuan} merupakan destinasi paling populer dengan ${topDestination.count} kunjungan `;
+        insight += `(${((topDestination.count / totalTrips) * 100).toFixed(1)}% dari total perjalanan). `;
+        
+        if (destinationData.length > 1) {
+            const secondDest = destinationData[1];
+            const difference = topDestination.count - secondDest.count;
+            const percentDiff = ((difference / secondDest.count) * 100).toFixed(1);
+            
+            insight += `Jumlah ini ${percentDiff}% lebih tinggi dibandingkan ${secondDest.tujuan} `;
+            insight += `yang berada di posisi kedua dengan ${secondDest.count} kunjungan.`;
+        }
+        
+        insight += `</p>`;
+        insight += `</div>`; // End analisis distribusi
+        
+        insight += `</div>`; // End info box
+        insight += `</div>`; // End space-y-3
+        
+        const insightElement = document.getElementById('insight-destination');
+        if (insightElement) {
+            insightElement.innerHTML = insight;
+        }
+    }
+    
+    // Helper method untuk format currency
+    formatCurrency(amount) {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(amount);
     }
 
     showEmpty(ctx, msg) {
@@ -1019,4 +1350,4 @@ class AnalyticsPage {
 // Inisialisasi jika ada elemen analytics
 if (document.getElementById('monthlyTrendsChart')) {
     window.analyticsPage = new AnalyticsPage();
-} 
+}

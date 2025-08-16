@@ -12,6 +12,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use App\Traits\BudgetCalculationTrait;
+use Illuminate\Support\Facades\Log;
 
 class AnalyticsController extends Controller
 {
@@ -45,7 +46,7 @@ class AnalyticsController extends Controller
             return view('analytics.dashboard', $data);
 
         } catch (\Exception $e) {
-            \Log::error('Analytics Error: ' . $e->getMessage(), [
+            \Illuminate\Support\Facades\Log::error('Analytics Error: ' . $e->getMessage(), [
                 'user_id' => $user->id,
                 'period' => $period
             ]);
@@ -67,7 +68,7 @@ class AnalyticsController extends Controller
 
             return response()->json($data);
         } catch (\Exception $e) {
-            \Log::error('Analytics Data Error: ' . $e->getMessage(), [
+            \Illuminate\Support\Facades\Log::error('Analytics Data Error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
                 'user_id' => Auth::id()
             ]);
@@ -96,7 +97,7 @@ class AnalyticsController extends Controller
             $result = $this->getDetailData($validated);
             return response()->json($result);
         } catch (\Exception $e) {
-            \Log::error('Analytics Detail Error: ' . $e->getMessage(), $validated);
+            \Illuminate\Support\Facades\Log::error('Analytics Detail Error: ' . $e->getMessage(), $validated);
             return response()->json([
                 'error' => 'Gagal memuat detail data.'
             ], 500);
@@ -110,7 +111,7 @@ class AnalyticsController extends Controller
     {
         $hasAccess = $user && in_array($user->role, self::ALLOWED_ROLES);
         
-        \Log::info('Analytics Access Check', [
+        \Illuminate\Support\Facades\Log::info('Analytics Access Check', [
             'user_id' => $user ? $user->id : null,
             'user_role' => $user ? $user->role : null,
             'allowed_roles' => self::ALLOWED_ROLES,
@@ -681,22 +682,14 @@ class AnalyticsController extends Controller
      */
     private function getBudgetUtilization($startDate): array
     {
-        // Ambil alokasi anggaran dari tabel settings
-        $setting = Setting::where('key', 'budget_allocation')->first();
-        $totalAllocated = $setting ? (int)$setting->value : 0;
-
+        // Hanya menampilkan total anggaran yang dikeluarkan dari SPPD yang disetujui
         $totalUsed = TravelRequest::where('created_at', '>=', $startDate)
             ->where('status', 'completed')
             ->sum(DB::raw('biaya_transport + biaya_penginapan + uang_harian + biaya_lainnya'));
 
-        $remaining = max(0, $totalAllocated - $totalUsed);
-        $utilizationRate = $totalAllocated > 0 ? round(($totalUsed / $totalAllocated) * 100, 1) : 0;
-
         return [
-            'allocated' => $totalAllocated,
             'used' => (float)$totalUsed,
-            'remaining' => $remaining,
-            'utilization_rate' => $utilizationRate
+            'remaining' => 0
         ];
     }
 

@@ -197,17 +197,17 @@ function showTooltip(event) {
     const tooltip = document.createElement('div');
     tooltip.className = 'custom-tooltip';
     tooltip.textContent = text;
-    tooltip.style.cssText = `
-        position: absolute;
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 8px 12px;
-        border-radius: 6px;
-        font-size: 14px;
-        z-index: 1000;
-        pointer-events: none;
-        white-space: nowrap;
-    `;
+    
+    // Set styles individually instead of using template literal
+    tooltip.style.position = 'absolute';
+    tooltip.style.background = 'rgba(0, 0, 0, 0.8)';
+    tooltip.style.color = 'white';
+    tooltip.style.padding = '8px 12px';
+    tooltip.style.borderRadius = '6px';
+    tooltip.style.fontSize = '14px';
+    tooltip.style.zIndex = '1000';
+    tooltip.style.pointerEvents = 'none';
+    tooltip.style.whiteSpace = 'nowrap';
 
     document.body.appendChild(tooltip);
 

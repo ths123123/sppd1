@@ -70,25 +70,7 @@
                     </div>
                 </div>
 
-                <!-- Chart Type Selector -->
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm font-medium text-gray-700">Chart Type:</span>
-                        <select id="chartTypeSelector" class="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="sppd_count">Jumlah SPPD</option>
-                            <option value="budget">Anggaran</option>
-                            <option value="approval_rate">Tingkat Approval</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Timeframe Selector -->
-                    <div class="flex items-center space-x-1">
-                        <button class="timeframe-btn bg-gray-100 text-gray-700 px-3 py-1 text-xs font-medium rounded-md hover:bg-gray-200 transition-colors" data-period="1">1M</button>
-                        <button class="timeframe-btn bg-gray-100 text-gray-700 px-3 py-1 text-xs font-medium rounded-md hover:bg-gray-200 transition-colors" data-period="3">3M</button>
-                        <button class="timeframe-btn bg-indigo-600 text-white px-3 py-1 text-xs font-medium rounded-md hover:bg-indigo-700 transition-colors" data-period="12">1Y</button>
-                        <button class="timeframe-btn bg-gray-100 text-gray-700 px-3 py-1 text-xs font-medium rounded-md hover:bg-gray-200 transition-colors" data-period="all">All</button>
-                    </div>
-                </div>
+                <!-- Menghapus Chart Type Selector dan Timeframe Selector -->
                 
                 <!-- Chart Container with Enhanced Layout -->
                 <div class="chart-container">
@@ -139,21 +121,7 @@
             </div>
         </div>
 
-        <!-- Charts Row 2: Budget Trends Chart (Full Width) -->
-        <div class="mb-8">
-            <!-- Budget Trends Chart -->
-            <div class="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-shadow p-6 relative border border-slate-100 group">
-                <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                    <i class="fas fa-coins text-green-400"></i> Tren Anggaran Bulanan
-                </h3>
-                <div class="h-80 relative">
-                    <canvas id="budgetTrendsChart" class="cursor-pointer"></canvas>
-                </div>
-                <div class="mt-4 text-sm text-gray-600 bg-green-50 rounded-lg px-4 py-2">
-                    <span class="font-semibold">Insight:</span> <span id="insight-budget">(Analisis tren anggaran akan muncul di sini)</span>
-                </div>
-            </div>
-        </div>
+        <!-- Menghapus Charts Row 2: Budget Trends Chart -->
 
         <!-- Charts Row 3: Distribusi Status & Analisis Departemen -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -212,7 +180,7 @@
             <!-- Budget Utilization -->
             <div class="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-shadow p-6 relative border border-slate-100 group">
                 <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                    <i class="fas fa-wallet text-green-400"></i> Utilisasi Anggaran
+                    <i class="fas fa-wallet text-green-400"></i> Total Anggaran SPPD
                 </h3>
                 <div class="h-80 relative">
                     <canvas id="budgetUtilizationChart" class="cursor-pointer"></canvas>

@@ -17,6 +17,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB; // Added for DB facade
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\TemplateDokumenController;
 use App\Http\Controllers\NotificationController;
 
@@ -34,7 +35,7 @@ Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
 
 // Home route
 Route::get('/', function () {
-    if (auth()->check()) {
+    if (Auth::check()) {
         return redirect()->route('dashboard');
     }
     return redirect()->route('login');
@@ -146,6 +147,12 @@ Route::middleware(['auth'])->group(function () {
         ->name('documents.all');
     Route::get('/dokumen/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
     Route::delete('/dokumen/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+    
+    // Travel Request Document Upload routes
+    Route::post('/travel-requests/{travelRequest}/upload-supporting', [\App\Http\Controllers\TravelRequestDocumentController::class, 'uploadSupportingDocuments'])
+        ->name('travel-requests.upload-supporting');
+    Route::post('/travel-requests/{travelRequest}/upload-reports', [\App\Http\Controllers\TravelRequestDocumentController::class, 'uploadTravelReports'])
+        ->name('travel-requests.upload-reports');
 });
 
 // API routes for realtime data
@@ -171,6 +178,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/notifications', [App\Http\Controllers\NotificationController::class, 'apiIndex']);
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
     Route::patch('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    
+    // Dashboard API endpoints
+    Route::get('/dashboard/recent-activities', [DashboardController::class, 'getRecentActivities'])->name('dashboard.recent-activities');
 });
 
 // Hapus route yang sudah dipindahkan

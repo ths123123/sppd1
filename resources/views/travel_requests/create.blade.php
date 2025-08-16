@@ -130,7 +130,7 @@
                             <input type="text" id="uang_harian" name="uang_harian" class="form-input biaya-input" placeholder="0">
             </div>
                         <div class="form-group">
-                            <label class="form-label">Biaya Lainnya</label>
+                            <label class="form-label">Biaya Lainnya <span class=\"text-xs text-gray-500 ml-2\">(misal: tol, parkir, konsumsi, ATK, dll.)</span></label>
                             <input type="text" id="biaya_lainnya" name="biaya_lainnya" class="form-input biaya-input" placeholder="0">
             </div>
                         <div class="form-group">

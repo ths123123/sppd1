@@ -555,7 +555,6 @@ class UserRoleSeeder extends Seeder
         foreach ($users as $user) {
             \App\Models\User::create($user);
         }
-        // Panggil seeder dummy SPPD setelah user selesai dibuat
-        \Database\Seeders\DummyTravelRequestSeeder::runStatic();
+        // Seeder dummy SPPD telah dihapus
     }
 }

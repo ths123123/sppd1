@@ -812,7 +812,7 @@ DRAFT → IN_REVIEW → COMPLETED
 - **Notifications**: WhatsApp API + Email
 - **UI**: Tailwind CSS
 - **Charts**: Chart.js
-- **Testing**: PHPUnit
+
 
 ---
 
@@ -924,4 +924,4 @@ if ($travelRequest->status !== TravelRequestStatus::COMPLETED->value) {
 
 **Dokumen ini dibuat otomatis oleh sistem pada Juli 2025**
 **Status: AKTIF DAN BERFUNGSI DENGAN BAIK** ✅
-**Update: Sesuai implementasi real sistem** ✅ 
+**Update: Sesuai implementasi real sistem** ✅

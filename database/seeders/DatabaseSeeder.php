@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
                     UserRoleSeeder::class,
             // DummyTravelRequestSeeder::class, // Seeder untuk dummy SPPD kasubbag1 (hapus, akan dipanggil dari UserRoleSeeder)
+            NotificationSeeder::class, // Seeder untuk notifikasi dummy
             // Tambahkan seeder lain yang esensial di sini jika ada
         ]);
     }

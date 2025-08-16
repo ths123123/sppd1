@@ -264,16 +264,11 @@
                                         required></textarea>
                             </div>
                             <div class="mt-4">
-                                <label for="revision_target" class="block text-sm font-medium text-gray-700 mb-2 text-left">Target Revisi</label>
-                                <select id="revision_target" name="target" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all" required>
-                                    <option value="">Pilih Target</option>
-                                    @if(auth()->user()->role === 'sekretaris')
-                                        <option value="kasubbag">Kembali ke Kasubbag</option>
-                                    @elseif(auth()->user()->role === 'ppk')
-                                        <option value="sekretaris">Kembali ke Sekretaris</option>
-                                        <option value="kasubbag">Kembali ke Kasubbag</option>
-                                    @endif
-                                </select>
+                                <label class="block text-sm font-medium text-gray-700 mb-2 text-left">Target Revisi</label>
+                                <div class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-700">
+                                    Kembali ke Kasubbag
+                                </div>
+                                <input type="hidden" name="target" value="kasubbag">
                             </div>
                         </div>
                         <div class="flex justify-center gap-4 mt-6">
@@ -724,7 +719,7 @@ document.addEventListener('alpine:init', () => {
             const id = form.action.split('/').slice(-2, -1)[0];
             const url = `/approval/pimpinan/${id}/revision`;
             const reason = form.querySelector('textarea[name="revision_reason"]').value;
-            const target = form.querySelector('select[name="target"]').value;
+            const target = form.querySelector('input[name="target"]').value;
             console.log(`[approvalTable] Sending REVISION AJAX: url=${url}, id=${id}, reason=${reason}, target=${target}`);
             
             // Create FormData for proper form submission

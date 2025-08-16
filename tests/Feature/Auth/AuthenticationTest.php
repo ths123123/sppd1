@@ -1,42 +1,76 @@
 <?php
 
+namespace Tests\Feature\Auth;
+
+use Tests\TestCase;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithFaker;
 
-test('login screen can be rendered', function () {
-    $response = $this->get('/login');
+class AuthenticationTest extends TestCase
+{
+    use RefreshDatabase, WithFaker;
 
-    $response->assertStatus(200);
-});
+    /** @test */
+    public function user_can_view_login_page()
+    {
+        $response = $this->get('/login');
 
-test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
-    $response = $this->get('/login');
-    $token = csrf_token();
-    $response = $this->post('/login', [
-        'email' => $user->email,
-        'password' => 'password',
-        '_token' => $token,
-    ]);
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
-});
+        $response->assertStatus(200);
+        $response->assertViewIs('auth.login');
+    }
 
-test('users can not authenticate with invalid password', function () {
-    $user = User::factory()->create();
+    /** @test */
+    public function user_can_login_with_valid_credentials()
+    {
+        $user = User::factory()->create([
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123')
+        ]);
 
-    $this->post('/login', [
-        'email' => $user->email,
-        'password' => 'wrong-password',
-    ]);
+        $response = $this->post('/login', [
+            'email' => 'test@example.com',
+            'password' => 'password123'
+        ]);
 
-    $this->assertGuest();
-});
+        $response->assertRedirect('/dashboard');
+        $this->assertAuthenticated();
+    }
 
-test('users can logout', function () {
-    $user = User::factory()->create();
-    $token = csrf_token();
-    $this->withSession([]); // Ensure session store is set
-    $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class); // Only bypass CSRF
-    $response = $this->actingAs($user)->post('/logout', ['_token' => $token]);
-    $this->assertTrue(in_array($response->status(), [200, 302, 419]), 'Logout response should be 200, 302, or 419');
-});
+    /** @test */
+    public function user_cannot_login_with_invalid_credentials()
+    {
+        $user = User::factory()->create([
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123')
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => 'test@example.com',
+            'password' => 'wrongpassword'
+        ]);
+
+        $response->assertSessionHasErrors();
+        $this->assertGuest();
+    }
+
+    /** @test */
+    public function authenticated_user_can_logout()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)
+            ->post('/logout');
+
+        $response->assertRedirect('/');
+        $this->assertGuest();
+    }
+
+    /** @test */
+    public function guest_cannot_access_protected_routes()
+    {
+        $response = $this->get('/dashboard');
+
+        $response->assertRedirect('/login');
+    }
+}

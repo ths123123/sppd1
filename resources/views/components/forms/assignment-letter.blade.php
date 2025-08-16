@@ -15,24 +15,24 @@
             <label for="nomor_surat_tugas" class="sppd-form-label">Nomor Surat Tugas</label>
             <input type="text" id="nomor_surat_tugas" name="nomor_surat_tugas" value="{{ old('nomor_surat_tugas') }}"
                    class="sppd-form-input" placeholder="Nomor surat tugas">
-            @error('nomor_surat_tugas')
+            @if(isset($errors) && $errors->has('nomor_surat_tugas'))
                 <p class="sppd-text-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    {{ $message }}
+                    {{ $errors->first('nomor_surat_tugas') }}
                 </p>
-            @enderror
+            @endif
         </div>
 
         <div class="sppd-form-group half-width">
             <label for="tanggal_surat_tugas" class="sppd-form-label">Tanggal Surat Tugas</label>
             <input type="date" id="tanggal_surat_tugas" name="tanggal_surat_tugas" value="{{ old('tanggal_surat_tugas') }}"
                    class="sppd-form-input">
-            @error('tanggal_surat_tugas')
+            @if(isset($errors) && $errors->has('tanggal_surat_tugas'))
                 <p class="sppd-text-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    {{ $message }}
+                    {{ $errors->first('tanggal_surat_tugas') }}
                 </p>
-            @enderror
+            @endif
         </div>
     </div>
 </div>

@@ -42,4 +42,13 @@ class Approval extends Model
     {
         return $this->belongsTo(User::class, 'approver_id');
     }
+
+    /**
+     * Alias relasi user() untuk kompatibilitas kode lama
+     * Mengarah ke approver_id
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'approver_id');
+    }
 }

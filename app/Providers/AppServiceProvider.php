@@ -25,6 +25,18 @@ class AppServiceProvider extends ServiceProvider
         
         // Add User Observer for monitoring user changes
         \App\Models\User::observe(\App\Observers\UserObserver::class);
+        
+        // Cek apakah tabel activity_logs kosong dan ada data travel_requests
+        try {
+            if (\Illuminate\Support\Facades\DB::table('activity_logs')->count() === 0 && 
+                \Illuminate\Support\Facades\DB::table('travel_requests')->count() > 0) {
+                // Jalankan command untuk generate activity logs
+                \Illuminate\Support\Facades\Log::info('Generating activity logs from existing travel requests on application boot');
+                \Illuminate\Support\Facades\Artisan::call('activity:generate');
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error checking or generating activity logs: ' . $e->getMessage());
+        }
 
         // --- AUTO CHECK & CREATE STORAGE SYMLINK ---
         if (app()->runningInConsole() === false) { // Only run in web context

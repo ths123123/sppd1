@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,10 +25,10 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
     // Profile API
     Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'show']);
     Route::put('/profile', [App\Http\Controllers\ProfileController::class, 'update']);
-    
+
     // Travel Request API
     Route::apiResource('travel-requests', App\Http\Controllers\TravelRequestController::class);
-    
+
     // Admin only routes
     Route::middleware('admin')->group(function () {
         Route::get('/admin/dashboard', function () {
@@ -37,23 +39,27 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
 
 // Notifications API (using web auth)
 Route::middleware(['auth'])->group(function () {
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'apiIndex']);
+    Route::post('/notifications', [\App\Http\Controllers\NotificationController::class, 'apiIndex']); // Tambahkan dukungan untuk POST
+    Route::post('/notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllRead']);
+
     Route::get('/notifications/count', function (Request $request) {
-        $user = auth()->user();
+        $user = Auth::user();
         $count = \App\Models\Notification::where('user_id', $user->id)
             ->where('is_read', false)
             ->count();
-        
+
         return response()->json(['count' => $count]);
     });
-    
+
     // Error logging endpoint
     Route::post('/log-error', function (Request $request) {
-        \Log::error('Frontend error: ' . ($request->type ?? 'unknown'), [
-            'user_id' => auth()->id(),
+        Log::error('Frontend error: ' . ($request->type ?? 'unknown'), [
+            'user_id' => Auth::id(),
             'message' => $request->message,
             'details' => $request->all()
         ]);
-        
+
         return response()->json(['success' => true]);
     });
 });

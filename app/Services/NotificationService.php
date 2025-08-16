@@ -5,22 +5,19 @@ namespace App\Services;
 use App\Models\TravelRequest;
 use App\Models\Notification;
 use App\Models\User;
-use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Log;
 
 /**
  * NotificationService
  *
  * Handles all notification logic for SPPD system
- * Manages database notifications and WhatsApp notifications
+ * Manages database notifications
  */
 class NotificationService
 {
-    protected WhatsAppService $whatsAppService;
-
-    public function __construct(WhatsAppService $whatsAppService)
+    public function __construct()
     {
-        $this->whatsAppService = $whatsAppService;
+        // Constructor
     }
 
     /**
@@ -67,8 +64,7 @@ class NotificationService
                     // Database notification
                     $this->createNotification($approver, $travelRequest, 'sppd_submitted', $title, $message);
 
-                    // WhatsApp notification (if phone number exists)
-                    $this->sendWhatsAppNotification($approver, $title, $message);
+                    // Notification is stored in database only
                 }
             }
 
@@ -84,6 +80,44 @@ class NotificationService
         }
     }
 
+    /**
+     * Notify when SPPD is approved by an approver
+     * 
+     * @param TravelRequest $travelRequest
+     * @param User $approver
+     * @return void
+     */
+    public function notifySppdApproved(TravelRequest $travelRequest, User $approver): void
+    {
+        try {
+            // Jika approval oleh sekretaris, beritahu PPK untuk approval selanjutnya
+            if ($approver->role === 'sekretaris') {
+                $ppkUsers = User::where('role', 'ppk')
+                    ->where('is_active', 1)
+                    ->get();
+                
+                foreach ($ppkUsers as $ppkUser) {
+                    $title = "SPPD Menunggu Persetujuan PPK";
+                    $message = "SPPD {$travelRequest->kode_sppd} dari {$travelRequest->user->name} telah disetujui oleh Sekretaris dan menunggu persetujuan Anda sebagai PPK. Tujuan: {$travelRequest->tujuan}";
+                    
+                    // Database notification
+                    $this->createNotification($ppkUser, $travelRequest, 'sppd_approved_by_sekretaris', $title, $message);
+                }
+            }
+            
+            // Beritahu submitter bahwa SPPD telah disetujui oleh approver
+            $submitter = $travelRequest->user;
+            $title = "SPPD Disetujui oleh {$approver->role}";
+            $message = "SPPD Anda ({$travelRequest->kode_sppd}) telah disetujui oleh {$approver->role}.";
+            
+            // Database notification
+            $this->createNotification($submitter, $travelRequest, 'sppd_approved', $title, $message);
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to send SPPD approved notification: ' . $e->getMessage());
+        }
+    }
+    
     /**
      * Notify when SPPD is completed
      */
@@ -119,8 +153,7 @@ class NotificationService
             // Database notification
             $this->createNotification($submitter, $travelRequest, 'sppd_rejected', $title, $message);
 
-            // WhatsApp notification
-            $this->sendWhatsAppNotification($submitter, $title, $message);
+            // Notification is stored in database only
 
         } catch (\Exception $e) {
             Log::error('Failed to send SPPD rejected notification: ' . $e->getMessage());
@@ -146,39 +179,14 @@ class NotificationService
             // Database notification
             $this->createNotification($submitter, $travelRequest, 'sppd_revision', $title, $message);
 
-            // WhatsApp notification
-            $this->sendWhatsAppNotification($submitter, $title, $message);
+            // Notification is stored in database only
 
         } catch (\Exception $e) {
             Log::error('Failed to send SPPD revision notification: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Send WhatsApp notification
-     *
-     * @param User $user
-     * @param string $title
-     * @param string $message
-     * @return void
-     */
-    protected function sendWhatsAppNotification(User $user, string $title, string $message): void
-    {
-        try {
-            // Check if user has phone number
-            if (empty($user->phone) && empty($user->no_hp)) {
-                return;
-            }
-
-            $phone = $user->phone ?? $user->no_hp;
-            $fullMessage = "*{$title}*\n\n{$message}\n\n_Sistem SPPD KPU Kabupaten Cirebon_";
-
-            $this->whatsAppService->sendMessage($phone, $fullMessage);
-
-        } catch (\Exception $e) {
-            Log::error('Failed to send WhatsApp notification: ' . $e->getMessage());
-        }
-    }
+    // WhatsApp notification method has been removed
 
     /**
      * Get unread notifications for user
@@ -289,8 +297,7 @@ class NotificationService
                 $dummyTravelRequest = new TravelRequest(); // For notification structure
                 $this->createNotification($approver, $dummyTravelRequest, 'approval_reminder', $title, $message);
 
-                // WhatsApp notification
-                $this->sendWhatsAppNotification($approver, $title, $message);
+                // Notification is stored in database only
             }
 
         } catch (\Exception $e) {

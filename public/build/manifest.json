@@ -8,7 +8,7 @@
     "name": "vendor"
   },
   "resources/css/app.css": {
-    "file": "assets/app-BIE4vaZs.css",
+    "file": "assets/app-CshAkUJ1.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -33,7 +33,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-9_lK-H8e.js",
+    "file": "assets/app-H3ivISej.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -46,7 +46,7 @@
     ]
   },
   "resources/js/dashboard/charts.js": {
-    "file": "assets/charts-U_b7n5ZG.js",
+    "file": "assets/charts-BZSCLydE.js",
     "name": "charts",
     "src": "resources/js/dashboard/charts.js",
     "isEntry": true
@@ -64,13 +64,13 @@
     "isEntry": true
   },
   "resources/js/pages/analytics.js": {
-    "file": "assets/analytics-DfXtfnNG.js",
+    "file": "assets/analytics-BjmQnut3.js",
     "name": "analytics",
     "src": "resources/js/pages/analytics.js",
     "isEntry": true
   },
   "resources/js/pages/dashboard.js": {
-    "file": "assets/dashboard-e4MiHWXX.js",
+    "file": "assets/dashboard-CtdXlt87.js",
     "name": "dashboard",
     "src": "resources/js/pages/dashboard.js",
     "isEntry": true,

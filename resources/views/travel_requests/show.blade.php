@@ -122,6 +122,13 @@
                                 $statusLabel = '';
                                 $statusColor = '';
                                 $icon = 'fa-user';
+                                
+                                // Cari user dengan role yang sesuai untuk mendapatkan avatar
+                                $approverUser = null;
+                                if (isset($stepData['approver_id'])) {
+                                    $approverUser = \App\Models\User::find($stepData['approver_id']);
+                                }
+                                
                                 if ($stepData) {
                                     if (isset($stepData['status']) && $stepData['status'] === 'approved') {
                                         $stepStatus = 'done';
@@ -162,17 +169,17 @@
                                 }
                             @endphp
                             <div class="flex items-start space-x-3">
-                                @if($stepStatus === 'done' && isset($stepData['approver_avatar']))
+                                @if($stepStatus === 'done' && $approverUser)
                                     <div class="flex-shrink-0">
-                                        <img src="{{ $stepData['approver_avatar'] }}" alt="{{ $stepData['approved_by'] ?? 'Approver' }}" class="w-8 h-8 rounded-full object-cover border-2 border-green-500">
+                                        <img src="{{ $approverUser->avatar_url }}" alt="{{ $stepData['approved_by'] ?? 'Approver' }}" class="w-8 h-8 rounded-full object-cover border-2 border-green-500">
                                     </div>
-                                @elseif($stepStatus === 'rejected' && isset($stepData['approver_avatar']))
+                                @elseif($stepStatus === 'rejected' && $approverUser)
                                     <div class="flex-shrink-0">
-                                        <img src="{{ $stepData['approver_avatar'] }}" alt="{{ $stepData['approved_by'] ?? 'Approver' }}" class="w-8 h-8 rounded-full object-cover border-2 border-red-500">
+                                        <img src="{{ $approverUser->avatar_url }}" alt="{{ $stepData['approved_by'] ?? 'Approver' }}" class="w-8 h-8 rounded-full object-cover border-2 border-red-500">
                                     </div>
-                                @elseif($stepStatus === 'revision' && isset($stepData['approver_avatar']))
+                                @elseif($stepStatus === 'revision' && $approverUser)
                                     <div class="flex-shrink-0">
-                                        <img src="{{ $stepData['approver_avatar'] }}" alt="{{ $stepData['approved_by'] ?? 'Approver' }}" class="w-8 h-8 rounded-full object-cover border-2 border-yellow-500">
+                                        <img src="{{ $approverUser->avatar_url }}" alt="{{ $stepData['approved_by'] ?? 'Approver' }}" class="w-8 h-8 rounded-full object-cover border-2 border-yellow-500">
                                     </div>
                                 @else
                                     <div class="flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center
@@ -227,13 +234,38 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pengajuan</label>
                             <p class="text-gray-900">{{ $travelRequest->created_at->format('d F Y, H:i') }}</p>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Perjalanan</label>
-                            <p class="text-gray-900 font-medium">{{ $travelRequest->tujuan }}</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Berangkat</label>
-                            <p class="text-gray-900 font-medium">{{ $travelRequest->tempat_berangkat }}</p>
+
+                        
+                        <!-- Peserta SPPD -->
+                        <div class="md:col-span-2 mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-3 flex items-center">
+                                <i class="fas fa-users text-purple-600 mr-2"></i> Peserta SPPD
+                            </label>
+                            @php $peserta = $travelRequest->participants ?? []; @endphp
+                            @if(count($peserta))
+                                <div class="space-y-3">
+                                    @foreach($peserta as $p)
+                                        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
+                                            <img src="{{ $p->avatar_url }}" alt="{{ $p->name }}" class="w-10 h-10 rounded-full object-cover border border-gray-200">
+                                            <div class="flex-1">
+                                                <span class="font-medium text-gray-900 text-sm">{{ $p->name }}</span>
+                                                <span class="text-xs text-gray-500 block">({{ $p->role === 'ppk' ? 'Pejabat Pembuat Komitmen' : $p->role }})</span>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
+                                        <img src="{{ $travelRequest->user->avatar_url }}" alt="{{ $travelRequest->user->name }}" class="w-10 h-10 rounded-full object-cover border border-gray-200">
+                                        <div class="flex-1">
+                                            <span class="font-medium text-gray-900 text-sm">{{ $travelRequest->user->name }}</span>
+                                            <span class="text-xs text-gray-500 block">({{ $travelRequest->user->role === 'ppk' ? 'Pejabat Pembuat Komitmen' : $travelRequest->user->role }}) - Pengaju</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-500 italic">Tidak ada peserta tambahan - pengaju sendiri yang melakukan perjalanan dinas</p>
+                                </div>
+                            @endif
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Status Saat Ini</label>
@@ -270,6 +302,14 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Keperluan</label>
                                 <p class="text-gray-900 leading-relaxed text-sm">{{ $travelRequest->keperluan }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tujuan Perjalanan</label>
+                                <p class="text-gray-900 font-medium">{{ $travelRequest->tujuan }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tempat Berangkat</label>
+                                <p class="text-gray-900 font-medium">{{ $travelRequest->tempat_berangkat }}</p>
                             </div>
                             <div class="grid grid-cols-1 gap-4">
                                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
@@ -334,7 +374,7 @@
                                 </span>
                             </div>
                             <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md">
-                                <span class="text-sm font-medium text-gray-700">Biaya Lainnya</span>
+                                <span class="text-sm font-medium text-gray-700">Biaya Lainnya<br><span class=\"text-xs text-gray-500\">(misal: tol, parkir, konsumsi, ATK, dll.)</span></span>
                                 <span class="text-sm font-semibold text-gray-900">
                                     Rp {{ number_format($travelRequest->biaya_lainnya ?? 0, 0, ',', '.') }}
                                 </span>
@@ -389,34 +429,45 @@
                 </div>
 
                 <!-- Supporting Documents -->
-                <div class="bg-white rounded-lg border border-gray-200 p-6">
-                    <h3 class="text-base font-semibold text-gray-900 mb-4">Dokumen Pendukung</h3>
-                    @php $documents = $travelRequest->documents; @endphp
-                    @if($documents->count())
-                        <div class="space-y-3">
-                            @foreach($documents as $doc)
-                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium text-gray-900 truncate">{{ $doc->original_filename }}</p>
-                                        <p class="text-xs text-gray-500">
-                                            {{ strtoupper($doc->file_type) }} • {{ number_format($doc->file_size/1024,1) }} KB
-                                            @if($doc->is_verified)
-                                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                                    <i class="fas fa-check mr-1"></i>Verified
-                                                </span>
-                                            @endif
-                                        </p>
-                                    </div>
-                                    <a href="{{ asset('storage/documents/'.$doc->filename) }}" target="_blank" class="ml-3 text-blue-600 hover:text-blue-800">
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <p class="text-gray-500 text-sm">Belum ada dokumen pendukung</p>
-                    @endif
-                </div>
+                @php 
+                    $supportingDocuments = $travelRequest->documents->where('document_type', 'supporting');
+                    $reportDocuments = $travelRequest->documents->where('document_type', 'report');
+                    
+                    // Cek apakah user bisa upload dokumen
+                    $canUpload = auth()->check() && (
+                        $travelRequest->user_id === auth()->id() || 
+                        in_array(auth()->user()->role, ['admin', 'kasubbag', 'sekretaris', 'ppk'])
+                    );
+                    
+                    // Cek apakah perjalanan sudah selesai untuk upload laporan
+                    $travelCompleted = now()->startOfDay()->gte(\Carbon\Carbon::parse($travelRequest->tanggal_kembali)->startOfDay());
+                @endphp
+                
+                <!-- Dokumen Pendukung -->
+                @include('travel_requests.partials.document-upload', [
+                    'title' => 'Dokumen Pendukung',
+                    'description' => 'Unggah dokumen pendukung untuk perjalanan dinas ini',
+                    'actionUrl' => route('travel-requests.upload-supporting', $travelRequest->id),
+                    'inputName' => 'dokumen_pendukung',
+                    'inputId' => 'dokumen_pendukung_input',
+                    'fileListId' => 'dokumen_pendukung_list',
+                    'documents' => $supportingDocuments,
+                    'isEnabled' => $canUpload,
+                    'disabledMessage' => 'Anda tidak memiliki akses untuk mengunggah dokumen'
+                ])
+                
+                <!-- Laporan Perjalanan Dinas -->
+                @include('travel_requests.partials.document-upload', [
+                    'title' => 'Laporan Perjalanan Dinas',
+                    'description' => 'Unggah laporan dan bukti perjalanan dinas setelah perjalanan selesai',
+                    'actionUrl' => route('travel-requests.upload-reports', $travelRequest->id),
+                    'inputName' => 'laporan_perjalanan',
+                    'inputId' => 'laporan_perjalanan_input',
+                    'fileListId' => 'laporan_perjalanan_list',
+                    'documents' => $reportDocuments,
+                    'isEnabled' => $canUpload && $travelCompleted,
+                    'disabledMessage' => $travelCompleted ? 'Anda tidak memiliki akses untuk mengunggah laporan' : 'Laporan hanya dapat diunggah setelah tanggal perjalanan selesai'
+                ])
 
 
 
@@ -439,43 +490,7 @@
                     </div>
                 </div>
 
-                <!-- Peserta SPPD -->
-                <div class="bg-white rounded-lg border border-gray-200 p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                            <i class="fas fa-users text-purple-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-base font-semibold text-gray-900">Peserta SPPD</h3>
-                            <p class="text-sm text-gray-600">Daftar peserta perjalanan dinas</p>
-                        </div>
-                    </div>
-                    @php $peserta = $travelRequest->participants ?? []; @endphp
-                    @if(count($peserta))
-                        <div class="space-y-3">
-                            @foreach($peserta as $p)
-                                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
-                                    <img src="{{ $p->avatar_url }}" alt="{{ $p->name }}" class="w-10 h-10 rounded-full object-cover border border-gray-200">
-                                    <div class="flex-1">
-                                        <span class="font-medium text-gray-900 text-sm">{{ $p->name }}</span>
-                                        <span class="text-xs text-gray-500 block">({{ $p->role === 'ppk' ? 'Pejabat Pembuat Komitmen' : $p->role }})</span>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="space-y-3">
-                            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
-                                <img src="{{ $travelRequest->user->avatar_url }}" alt="{{ $travelRequest->user->name }}" class="w-10 h-10 rounded-full object-cover border border-gray-200">
-                                <div class="flex-1">
-                                    <span class="font-medium text-gray-900 text-sm">{{ $travelRequest->user->name }}</span>
-                                    <span class="text-xs text-gray-500 block">({{ $travelRequest->user->role === 'ppk' ? 'Pejabat Pembuat Komitmen' : $travelRequest->user->role }}) - Pengaju</span>
-                                </div>
-                            </div>
-                            <p class="text-sm text-gray-500 italic text-center">Tidak ada peserta tambahan - pengaju sendiri yang melakukan perjalanan dinas</p>
-                        </div>
-                    @endif
-                </div>
+
             </div>
         </div>
     </div>

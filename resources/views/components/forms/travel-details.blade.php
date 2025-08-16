@@ -19,12 +19,12 @@
             <input type="text" id="tujuan" name="tujuan" value="{{ old('tujuan') }}" required
                    class="sppd-form-input"
                    placeholder="Contoh: KPU Provinsi Jawa Barat">
-            @error('tujuan')
+            @if(isset($errors) && $errors->has('tujuan'))
                 <p class="sppd-text-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    {{ $message }}
+                    {{ $errors->first('tujuan') }}
                 </p>
-            @enderror
+            @endif
         </div>
 
         <div class="sppd-form-group">
@@ -35,12 +35,12 @@
             <textarea id="keperluan" name="keperluan" rows="4" required
                       class="sppd-form-input"
                       placeholder="Jelaskan maksud dan tujuan perjalanan dinas">{{ old('keperluan') }}</textarea>
-            @error('keperluan')
+            @if(isset($errors) && $errors->has('keperluan'))
                 <p class="sppd-text-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    {{ $message }}
+                    {{ $errors->first('keperluan') }}
                 </p>
-            @enderror
+            @endif
         </div>
 
         <div class="sppd-form-row">
@@ -51,12 +51,12 @@
                 <input type="date" id="tanggal_berangkat" name="tanggal_berangkat" value="{{ old('tanggal_berangkat') }}" required
                        class="sppd-form-input"
                        onchange="calculateDuration(); validateDates()">
-                @error('tanggal_berangkat')
-                    <p class="sppd-text-error">
-                        <i class="fas fa-exclamation-circle"></i>
-                        {{ $message }}
-                    </p>
-                @enderror
+                @if(isset($errors) && $errors->has('tanggal_berangkat'))
+                <p class="sppd-text-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ $errors->first('tanggal_berangkat') }}
+                </p>
+            @endif
             </div>
             <div class="sppd-form-group half-width">
                 <label for="tanggal_kembali" class="sppd-form-label required">
@@ -65,12 +65,12 @@
                 <input type="date" id="tanggal_kembali" name="tanggal_kembali" value="{{ old('tanggal_kembali') }}" required
                        class="sppd-form-input"
                        onchange="calculateDuration(); validateDates()">
-                @error('tanggal_kembali')
-                    <p class="sppd-text-error">
-                        <i class="fas fa-exclamation-circle"></i>
-                        {{ $message }}
-                    </p>
-                @enderror
+                @if(isset($errors) && $errors->has('tanggal_kembali'))
+                <p class="sppd-text-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ $errors->first('tanggal_kembali') }}
+                </p>
+            @endif
             </div>
         </div>
 
@@ -84,12 +84,12 @@
                        class="sppd-form-input"
                        style="background: rgba(249, 250, 251, 0.8); cursor: not-allowed;"
                        placeholder="Otomatis terhitung">
-                @error('lama_perjalanan')
-                    <p class="sppd-text-error">
-                        <i class="fas fa-exclamation-circle"></i>
-                        {{ $message }}
-                    </p>
-                @enderror
+                @if(isset($errors) && $errors->has('lama_perjalanan'))
+                <p class="sppd-text-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ $errors->first('lama_perjalanan') }}
+                </p>
+            @endif
             </div>
             <div class="sppd-form-group half-width">
                 <label for="transportasi" class="sppd-form-label required">
@@ -106,12 +106,12 @@
                     <option value="Kendaraan Pribadi" {{ old('transportasi') == 'Kendaraan Pribadi' ? 'selected' : '' }}>Kendaraan Pribadi</option>
                     <option value="Lainnya" {{ old('transportasi') == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
                 </select>
-                @error('transportasi')
-                    <p class="sppd-text-error">
-                        <i class="fas fa-exclamation-circle"></i>
-                        {{ $message }}
-                    </p>
-                @enderror
+                @if(isset($errors) && $errors->has('transportasi'))
+                <p class="sppd-text-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ $errors->first('transportasi') }}
+                </p>
+            @endif
             </div>
         </div>
 
@@ -122,12 +122,12 @@
             <input type="text" id="tempat_menginap" name="tempat_menginap" value="{{ old('tempat_menginap') }}"
                    class="sppd-form-input"
                    placeholder="Hotel/Guest House (opsional)">
-            @error('tempat_menginap')
+            @if(isset($errors) && $errors->has('tempat_menginap'))
                 <p class="sppd-text-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    {{ $message }}
+                    {{ $errors->first('tempat_menginap') }}
                 </p>
-            @enderror
+            @endif
         </div>
     </div>
 </div>

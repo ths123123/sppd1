@@ -74,22 +74,15 @@
 
         <!-- Filter/Search Bar -->
         <div class="bg-white rounded-xl shadow p-6 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <form id="document-filter-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Cari Dokumen</label>
-                    <input type="text" placeholder="Nama file atau kode SPPD..."
+                    <label for="search-input" class="block text-sm font-medium text-gray-700 mb-2">Cari Dokumen</label>
+                    <input type="text" id="search-input" name="search" placeholder="Nama pengaju, peserta, atau kode SPPD..."
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Pengaju</label>
-                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
-                        <option value="">Semua Pengaju</option>
-                        <!-- Dynamic options berdasarkan data pengaju -->
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                    <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select id="status-filter" name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
                         <option value="">Semua Status</option>
                         <option value="in_review">Diajukan</option>
                         <option value="completed">Disetujui</option>
@@ -98,11 +91,17 @@
                     </select>
                 </div>
                 <div>
-                    <button class="w-full bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors duration-200">
-                        <i class="fas fa-search mr-2"></i>Filter
-                    </button>
+                    <label for="document-type-filter" class="block text-sm font-medium text-gray-700 mb-2">Jenis Dokumen</label>
+                    <select id="document-type-filter" name="document_type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                        <option value="">Semua Jenis</option>
+                        <option value="surat_tugas">Surat Tugas</option>
+                        <option value="sppd">SPPD</option>
+                        <option value="laporan">Laporan</option>
+                        <option value="bukti_pengeluaran">Bukti Pengeluaran</option>
+                        <option value="lainnya">Lainnya</option>
+                    </select>
                 </div>
-            </div>
+            </form>
         </div>
 
         <!-- Documents Table -->
@@ -120,135 +119,112 @@
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama File</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode SPPD</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengaju</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Upload By</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Upload</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($documents as $doc)
-                        <tr class="hover:bg-gray-50 transition-colors duration-200">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ ($documents->currentPage() - 1) * $documents->perPage() + $loop->iteration }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <i class="fas fa-file-pdf text-red-500 mr-2"></i>
-                                    <span class="text-sm font-medium text-gray-900">{{ $doc->original_filename }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm text-blue-600 font-semibold">
-                                    @if($doc->travelRequest && $doc->travelRequest->status === 'completed')
-                                        {{ $doc->travelRequest->kode_sppd }}
-                                    @endif
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-8 w-8">
-                                        <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
-                                            <span class="text-sm font-medium text-white">
-                                                {{ substr($doc->travelRequest->user->name ?? 'N', 0, 1) }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="ml-3">
-                                        <div class="text-sm font-medium text-gray-900">
-                                            {{ $doc->travelRequest->user->name ?? 'Tidak Diketahui' }}
-                                        </div>
-                                        <div class="text-sm text-gray-500">
-                                            {{ $doc->travelRequest->user->email ?? '-' }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $doc->travelRequest->destination ?? '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $doc->uploader->name ?? '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $doc->created_at->format('d/m/Y H:i') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($doc->travelRequest)
-                                    @php
-                                        $status = $doc->travelRequest->status;
-                                        $statusConfig = [
-                                            'in_review' => ['class' => 'bg-yellow-100 text-yellow-800', 'icon' => 'fas fa-clock', 'text' => 'Diajukan'],
-                                            'completed' => ['class' => 'bg-green-100 text-green-800', 'icon' => 'fas fa-check-circle', 'text' => 'Disetujui'],
-                                            'rejected' => ['class' => 'bg-red-100 text-red-800', 'icon' => 'fas fa-times-circle', 'text' => 'Ditolak'],
-                                            'revision' => ['class' => 'bg-orange-100 text-orange-800', 'icon' => 'fas fa-redo', 'text' => 'Revisi']
-                                        ];
-                                        $config = $statusConfig[$status] ?? $statusConfig['in_review'];
-                                    @endphp
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config['class'] }}">
-                                        <i class="{{ $config['icon'] }} mr-1"></i>
-                                        {{ $config['text'] }}
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        <i class="fas fa-question mr-1"></i>
-                                        Tidak Diketahui
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex space-x-2">
-                                    <a href="{{ route('documents.download', $doc->id) }}"
-                                       target="_blank"
-                                       class="inline-flex items-center bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors duration-200">
-                                        <i class="fas fa-eye mr-1"></i>
-                                        Lihat
-                                    </a>
-                                    <a href="{{ route('documents.download', $doc->id) }}"
-                                       class="inline-flex items-center bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors duration-200">
-                                        <i class="fas fa-download mr-1"></i>
-                                        Download
-                                    </a>
-                                    @if($doc->travelRequest)
-                                    <a href="{{ route('travel-requests.show', $doc->travelRequest->id) }}"
-                                       class="inline-flex items-center bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 transition-colors duration-200">
-                                        <i class="fas fa-info-circle mr-1"></i>
-                                        Detail
-                                    </a>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="9" class="px-6 py-12 text-center">
-                                <div class="flex flex-col items-center">
-                                    <i class="fas fa-folder-open text-6xl text-gray-300 mb-4"></i>
-                                    <h3 class="text-lg font-medium text-gray-500 mb-2">Belum Ada Dokumen</h3>
-                                    <p class="text-gray-400">Belum ada dokumen SPPD yang terupload di sistem.</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            @if($documents->hasPages())
-            <div class="bg-white px-6 py-3 border-t border-gray-200">
-                {{ $documents->links() }}
-            </div>
-            @endif
+            <!-- Tabel Dokumen (Partial View) -->
+            @include('documents.partials.documents_table', ['documents' => $documents])
+            
+            <!-- Script untuk toggle dokumen dan filter otomatis -->
+            <script>
+                function toggleDocuments(kodeSppd) {
+                    const element = document.getElementById('documents-' + kodeSppd);
+                    if (element.classList.contains('hidden')) {
+                        element.classList.remove('hidden');
+                    } else {
+                        element.classList.add('hidden');
+                    }
+                }
+                
+                document.addEventListener('DOMContentLoaded', function() {
+                    const filterForm = document.getElementById('document-filter-form');
+                    const searchInput = document.getElementById('search-input');
+                    const statusFilter = document.getElementById('status-filter');
+                    const documentTypeFilter = document.getElementById('document-type-filter');
+                    const tableContainer = document.querySelector('.overflow-x-auto');
+                    
+                    let searchTimeout;
+                    
+                    // Fungsi untuk menerapkan filter
+                    function applyFilter() {
+                        // Tampilkan indikator loading
+                        tableContainer.style.opacity = '0.6';
+                        
+                        const formData = new FormData(filterForm);
+                        const params = new URLSearchParams(formData);
+                        const url = `{{ route('documents.all') }}?${params.toString()}`;
+                        
+                        fetch(url, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => response.text())
+                        .then(html => {
+                            // Perbarui konten tabel
+                            document.querySelector('.overflow-x-auto').outerHTML = html;
+                            // Perbarui URL browser
+                            window.history.pushState({}, '', url);
+                            // Pasang kembali event listener untuk pagination
+                            attachPaginationListeners();
+                        })
+                        .catch(error => console.error('Error fetching documents:', error))
+                        .finally(() => {
+                            // Sembunyikan indikator loading
+                            tableContainer.style.opacity = '1';
+                        });
+                    }
+                    
+                    // Debounce untuk input pencarian
+                    searchInput.addEventListener('input', function() {
+                        clearTimeout(searchTimeout);
+                        searchTimeout = setTimeout(applyFilter, 500); // Delay 500ms
+                    });
+                    
+                    // Event listener untuk filter dropdown
+                    statusFilter.addEventListener('change', applyFilter);
+                    documentTypeFilter.addEventListener('change', applyFilter);
+                    
+                    // Mencegah form submit normal
+                    filterForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        applyFilter();
+                    });
+                    
+                    // Fungsi untuk menangani pagination
+                    function attachPaginationListeners() {
+                        document.querySelectorAll('.pagination a').forEach(link => {
+                            link.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                const url = this.href;
+                                
+                                // Tampilkan indikator loading
+                                tableContainer.style.opacity = '0.6';
+                                
+                                fetch(url, {
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    }
+                                })
+                                .then(response => response.text())
+                                .then(html => {
+                                    // Perbarui konten tabel
+                                    document.querySelector('.overflow-x-auto').outerHTML = html;
+                                    // Perbarui URL browser
+                                    window.history.pushState({}, '', url);
+                                    // Pasang kembali event listener
+                                    attachPaginationListeners();
+                                })
+                                .catch(error => console.error('Error fetching pagination:', error))
+                                .finally(() => {
+                                    // Sembunyikan indikator loading
+                                    tableContainer.style.opacity = '1';
+                                });
+                            });
+                        });
+                    }
+                    
+                    // Pasang event listener untuk pagination awal
+                    attachPaginationListeners();
+                });
+            </script>
         </div>
 
         <!-- Summary Information -->

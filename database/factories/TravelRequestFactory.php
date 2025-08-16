@@ -17,47 +17,53 @@ class TravelRequestFactory extends Factory
      */
     public function definition(): array
     {
-        $transportCost = fake()->numberBetween(100000, 1000000);
-        $accommodationCost = fake()->numberBetween(200000, 800000);
-        $dailyAllowance = fake()->numberBetween(150000, 500000);
-        $otherCosts = fake()->numberBetween(0, 300000);
-
+        $tanggalBerangkat = fake()->dateTimeBetween('now', '+1 month');
+        $tanggalKembali = fake()->dateTimeBetween($tanggalBerangkat, '+2 months');
+        $lamaPerjalanan = (strtotime($tanggalKembali->format('Y-m-d')) - strtotime($tanggalBerangkat->format('Y-m-d'))) / (60 * 60 * 24);
+        
+        $biayaTransport = fake()->numberBetween(500000, 5000000);
+        $biayaPenginapan = fake()->numberBetween(200000, 2000000);
+        $uangHarian = fake()->numberBetween(100000, 500000) * $lamaPerjalanan;
+        $biayaLainnya = fake()->numberBetween(100000, 1000000);
+        $totalBiaya = $biayaTransport + $biayaPenginapan + $uangHarian + $biayaLainnya;
+        
         return [
-            'kode_sppd' => 'SPPD-' . fake()->unique()->numerify('######'),
+            'kode_sppd' => 'SPPD-' . fake()->unique()->numerify('####'),
             'user_id' => User::factory(),
             'tujuan' => fake()->city(),
             'keperluan' => fake()->sentence(),
-            'tanggal_berangkat' => fake()->dateTimeBetween('now', '+30 days'),
-            'tanggal_kembali' => fake()->dateTimeBetween('+1 day', '+35 days'),
-            'lama_perjalanan' => fake()->numberBetween(1, 7),
-            'transportasi' => fake()->randomElement(['Kereta Api', 'Bus', 'Pesawat', 'Mobil Dinas']),
-            'tempat_menginap' => fake()->optional()->company() . ' Hotel',
-            'biaya_transport' => $transportCost,
-            'biaya_penginapan' => $accommodationCost,
-            'uang_harian' => $dailyAllowance,
-            'biaya_lainnya' => $otherCosts,
-            'total_biaya' => $transportCost + $accommodationCost + $dailyAllowance + $otherCosts,
-            'nomor_surat_tugas' => fake()->optional()->numerify('ST-###/KPU/####'),
-            'catatan_pemohon' => fake()->optional()->paragraph(),
-            'catatan_approval' => null,
+            'tanggal_berangkat' => $tanggalBerangkat->format('Y-m-d'),
+            'tanggal_kembali' => $tanggalKembali->format('Y-m-d'),
+            'lama_perjalanan' => $lamaPerjalanan,
+            'transportasi' => fake()->randomElement(['Pesawat', 'Kereta', 'Bus', 'Mobil Dinas']),
+            'tempat_menginap' => fake()->optional()->company(),
+            'biaya_transport' => $biayaTransport,
+            'biaya_penginapan' => $biayaPenginapan,
+            'uang_harian' => $uangHarian,
+            'biaya_lainnya' => $biayaLainnya,
+            'total_biaya' => $totalBiaya,
+            'sumber_dana' => fake()->optional()->randomElement(['APBN', 'APBD', 'Dana Sendiri']),
             'status' => 'in_review',
             'current_approval_level' => 0,
-            'approval_history' => null,
-            'is_urgent' => fake()->boolean(10), // 10% chance of being urgent
-            'submitted_at' => fake()->optional()->dateTime(),
+            'approval_history' => [],
+            'catatan_pemohon' => fake()->optional()->sentence(),
+            'catatan_approval' => null,
+            'is_urgent' => fake()->boolean(20),
+            'nomor_surat_tugas' => null,
+            'tanggal_surat_tugas' => null,
+            'submitted_at' => now(),
             'approved_at' => null,
         ];
     }
 
     /**
-     * Indicate that the travel request is in review status.
+     * Indicate that the travel request is in revision.
      */
-    public function inReview(): static
+    public function revision(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'in_review',
-            'submitted_at' => now(),
-            'current_approval_level' => 1,
+            'status' => 'revision',
+            'catatan_approval' => fake()->sentence(),
         ]);
     }
 
@@ -68,9 +74,8 @@ class TravelRequestFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'completed',
-            'submitted_at' => now()->subDays(3),
             'approved_at' => now(),
-            'current_approval_level' => 0,
+            'current_approval_level' => 3, // Assuming 3 levels of approval
         ]);
     }
 
@@ -81,9 +86,7 @@ class TravelRequestFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'rejected',
-            'submitted_at' => now()->subDays(2),
-            'approved_at' => null,
-            'current_approval_level' => 0,
+            'catatan_approval' => fake()->sentence(),
         ]);
     }
 

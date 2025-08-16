@@ -97,13 +97,16 @@
                     <svg class="mobile-menu-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6" /></svg>
                     Dashboard
                 </a>
-                @if(in_array($role, ['sekretaris', 'ppk']))
-                <a href="{{ route('approval.pimpinan.index') }}" class="mobile-menu-item text-black {{ request()->routeIs('approval.pimpinan.*') ? 'active' : '' }}">
+
+                <!-- Approval - Tampilkan untuk semua user -->
+                <a href="{{ route('approval.pimpinan.index') }}"
+                   data-requires-role="approver"
+                   class="mobile-menu-item text-black {{ request()->routeIs('approval.pimpinan.*') ? 'active' : '' }} {{ !in_array($role, ['kasubbag', 'sekretaris', 'ppk']) ? 'opacity-50 cursor-not-allowed' : '' }}">
                     <svg class="mobile-menu-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 9a2 2 0 012-2h2a2 2 0 012 2m-6 0a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                     Approval
                 </a>
-                @endif
-                <!-- SPPD Group -->
+
+                <!-- SPPD Group - Tampilkan untuk semua user -->
                 <button @click="sppdOpen = !sppdOpen; analyticsOpen = dokumenOpen = false;" class="mobile-menu-item w-full justify-between text-black" :aria-expanded="sppdOpen">
                     <span class="flex items-center gap-2">
                         <svg class="mobile-menu-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.5 6.5l7 7m0 0l-7 7m7-7H3" /></svg>
@@ -112,16 +115,27 @@
                     <svg class="w-5 h-5 text-gray-400 ml-auto transition-transform duration-200" :class="sppdOpen ? 'rotate-90' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
                 </button>
                 <div x-show="sppdOpen" x-transition class="pl-10 space-y-1">
-                    @if($role === 'kasubbag')
-                        <a href="{{ route('travel-requests.create') }}" class="mobile-menu-item text-black">Buat SPPD</a>
-                    @endif
-                    <a href="{{ route('my-travel-requests.index') }}" class="mobile-menu-item text-black">SPPD Saya</a>
-                    @if(in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin']))
-                        <a href="{{ route('travel-requests.index') }}" class="mobile-menu-item text-black">Daftar SPPD</a>
-                    @endif
+                    <!-- Buat SPPD - Tampilkan untuk semua user -->
+                    <a href="{{ route('travel-requests.create') }}"
+                       data-requires-role="kasubbag"
+                       class="mobile-menu-item text-black {{ $role !== 'kasubbag' ? 'opacity-50 cursor-not-allowed' : '' }}">
+                        Buat SPPD
+                    </a>
+
+                    <!-- SPPD Saya - Tampilkan untuk semua user -->
+                    <a href="{{ route('my-travel-requests.index') }}" class="mobile-menu-item text-black">
+                        SPPD Saya
+                    </a>
+
+                    <!-- Daftar SPPD - Tampilkan untuk semua user -->
+                    <a href="{{ route('travel-requests.index') }}"
+                       data-requires-role="view_all_sppd"
+                       class="mobile-menu-item text-black {{ !in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin']) ? 'opacity-50 cursor-not-allowed' : '' }}">
+                        Daftar SPPD
+                    </a>
                 </div>
-                <!-- Analytics & Laporan Group -->
-                @if(in_array($role, ['kasubbag', 'sekretaris', 'ppk']))
+
+                <!-- Analytics & Laporan Group - Tampilkan untuk semua user -->
                 <button @click="analyticsOpen = !analyticsOpen; sppdOpen = dokumenOpen = false;" class="mobile-menu-item w-full justify-between text-black" :aria-expanded="analyticsOpen">
                     <span class="flex items-center gap-2">
                         <svg class="mobile-menu-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10" /></svg>
@@ -130,11 +144,19 @@
                     <svg class="w-5 h-5 text-gray-400 ml-auto transition-transform duration-200" :class="analyticsOpen ? 'rotate-90' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
                 </button>
                 <div x-show="analyticsOpen" x-transition class="pl-10 space-y-1">
-                    <a href="{{ route('analytics.index') }}" class="mobile-menu-item text-black">Analytics</a>
-                    <a href="{{ route('laporan.daftar') }}" class="mobile-menu-item text-black">Laporan</a>
+                    <a href="{{ route('analytics.index') }}"
+                       data-requires-role="analytics"
+                       class="mobile-menu-item text-black {{ !in_array($role, ['kasubbag', 'sekretaris', 'ppk']) ? 'opacity-50 cursor-not-allowed' : '' }}">
+                        Analytics
+                    </a>
+                    <a href="{{ route('laporan.daftar') }}"
+                       data-requires-role="analytics"
+                       class="mobile-menu-item text-black {{ !in_array($role, ['kasubbag', 'sekretaris', 'ppk']) ? 'opacity-50 cursor-not-allowed' : '' }}">
+                        Laporan
+                    </a>
                 </div>
-                @endif
-                <!-- Dokumen Group -->
+
+                <!-- Dokumen Group - Tampilkan untuk semua user -->
                 <button @click="dokumenOpen = !dokumenOpen; sppdOpen = analyticsOpen = false;" class="mobile-menu-item w-full justify-between text-black" :aria-expanded="dokumenOpen">
                     <span class="flex items-center gap-2">
                         <svg class="mobile-menu-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 19V5a2 2 0 012-2h6a2 2 0 012 2v14a2 2 0 01-2 2H8a2 2 0 01-2-2z" /></svg>
@@ -143,19 +165,31 @@
                     <svg class="w-5 h-5 text-gray-400 ml-auto transition-transform duration-200" :class="dokumenOpen ? 'rotate-90' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
                 </button>
                 <div x-show="dokumenOpen" x-transition class="pl-10 space-y-1">
-                    <a href="{{ route('documents.index') }}" class="mobile-menu-item text-black">Dokumen Saya</a>
-                    @if(in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin']))
-                        <a href="{{ route('templates.index') }}" class="mobile-menu-item text-black">Manajemen Template</a>
-                    @endif
-                </div>
-                @if(in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin']))
-                    <div class="mobile-menu-section">MENU MANAJEMEN</div>
-                    <a href="{{ route('users.index') }}" class="mobile-menu-item text-black {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                        <svg class="mobile-menu-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                        Kelola User
+                    <a href="{{ route('documents.index') }}" class="mobile-menu-item text-black">
+                        Dokumen Saya
                     </a>
-                @endif
+                    <a href="{{ route('templates.index') }}"
+                       data-requires-role="document_management"
+                       class="mobile-menu-item text-black {{ !in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin']) ? 'opacity-50 cursor-not-allowed' : '' }}">
+                        Manajemen Template
+                    </a>
+                </div>
+
+                <!-- Kelola User - Tampilkan untuk semua user -->
+                <div class="mobile-menu-section">MENU MANAJEMEN</div>
+                <a href="{{ route('users.index') }}"
+                   data-requires-role="user_management"
+                   class="mobile-menu-item text-black {{ request()->routeIs('users.*') ? 'active' : '' }} {{ !in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin']) ? 'opacity-50 cursor-not-allowed' : '' }}">
+                    <svg class="mobile-menu-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    Kelola User
+                </a>
+
                 <div class="mobile-menu-section">AKUN</div>
+                <a href="/notifications" class="mobile-menu-item text-black">
+                    <svg class="mobile-menu-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                    Notifikasi
+                    <span id="mobile-notification-badge" class="ml-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-md" style="display:none;">0</span>
+                </a>
                 <a href="{{ route('profile.show') }}" class="mobile-menu-item text-black">
                     <svg class="mobile-menu-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                     Profil Saya

@@ -270,9 +270,9 @@ class TravelRequestService
      */
     public function updateTravelRequest(TravelRequest $travelRequest, Request $request): TravelRequest
     {
-        // Only allow updates for in_review status
-        if ($travelRequest->status !== 'in_review') {
-            throw new \Exception('Only in_review SPPD can be updated.');
+        // Allow updates for in_review and revision status
+        if (!in_array($travelRequest->status, ['in_review', 'revision'])) {
+            throw new \Exception('Only in_review or revision SPPD can be updated.');
         }
 
         $duration = $this->calculateDuration(

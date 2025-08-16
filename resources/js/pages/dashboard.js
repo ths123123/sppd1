@@ -13,6 +13,7 @@ export class DashboardManager {
     init() {
         this.loadDashboardData();
         this.initializeCharts();
+        this.loadRecentActivities();
         this.setupAutoRefresh();
         this.bindEvents();
     }
@@ -268,7 +269,22 @@ export class DashboardManager {
         // Refresh dashboard every 30 seconds
         this.autoRefreshInterval = setInterval(() => {
             this.loadDashboardData();
+            this.loadRecentActivities();
         }, 30000);
+    }
+
+    async loadRecentActivities() {
+        try {
+            const activities = await dashboardAPI.getRecentActivities();
+            if (activities && activities.length > 0) {
+                // Import function from charts.js
+                if (typeof updateRecentActivities === 'function') {
+                    updateRecentActivities(activities);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load recent activities:', error);
+        }
     }
 
     bindEvents() {
@@ -299,6 +315,7 @@ export class DashboardManager {
         try {
             await this.loadDashboardData();
             await this.initializeCharts();
+            await this.loadRecentActivities();
 
             // Show success notification
             this.showNotification('Dashboard berhasil diperbarui', 'success');

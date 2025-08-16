@@ -93,9 +93,9 @@
                                 </label>
                                 <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                @error('name')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                @if(isset($errors) && $errors->has('name'))
+                    <p class="mt-1 text-sm text-red-600">{{ $errors->first('name') }}</p>
+                @endif
                             </div>
 
                             <div>
@@ -104,9 +104,9 @@
                                 </label>
                                 <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                @error('email')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                @if(isset($errors) && $errors->has('email'))
+                    <p class="mt-1 text-sm text-red-600">{{ $errors->first('email') }}</p>
+                @endif
                             </div>
 
                             <div>
@@ -116,9 +116,9 @@
                                 <input type="text" name="phone" id="phone" value="{{ old('phone', $user->phone) }}"
                                        placeholder="08123456789"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                @error('phone')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                @if(isset($errors) && $errors->has('phone'))
+                    <p class="mt-1 text-sm text-red-600">{{ $errors->first('phone') }}</p>
+                @endif
                             </div>
 
                             <div>
@@ -127,9 +127,9 @@
                                 </label>
                                 <input type="text" name="department" id="department" value="{{ old('department', $user->department) }}"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                @error('department')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                @if(isset($errors) && $errors->has('department'))
+                    <p class="mt-1 text-sm text-red-600">{{ $errors->first('department') }}</p>
+                @endif
                             </div>
 
                             <div class="md:col-span-2">
@@ -139,9 +139,9 @@
                                 <textarea name="bio" id="bio" rows="3"
                                           placeholder="Ceritakan sedikit tentang diri Anda..."
                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">{{ old('bio', $user->bio) }}</textarea>
-                                @error('bio')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                @if(isset($errors) && $errors->has('bio'))
+                    <p class="mt-1 text-sm text-red-600">{{ $errors->first('bio') }}</p>
+                @endif
                             </div>
                         </div>
 
@@ -167,9 +167,9 @@
                                 </label>
                                 <input type="text" name="employee_id" id="employee_id" value="{{ old('employee_id', $user->employee_id) }}"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                @error('employee_id')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                @if(isset($errors) && $errors->has('employee_id'))
+                    <p class="mt-1 text-sm text-red-600">{{ $errors->first('employee_id') }}</p>
+                @endif
                             </div>
 
                             <div>
@@ -178,9 +178,9 @@
                                 </label>
                                 <input type="date" name="birth_date" id="birth_date" value="{{ old('birth_date', $user->birth_date?->format('Y-m-d')) }}"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                @error('birth_date')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                @if(isset($errors) && $errors->has('birth_date'))
+                    <p class="mt-1 text-sm text-red-600">{{ $errors->first('birth_date') }}</p>
+                @endif
                             </div>
 
                             <div>
@@ -193,9 +193,9 @@
                                     <option value="male" {{ old('gender', $user->gender) === 'male' ? 'selected' : '' }}>Laki-laki</option>
                                     <option value="female" {{ old('gender', $user->gender) === 'female' ? 'selected' : '' }}>Perempuan</option>
                                 </select>
-                                @error('gender')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                @if(isset($errors) && $errors->has('gender'))
+                    <p class="mt-1 text-sm text-red-600">{{ $errors->first('gender') }}</p>
+                @endif
                             </div>
 
                             <div class="md:col-span-2">
@@ -205,9 +205,9 @@
                                 <textarea name="address" id="address" rows="3"
                                           placeholder="Alamat lengkap..."
                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">{{ old('address', $user->address) }}</textarea>
-                                @error('address')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                @if(isset($errors) && $errors->has('address'))
+                    <p class="mt-1 text-sm text-red-600">{{ $errors->first('address') }}</p>
+                @endif
                             </div>
                         </div>
 

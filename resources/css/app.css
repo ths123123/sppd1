@@ -181,7 +181,9 @@
 
 /* Global Navbar & Layout Classes */
 .navbar-fixed {
-    @apply fixed top-0 left-0 right-0 w-full bg-white shadow-md border-b border-gray-200 z-[999];
+    @apply fixed top-0 left-0 right-0 w-full shadow-md border-b z-[999];
+    background-color: #8B0000;
+    border-color: #700000;
     height: 4rem; /* 64px - default */
 }
 

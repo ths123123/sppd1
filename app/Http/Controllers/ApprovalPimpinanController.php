@@ -7,6 +7,7 @@ use App\Models\TravelRequest;
 use App\Models\Approval;
 use App\Models\User;
 use App\Services\ApprovalService;
+use App\Services\ActivityLogService;
 use App\Services\NotificationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
@@ -19,11 +20,13 @@ class ApprovalPimpinanController extends Controller
 {
     protected $approvalService;
     protected $notificationService;
+    protected $activityLogService;
 
-    public function __construct(ApprovalService $approvalService, NotificationService $notificationService)
+    public function __construct(ApprovalService $approvalService, NotificationService $notificationService, ActivityLogService $activityLogService)
     {
         $this->approvalService = $approvalService;
         $this->notificationService = $notificationService;
+        $this->activityLogService = $activityLogService;
     }
 
     /**
@@ -33,7 +36,7 @@ class ApprovalPimpinanController extends Controller
     {
         $query = TravelRequest::with(['user', 'approvals.approver'])
             ->where('status', 'in_review');
-            
+
         // Role-based filtering with proper authorization
         if (in_array($user->role, ['sekretaris', 'ppk'])) {
             if ($user->role === 'sekretaris') {
@@ -86,7 +89,7 @@ class ApprovalPimpinanController extends Controller
     private function handleResponse(Request $request, $success, $message, $redirectRoute = null, $data = null)
     {
         $isApiRequest = $request->wantsJson() || $request->ajax() || $request->header('Accept') === 'application/json';
-        
+
         if ($isApiRequest) {
             $response = ['success' => $success, 'message' => $message];
             if ($data) {
@@ -94,11 +97,11 @@ class ApprovalPimpinanController extends Controller
             }
             return response()->json($response, $success ? 200 : 422);
         }
-        
+
         if ($redirectRoute) {
             return redirect()->route($redirectRoute)->with($success ? 'success' : 'error', $message);
         }
-        
+
         return redirect()->back()->with($success ? 'success' : 'error', $message);
     }
 
@@ -108,18 +111,18 @@ class ApprovalPimpinanController extends Controller
     private function validateApprovalRequest(Request $request, array $rules, array $messages = [])
     {
         $isApiRequest = $request->wantsJson() || $request->ajax() || $request->header('Accept') === 'application/json';
-        
+
         if ($isApiRequest) {
             // Manual validation for API requests
             $validator = Validator::make($request->all(), $rules, $messages);
-            
+
             if ($validator->fails()) {
                 throw new ValidationException($validator);
             }
-            
+
             return $validator->validated();
         }
-        
+
         // Standard validation for web requests
         return $request->validate($rules, $messages);
     }
@@ -138,14 +141,14 @@ class ApprovalPimpinanController extends Controller
         ]);
 
         $isApiRequest = $request->wantsJson() || $request->ajax() || $request->header('Accept') === 'application/json';
-        
+
         if ($isApiRequest) {
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan sistem. Silakan coba lagi.'
             ], 500);
         }
-        
+
         return redirect()->back()->with('error', 'Terjadi kesalahan sistem. Silakan coba lagi.');
     }
 
@@ -188,6 +191,23 @@ class ApprovalPimpinanController extends Controller
             );
 
             if ($success) {
+                // Log the revision activity
+                $this->activityLogService->log(
+                    'SPPD Direvisi',
+                    TravelRequest::class,
+                    $travelRequest->id,
+                    [
+                        'kode_sppd' => $travelRequest->kode_sppd,
+                        'tujuan' => $travelRequest->tujuan,
+                        'approver_name' => $user->name,
+                        'approver_role' => $user->role,
+                        'reason' => $validatedData['revision_reason'],
+                        'target' => $validatedData['target'],
+                        'description' => "🔄 SPPD {$travelRequest->kode_sppd} memerlukan perbaikan berdasarkan evaluasi dari {$user->name} ({$user->role}) untuk tujuan {$travelRequest->tujuan}.",
+                    ],
+                    $user
+                );
+
                 // Perbaiki: tambahkan parameter target yang hilang
                 $this->notificationService->notifySppdRevision($travelRequest, $user, $validatedData['revision_reason'], $validatedData['target']);
                 return $this->handleResponse($request, true, 'Pengajuan telah dikembalikan untuk revisi.', 'approval.pimpinan.index');
@@ -197,7 +217,7 @@ class ApprovalPimpinanController extends Controller
 
         } catch (ValidationException $e) {
             $isApiRequest = $request->wantsJson() || $request->ajax() || $request->header('Accept') === 'application/json';
-            
+
             if ($isApiRequest) {
                 return response()->json([
                     'success' => false,
@@ -205,7 +225,7 @@ class ApprovalPimpinanController extends Controller
                     'errors' => $e->errors()
                 ], 422);
             }
-            
+
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             return $this->handleException($e, $request, 'revision');
@@ -218,7 +238,7 @@ class ApprovalPimpinanController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        
+
         try {
             $query = $this->buildApprovalQuery($request, $user);
             $requests = $query->paginate(10);
@@ -226,7 +246,7 @@ class ApprovalPimpinanController extends Controller
             if ($request->ajax()) {
                 return view('approval.pimpinan.partials.approval_requests_table', compact('requests'))->render();
             }
-            
+
             return view('approval.pimpinan.approval_requests', compact('requests'));
         } catch (\Exception $e) {
             return $this->handleException($e, $request, 'index');
@@ -239,11 +259,11 @@ class ApprovalPimpinanController extends Controller
     public function ajaxListApproval(Request $request)
     {
         $user = Auth::user();
-        
+
         try {
             $query = $this->buildApprovalQuery($request, $user);
             $requests = $query->paginate(10);
-            
+
             return view('approval.pimpinan.partials.approval_requests_table', compact('requests'))->render();
         } catch (\Exception $e) {
             return $this->handleException($e, $request, 'ajax_list');
@@ -350,7 +370,30 @@ class ApprovalPimpinanController extends Controller
             );
 
             if ($success) {
-                $this->notificationService->notifySppdCompleted($travelRequest, $user);
+                // Log the approval activity
+                $this->activityLogService->log(
+                    'SPPD Disetujui',
+                    TravelRequest::class,
+                    $travelRequest->id,
+                    [
+                        'kode_sppd' => $travelRequest->kode_sppd,
+                        'tujuan' => $travelRequest->tujuan,
+                        'approver_name' => $user->name,
+                        'approver_role' => $user->role,
+                        'comments' => $finalComments,
+                        'description' => "✅ SPPD {$travelRequest->kode_sppd} telah berhasil disetujui oleh {$user->name} ({$user->role}) untuk tujuan {$travelRequest->tujuan}.",
+                    ],
+                    $user
+                );
+
+                // Kirim notifikasi ke PPK jika approval oleh sekretaris
+                $this->notificationService->notifySppdApproved($travelRequest, $user);
+
+                // Jika semua approval selesai, kirim notifikasi completed
+                if ($travelRequest->status === 'completed') {
+                    $this->notificationService->notifySppdCompleted($travelRequest, $user);
+                }
+
                 return $this->handleResponse($request, true, 'SPPD berhasil disetujui.', 'approval.pimpinan.index');
             }
 
@@ -358,7 +401,7 @@ class ApprovalPimpinanController extends Controller
 
         } catch (ValidationException $e) {
             $isApiRequest = $request->wantsJson() || $request->ajax() || $request->header('Accept') === 'application/json';
-            
+
             if ($isApiRequest) {
                 return response()->json([
                     'success' => false,
@@ -366,7 +409,7 @@ class ApprovalPimpinanController extends Controller
                     'errors' => $e->errors()
                 ], 422);
             }
-            
+
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             return $this->handleException($e, $request, 'approve');
@@ -407,6 +450,22 @@ class ApprovalPimpinanController extends Controller
             );
 
             if ($success) {
+                // Log the rejection activity
+                $this->activityLogService->log(
+                    'SPPD Ditolak',
+                    TravelRequest::class,
+                    $travelRequest->id,
+                    [
+                        'kode_sppd' => $travelRequest->kode_sppd,
+                        'tujuan' => $travelRequest->tujuan,
+                        'approver_name' => $user->name,
+                        'approver_role' => $user->role,
+                        'reason' => $validatedData['rejection_reason'],
+                        'description' => "❌ SPPD {$travelRequest->kode_sppd} tidak dapat diproses dan telah ditolak oleh {$user->name} ({$user->role}) untuk tujuan {$travelRequest->tujuan}.",
+                    ],
+                    $user
+                );
+
                 $this->notificationService->notifySppdRejected($travelRequest, $user, $validatedData['rejection_reason']);
                 return $this->handleResponse($request, true, 'Pengajuan telah ditolak.', 'approval.pimpinan.index');
             }
@@ -415,7 +474,7 @@ class ApprovalPimpinanController extends Controller
 
         } catch (ValidationException $e) {
             $isApiRequest = $request->wantsJson() || $request->ajax() || $request->header('Accept') === 'application/json';
-            
+
             if ($isApiRequest) {
                 return response()->json([
                     'success' => false,
@@ -423,7 +482,7 @@ class ApprovalPimpinanController extends Controller
                     'errors' => $e->errors()
                 ], 422);
             }
-            
+
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             return $this->handleException($e, $request, 'reject');
@@ -485,7 +544,7 @@ class ApprovalPimpinanController extends Controller
                 ->findOrFail($id);
 
             $user = Auth::user();
-            
+
             // Authorization check
             if (!$this->canUserModifyRequest($travelRequest, $user)) {
                 abort(403, 'Anda tidak memiliki akses untuk melihat riwayat pengajuan ini.');
@@ -512,7 +571,7 @@ class ApprovalPimpinanController extends Controller
         if (Auth::user()->role !== 'admin') {
             abort(403, 'Hanya admin yang dapat menjalankan fungsi ini.');
         }
-        
+
         try {
             // Fix SPPD with inconsistent approval levels
             $inconsistentRequests = TravelRequest::where('status', 'in_review')
@@ -522,22 +581,22 @@ class ApprovalPimpinanController extends Controller
                           ->orWhere('current_approval_level', '>', 2);
                 })
                 ->get();
-                
+
             $count = 0;
-            
+
             foreach ($inconsistentRequests as $request) {
                 $approvals = $request->approvals()->orderBy('level', 'desc')->first();
-                
+
                 if ($approvals) {
                     $request->current_approval_level = $approvals->level + 1;
                 } else {
                     $request->current_approval_level = 1;
                 }
-                
+
                 $request->save();
                 $count++;
             }
-            
+
             // Fix missing approver roles
             $missingRoleRequests = TravelRequest::where('status', 'in_review')
                 ->whereIn('current_approval_level', [1, 2])
@@ -545,12 +604,12 @@ class ApprovalPimpinanController extends Controller
                 ->filter(function($item) {
                     return $item->current_approver_role === null;
                 });
-                
+
             foreach ($missingRoleRequests as $request) {
                 $this->approvalService->initializeApprovalWorkflow($request);
                 $count++;
             }
-            
+
             return redirect()->back()->with('success', "Berhasil memperbaiki {$count} data SPPD yang tidak konsisten.");
         } catch (\Exception $e) {
             Log::error('Error fixing inconsistent data: ' . $e->getMessage());

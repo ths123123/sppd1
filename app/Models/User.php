@@ -106,30 +106,7 @@ class User extends Authenticatable
         }
     }
 
-    /**
-     * Get user's phone number formatted for WhatsApp
-     */
-    public function getWhatsappNumberAttribute()
-    {
-        if (!$this->phone) {
-            return null;
-        }
-
-        // Remove any non-numeric characters except +
-        $phone = preg_replace('/[^0-9+]/', '', $this->phone);
-
-        // If starts with 0, replace with +62
-        if (substr($phone, 0, 1) === '0') {
-            $phone = '+62' . substr($phone, 1);
-        }
-
-        // If doesn't start with +, assume it's Indonesian number
-        if (substr($phone, 0, 1) !== '+') {
-            $phone = '+62' . $phone;
-        }
-
-        return $phone;
-    }
+    // WhatsApp attribute has been removed
 
     /**
      * Get the travel requests for the user.

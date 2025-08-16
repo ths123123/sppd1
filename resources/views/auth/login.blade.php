@@ -75,7 +75,7 @@
             <div class="max-w-sm w-full text-white slide-in">
                 <div class="text-center mb-4">
                     <div class="w-16 h-16 mx-auto mb-4 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                        <i class="fas fa-route text-2xl"></i>
+                        <img src="{{ asset('images/logo.png') }}" alt="KPU Logo" class="w-12 h-12 object-contain">
                     </div>
                     <h1 class="text-2xl font-bold mb-2">Sistem SPPD</h1>
                     <p class="text-base text-white/80">KPU Kabupaten Cirebon</p>
@@ -128,11 +128,30 @@
             <div class="w-full max-w-sm slide-in">
                 <div class="text-center mb-4">
                     <div class="w-12 h-12 mx-auto mb-3 gradient-bg rounded-2xl flex items-center justify-center">
-                        <i class="fas fa-user text-white text-lg"></i>
+                        <img src="{{ asset('images/logo.png') }}" alt="KPU Logo" class="w-8 h-8 object-contain">
                     </div>
                     <h2 class="text-2xl font-bold text-gray-800 mb-1">Masuk ke Sistem</h2>
                     <p class="text-gray-600 text-sm">Silakan masuk dengan akun Anda</p>
                 </div>
+                @if ($errors->any())
+                <div class="mb-4 p-4 rounded-lg bg-red-50 border border-red-300">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 pt-0.5">
+                            <i class="fas fa-exclamation-circle text-red-500"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Terjadi kesalahan:</h3>
+                            <div class="mt-1 text-sm text-red-700">
+                                <ul class="list-disc pl-5 space-y-1">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
                 <div class="card-shadow rounded-2xl p-4 bg-white border border-gray-100">
                     <form class="space-y-4" method="POST" action="{{ route('login') }}">
                         @csrf
@@ -186,7 +205,7 @@
         <!-- Header -->
         <div class="gradient-bg p-6 text-center text-white">
             <div class="w-16 h-16 mx-auto mb-4 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                <i class="fas fa-route text-2xl"></i>
+                <img src="{{ asset('images/logo.png') }}" alt="KPU Logo" class="w-12 h-12 object-contain">
             </div>
             <h1 class="text-2xl font-bold mb-2">Sistem SPPD</h1>
             <p class="text-white/80">KPU Kabupaten Cirebon</p>
@@ -196,6 +215,26 @@
         <div class="p-6 -mt-8 relative z-10">
             <div class="card-shadow rounded-2xl p-6 bg-white">
                 <h2 class="text-xl font-bold text-gray-800 mb-6 text-center">Masuk ke Sistem</h2>
+                
+                @if ($errors->any())
+                <div class="mb-4 p-4 rounded-lg bg-red-50 border border-red-300">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 pt-0.5">
+                            <i class="fas fa-exclamation-circle text-red-500"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Terjadi kesalahan:</h3>
+                            <div class="mt-1 text-sm text-red-700">
+                                <ul class="list-disc pl-5 space-y-1">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
 
                 <form class="space-y-4" method="POST" action="{{ route('login') }}">
                     @csrf

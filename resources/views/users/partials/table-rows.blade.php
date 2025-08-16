@@ -3,8 +3,8 @@
     <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
         <div class="flex items-center">
             <div class="relative">
-                <div class="h-10 w-10 rounded-xl bg-gradient-to-br {{ $user->is_active ? 'from-blue-400 to-blue-600' : 'from-gray-400 to-gray-600' }} flex items-center justify-center text-white font-semibold shadow-sm">
-                    {{ strtoupper(substr($user->name, 0, 1)) }}
+                <div class="h-10 w-10 rounded-xl overflow-hidden shadow-sm">
+                    <img src="{{ $user->avatar_url }}" alt="{{ $user->name }}" class="h-full w-full object-cover">
                 </div>
                 @if($user->is_active)
                 <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
@@ -68,22 +68,11 @@
     </td>
     <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
         <div class="flex items-center space-x-2">
-            <button class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200" title="Edit">
-                <i class="fas fa-edit"></i>
-            </button>
-            @if($user->is_active)
             <button onclick="toggleUserStatus({{ $user->id }}, '{{ $user->name }}')"
-                    class="p-2 bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700 rounded-lg transition-all duration-200 flex items-center justify-center"
-                    title="Deactivate">
-                <i class="fas fa-ban"></i>
+                    class="px-3 py-1.5 {{ $user->is_active ? 'bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700' : 'bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700' }} rounded-lg transition-all duration-200 flex items-center justify-center text-sm font-medium"
+                    title="{{ $user->is_active ? 'Nonaktif' : 'Aktif' }}">
+                {{ $user->is_active ? 'Nonaktif' : 'Aktif' }} ↔
             </button>
-            @else
-            <button onclick="toggleUserStatus({{ $user->id }}, '{{ $user->name }}')"
-                    class="p-2 bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 rounded-lg transition-all duration-200 flex items-center justify-center"
-                    title="Activate">
-                <i class="fas fa-check-circle"></i>
-            </button>
-            @endif
         </div>
     </td>
 </tr>
@@ -99,4 +88,4 @@
         </div>
     </td>
 </tr>
-@endforelse 
+@endforelse

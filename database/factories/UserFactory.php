@@ -27,17 +27,13 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password: 'password' (bcrypt)
+            'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
-            'nip' => fake()->unique()->numerify('1984##########'), // NIP format: 18 digit (YYYYMMDDNNNNNNNNN)
-            'jabatan' => fake()->jobTitle(),
-            'role' => fake()->randomElement(['staff', 'kasubbag', 'sekretaris', 'ppk']),
+            'role' => 'staff', // staff adalah role default yang valid
             'phone' => fake()->phoneNumber(),
-            'address' => fake()->address(),
-            'pangkat' => fake()->randomElement(['Pengatur', 'Penata', 'Pembina']),
-            'golongan' => fake()->randomElement(['II/c', 'III/c', 'IV/a']),
+            'nip' => fake()->numerify('##########'),
+            'jabatan' => fake()->jobTitle(),
             'unit_kerja' => fake()->company(),
-            'is_active' => true,
         ];
     }
 
@@ -52,22 +48,22 @@ class UserFactory extends Factory
     }
 
     /**
-     * Indicate that the user is inactive.
+     * Indicate that the user is an admin.
      */
-    public function inactive(): static
+    public function admin(): static
     {
         return $this->state(fn (array $attributes) => [
-            'is_active' => false,
+            'role' => 'admin',
         ]);
     }
 
     /**
-     * Create a user with specific role.
+     * Indicate that the user is an approver.
      */
-    public function role(string $role): static
+    public function approver(): static
     {
         return $this->state(fn (array $attributes) => [
-            'role' => $role,
+            'role' => 'ppk', // PPK adalah role yang bisa approve
         ]);
     }
 }

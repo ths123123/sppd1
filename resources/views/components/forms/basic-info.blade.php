@@ -22,12 +22,12 @@
                     </option>
                 @endforeach
             </select>
-            @error('user_id')
+            @if(isset($errors) && $errors->has('user_id'))
                 <p class="sppd-text-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    {{ $message }}
+                    {{ $errors->first('user_id') }}
                 </p>
-            @enderror
+            @endif
         </div>
         @endif
 
