@@ -109,8 +109,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/save', [SettingsController::class, 'saveSettings'])->name('settings.save');
     Route::post('/settings/user/save', [SettingsController::class, 'saveUserSettings'])->name('settings.user.save');
 
-    // User Management (admin only)
-    Route::middleware('role_direct:kasubbag,sekretaris,admin')->group(function () {
+    // User Management (admin, kasubbag, sekretaris, ppk)
+    Route::middleware('role_direct:kasubbag,sekretaris,ppk,admin')->group(function () {
         Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
         Route::post('/users', [UserManagementController::class, 'store'])->name('users.store');
         Route::patch('/users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
@@ -147,7 +147,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('documents.all');
     Route::get('/dokumen/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
     Route::delete('/dokumen/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
-    
+
     // Travel Request Document Upload routes
     Route::post('/travel-requests/{travelRequest}/upload-supporting', [\App\Http\Controllers\TravelRequestDocumentController::class, 'uploadSupportingDocuments'])
         ->name('travel-requests.upload-supporting');
@@ -179,7 +179,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
     Route::patch('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-    
+
     // Dashboard API endpoints
     Route::get('/dashboard/recent-activities', [DashboardController::class, 'getRecentActivities'])->name('dashboard.recent-activities');
 });
