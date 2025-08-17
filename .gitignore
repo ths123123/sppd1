@@ -73,3 +73,12 @@ yarn-error.log*
 /skripsi_files/
 /diagram_files/
 /python_scripts/
+
+# Vite build (Laravel + Vite)
+public/build/
+
+# Laravel framework cache & views
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+!/storage/framework/.gitignore
