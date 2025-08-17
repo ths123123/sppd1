@@ -118,7 +118,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Admin routes - approval and management
-    Route::middleware('role_direct:kasubbag,sekretaris,ppk,admin')->group(function () {
+    Route::middleware('role_direct:sekretaris,ppk,admin')->group(function () {
         Route::get('/approval/pimpinan', [ApprovalPimpinanController::class, 'index'])->name('approval.pimpinan.index');
         Route::get('/approval/pimpinan/ajax', [\App\Http\Controllers\ApprovalPimpinanController::class, 'ajaxListApproval'])->name('approval.pimpinan.ajax');
         Route::post('/approval/pimpinan/{id}/approve', [ApprovalPimpinanController::class, 'approve'])

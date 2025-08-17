@@ -31,7 +31,7 @@ class TravelRequestObserver
         $userName = $user ? $user->name : 'Sistem';
 
         $action = 'SPPD Dibuat';
-        $description = "📋 SPPD baru dengan tujuan {$travelRequest->tujuan} telah dibuat oleh {$userName}.";
+        $description = "Pengajuan SPPD atas nama {$userName} telah berhasil disampaikan.";
 
         $this->activityLogService->log(
             $action,
@@ -62,7 +62,7 @@ class TravelRequestObserver
             $userName = $user ? $user->name : 'Sistem';
 
             $action = 'SPPD Diajukan';
-            $description = "📋 SPPD dengan tujuan {$travelRequest->tujuan} telah berhasil diajukan oleh {$userName} untuk proses persetujuan.";
+            $description = "Pengajuan SPPD atas nama {$userName} telah berhasil disampaikan.";
 
             $this->activityLogService->log(
                 $action,
@@ -101,23 +101,25 @@ class TravelRequestObserver
                 case 'in_review':
                     $currentApproverRole = $travelRequest->current_approver_role ?? 'pihak berwenang';
                     $action = 'SPPD Dalam Review';
-                    $description = "⏳ SPPD {$travelRequest->kode_sppd} sedang dalam tahap peninjauan dan evaluasi oleh {$currentApproverRole}.";
+                    // Cek apakah ini approval oleh sekretaris
+                    if ($approverRole === 'sekretaris' && $travelRequest->current_approval_level == 2) {
+                        $description = "SPPD dengan nomor {$travelRequest->kode_sppd} telah disetujui Sekretaris dan menunggu persetujuan Pejabat Pembuat Komitmen.";
+                    } else {
+                        $description = "SPPD dengan nomor {$travelRequest->kode_sppd} sedang dalam tahap peninjauan dan evaluasi oleh {$currentApproverRole}.";
+                    }
                     break;
                 case 'revision':
                     $action = 'SPPD Perlu Revisi';
-                    $description = "🔄 SPPD {$travelRequest->kode_sppd} memerlukan perbaikan berdasarkan evaluasi dari {$approverName}.";
+                    $description = "SPPD dengan nomor {$travelRequest->kode_sppd} memerlukan perbaikan berdasarkan evaluasi dari {$approverName}.";
                     break;
                 case 'rejected':
                     $action = 'SPPD Ditolak';
-                    $description = "❌ SPPD {$travelRequest->kode_sppd} tidak dapat diproses dan telah ditolak oleh {$approverName}.";
+                    $applicantName = $travelRequest->user ? $travelRequest->user->name : 'Sistem';
+                    $description = "SPPD yang diajukan oleh {$applicantName} tidak dapat melanjutkan proses dan telah ditolak oleh {$approverName}.";
                     break;
                 case 'completed':
                     $action = 'SPPD Disetujui';
-                    $description = "✅ SPPD {$travelRequest->kode_sppd} telah memperoleh persetujuan penuh dan siap untuk eksekusi perjalanan dinas";
-                    if ($approverName) {
-                        $description .= " berdasarkan evaluasi dari {$approverName}";
-                    }
-                    $description .= ".";
+                    $description = "Surat Perintah Perjalanan Dinas {$travelRequest->kode_sppd} telah disetujui lengkap.";
                     break;
             }
 

@@ -71,13 +71,13 @@
                             Kelola dan pantau perjalanan dinas dengan sistem terintegrasi KPU Kabupaten Cirebon
                         </p>
                         <div class="flex flex-wrap gap-3">
-                            <a href="{{ route('travel-requests.create') }}" data-requires-role="kasubbag" class="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200 {{ Auth::user()->role !== 'kasubbag' ? 'opacity-50 cursor-not-allowed' : '' }}">
+                            <a href="{{ route('travel-requests.create') }}" data-requires-role="kasubbag" class="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
                                 <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
                                 Buat SPPD Baru
                             </a>
-                            <a href="{{ route('travel-requests.index') }}" data-requires-role="view_all_sppd" class="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-800 bg-opacity-60 hover:bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200 {{ !in_array(Auth::user()->role, ['admin', 'kasubbag', 'sekretaris', 'ppk']) ? 'opacity-50 cursor-not-allowed' : '' }}">
+                            <a href="{{ route('travel-requests.index') }}" data-requires-role="view_all_sppd" class="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-800 bg-opacity-60 hover:bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
                                 <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                 </svg>
@@ -241,14 +241,82 @@
                     <h3 class="text-lg font-medium text-gray-900">Aktivitas Terbaru</h3>
                 </div>
                 <div class="divide-y divide-gray-200 max-h-96 overflow-y-auto scrollbar-thin" id="recent-activities-container">
-                    {{-- Konten aktivitas akan diisi oleh JavaScript --}}
-                    <div class="px-6 py-8 text-center">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                        </svg>
-                        <p class="mt-2 text-sm font-medium text-gray-900">Memuat aktivitas terbaru...</p>
-                        <p class="mt-1 text-sm text-gray-500">Harap tunggu sebentar.</p>
-                    </div>
+                    {{-- Fallback: Tampilkan aktivitas dari backend jika ada --}}
+                    @if(isset($recentActivities) && count($recentActivities) > 0)
+                        @foreach($recentActivities as $activity)
+                            <div class="px-6 py-5 flex items-start hover:bg-gray-50 transition-colors duration-150">
+                                <div class="flex-shrink-0">
+                                    @php
+                                        $bgColor = 'bg-blue-100';
+                                        $textColor = 'text-blue-600';
+                                        $icon = 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2';
+
+                                        if (isset($activity['status'])) {
+                                            if ($activity['status'] === 'completed') {
+                                                $bgColor = 'bg-green-100';
+                                                $textColor = 'text-green-600';
+                                                $icon = 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z';
+                                            } elseif ($activity['status'] === 'rejected') {
+                                                $bgColor = 'bg-red-100';
+                                                $textColor = 'text-red-600';
+                                                $icon = 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z';
+                                            } elseif ($activity['status'] === 'in_review') {
+                                                $bgColor = 'bg-purple-100';
+                                                $textColor = 'text-purple-600';
+                                                $icon = 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z';
+                                            } elseif ($activity['status'] === 'revision') {
+                                                $bgColor = 'bg-yellow-100';
+                                                $textColor = 'text-yellow-600';
+                                                $icon = 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z';
+                                            } elseif ($activity['status'] === 'submitted') {
+                                                $bgColor = 'bg-blue-100';
+                                                $textColor = 'text-blue-600';
+                                                $icon = 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z';
+                                            }
+                                        }
+                                    @endphp
+                                    <span class="h-12 w-12 rounded-full {{ $bgColor }} flex items-center justify-center shadow-md">
+                                        <svg class="h-7 w-7 {{ $textColor }}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon }}" />
+                                        </svg>
+                                    </span>
+                                </div>
+                                <div class="ml-5 flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <p class="text-sm font-medium text-gray-900">{{ $activity['description'] ?? 'Aktivitas SPPD' }}</p>
+                                        <span class="text-xs text-gray-500 ml-2 whitespace-nowrap font-medium">{{ $activity['time_ago'] ?? ($activity['updated_at_diff'] ?? '') }}</span>
+                                    </div>
+                                    <div class="mt-1">
+                                        <p class="text-xs text-gray-500">
+                                            <span class="font-medium">{{ $activity['kode_sppd'] ?? 'No. SPPD belum tersedia' }}</span>
+                                            @if(isset($activity['tujuan']) && $activity['tujuan'])
+                                                - {{ $activity['tujuan'] }}
+                                            @endif
+                                        </p>
+                                    </div>
+                                    @if(isset($activity['approver_name']) && $activity['approver_name'])
+                                        <div class="mt-1">
+                                            <p class="text-xs text-gray-500">
+                                                <span class="font-medium">Diproses oleh: {{ $activity['approver_name'] }}</span>
+                                                @if(isset($activity['approver_role']) && $activity['approver_role'])
+                                                    ({{ $activity['approver_role'] }})
+                                                @endif
+                                            </p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        {{-- Loading message yang akan diganti oleh JavaScript --}}
+                        <div class="px-6 py-8 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                            </svg>
+                            <p class="mt-2 text-sm font-medium text-gray-900">Memuat aktivitas terbaru...</p>
+                            <p class="mt-1 text-sm text-gray-500">Harap tunggu sebentar.</p>
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -258,7 +326,7 @@
                     <h3 class="text-lg font-medium text-gray-900">Akses Cepat</h3>
                 </div>
                 <div class="p-6 space-y-4">
-                    <a href="{{ route('travel-requests.create') }}" data-requires-role="kasubbag" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200 {{ Auth::user()->role !== 'kasubbag' ? 'opacity-50 cursor-not-allowed' : '' }}">
+                    <a href="{{ route('travel-requests.create') }}" data-requires-role="kasubbag" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200">
                         <div class="flex-shrink-0 bg-blue-500 p-2 rounded-md">
                             <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -280,7 +348,7 @@
                             <p class="text-xs text-gray-500">Lihat perjalanan dinas Anda</p>
                         </div>
                     </a>
-                    <a href="{{ route('approvals.index') }}" data-requires-role="approver" class="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors duration-200 {{ !in_array(Auth::user()->role, ['kasubbag', 'sekretaris', 'ppk']) ? 'opacity-50 cursor-not-allowed' : '' }}">
+                    <a href="{{ route('approvals.index') }}" data-requires-role="approver" class="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors duration-200">
                         <div class="flex-shrink-0 bg-purple-500 p-2 rounded-md">
                             <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -310,81 +378,278 @@
 @endsection
 
 @push('scripts')
-@vite(['resources/js/dashboard/charts.js'])
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Prepare data from backend
-        const dashboardData = {
-            months: @json($months ?? []),
-            monthlyApproved: @json($monthlyApproved ?? []),
-            monthlyInReview: @json($monthlyInReview ?? []),
-            monthlyRejected: @json($monthlyRejected ?? []),
-            monthlySubmitted: @json($monthlySubmitted ?? []),
-            statusDistribution: {
-                approved: {{ $approvedCount ?? 0 }},
-                submitted: {{ $submittedCount ?? 0 }},
-                in_review: {{ $reviewCount ?? 0 }},
-                rejected: {{ $rejectedCount ?? 0 }},
-                completed: {{ $approvedCount ?? 0 }} // Tambahkan completed untuk kompatibilitas
-            }
-        };
+    @vite(['resources/js/dashboard/charts.js'])
 
-        // Initialize dashboard
-        if (window.DashboardManager) {
-            window.DashboardManager.init(dashboardData);
-            // Panggil fetchRealtimeDashboard untuk memperbarui data secara real-time
-            if (typeof fetchRealtimeDashboard === 'function') {
-                fetchRealtimeDashboard();
+    <!-- Enhanced Dashboard Test Script -->
+    <script src="{{ asset('js/dashboard/test-enhanced.js') }}"></script>
+
+    <!-- Dashboard Verifier - Console-only testing -->
+    <script src="{{ asset('js/dashboard-verifier.js') }}"></script>
+
+    <!-- Dashboard Debug Script -->
+    <script src="{{ asset('js/dashboard-debug.js') }}"></script>
+
+    <!-- Ensure charts.js is loaded before other scripts -->
+    <script>
+        // Wait for charts.js to be fully loaded
+        function waitForChartsJS() {
+            if (typeof loadRecentActivities === 'function' && typeof updateRecentActivities === 'function') {
+                console.log('✅ charts.js loaded successfully');
+                return true;
             }
-        } else {
-            console.error('DashboardManager not found! Make sure charts.js is loaded.');
+            return false;
         }
 
-        // Tidak perlu inisialisasi Status Chart di sini karena sudah diinisialisasi di charts.js
+        // Check every 100ms for charts.js
+        let chartsJSLoaded = false;
+        const checkInterval = setInterval(() => {
+            if (waitForChartsJS()) {
+                chartsJSLoaded = true;
+                clearInterval(checkInterval);
+                console.log('🚀 charts.js is ready, proceeding with dashboard initialization');
+            }
+        }, 100);
 
-        // Handle unauthorized access notification
-        const userRole = "{{ Auth::user()->role }}";
+        // Timeout after 10 seconds
+        setTimeout(() => {
+            if (!chartsJSLoaded) {
+                clearInterval(checkInterval);
+                console.error('❌ charts.js failed to load within 10 seconds');
+            }
+        }, 10000);
+    </script>
 
-        // Add event listeners to restricted links
-        document.querySelectorAll('a[data-requires-role]').forEach(link => {
-            const requiredRole = link.getAttribute('data-requires-role');
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Prepare data from backend
+            const dashboardData = {
+                months: @json($months ?? []),
+                monthlyApproved: @json($monthlyApproved ?? []),
+                monthlyInReview: @json($monthlyInReview ?? []),
+                monthlyRejected: @json($monthlyRejected ?? []),
+                monthlySubmitted: @json($monthlySubmitted ?? []),
+                statusDistribution: {
+                    approved: {{ $approvedCount ?? 0 }},
+                    submitted: {{ $submittedCount ?? 0 }},
+                    in_review: {{ $reviewCount ?? 0 }},
+                    rejected: {{ $rejectedCount ?? 0 }},
+                    completed: {{ $approvedCount ?? 0 }}
+                }
+            };
 
-            // Sembunyikan menu jika pengguna tidak memiliki role yang diperlukan
-            if (requiredRole === 'kasubbag' && userRole !== 'kasubbag') {
-                link.classList.add('opacity-50', 'cursor-not-allowed');
-            } else if (requiredRole === 'approver' && !['kasubbag', 'sekretaris', 'ppk'].includes(userRole)) {
-                link.classList.add('opacity-50', 'cursor-not-allowed');
-            } else if (requiredRole === 'view_all_sppd' && !['admin', 'kasubbag', 'sekretaris', 'ppk'].includes(userRole)) {
-                link.classList.add('opacity-50', 'cursor-not-allowed');
-            } else if (requiredRole === 'analytics' && !['kasubbag', 'sekretaris', 'ppk'].includes(userRole)) {
-                link.classList.add('opacity-50', 'cursor-not-allowed');
-            } else if (requiredRole === 'document_management' && !['admin', 'kasubbag', 'sekretaris', 'ppk'].includes(userRole)) {
-                link.classList.add('opacity-50', 'cursor-not-allowed');
-            } else if (requiredRole === 'user_management' && !['admin', 'kasubbag', 'sekretaris', 'ppk'].includes(userRole)) {
-                link.classList.add('opacity-50', 'cursor-not-allowed');
+            // Initialize dashboard
+            if (window.DashboardManager) {
+                window.DashboardManager.init(dashboardData);
+                if (typeof fetchRealtimeDashboard === 'function') {
+                    fetchRealtimeDashboard();
+                }
+            } else {
+                console.error('DashboardManager not found! Make sure charts.js is loaded.');
             }
 
-            link.addEventListener('click', function(e) {
-                if ((requiredRole === 'kasubbag' && userRole !== 'kasubbag') ||
-                    (requiredRole === 'approver' && !['kasubbag', 'sekretaris', 'ppk'].includes(userRole)) ||
-                    (requiredRole === 'view_all_sppd' && !['admin', 'kasubbag', 'sekretaris', 'ppk'].includes(userRole)) ||
-                    (requiredRole === 'analytics' && !['kasubbag', 'sekretaris', 'ppk'].includes(userRole)) ||
-                    (requiredRole === 'document_management' && !['admin', 'kasubbag', 'sekretaris', 'ppk'].includes(userRole)) ||
-                    (requiredRole === 'user_management' && !['admin', 'kasubbag', 'sekretaris', 'ppk'].includes(userRole))) {
-                    e.preventDefault();
-                    document.getElementById('unauthorized-notification').classList.remove('hidden');
-
-                    // Auto-hide notification after 5 seconds
-                    setTimeout(() => {
-                        document.getElementById('unauthorized-notification').classList.add('hidden');
-                    }, 5000);
+            // Load recent activities with better error handling
+            const loadActivitiesWithRetry = () => {
+                // Check if loading is disabled
+                if (window.disableActivityLoading) {
+                    console.log('🚫 Activity loading disabled, skipping...');
+                    return;
                 }
-            });
-        });
 
-        console.log('🎯 Dashboard SPPD KPU Kabupaten Cirebon - Enhanced Version Active');
-    });
-</script>
+                if (typeof loadRecentActivities === 'function') {
+                    console.log('✅ loadRecentActivities function found, calling it...');
+                    loadRecentActivities();
+                } else {
+                    console.warn('⚠️ loadRecentActivities function not available, waiting for charts.js to load...');
+                    setTimeout(() => {
+                        if (typeof loadRecentActivities === 'function') {
+                            console.log('✅ loadRecentActivities function found after delay, calling it...');
+                            loadRecentActivities();
+                        } else {
+                            console.error('❌ loadRecentActivities still not available after timeout');
+                            // Fallback: try to load activities manually
+                            loadActivitiesManually();
+                        }
+                    }, 3000);
+                }
+            };
+
+            // Fallback function to load activities manually
+            const loadActivitiesManually = async () => {
+                // Check if loading is disabled
+                if (window.disableActivityLoading) {
+                    console.log('🚫 Manual activity loading disabled, skipping...');
+                    return;
+                }
+
+                try {
+                    console.log('🔄 Attempting to load activities manually...');
+                    const response = await fetch('/dashboard/recent-activities');
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success && result.data && result.data.length > 0) {
+                            console.log('✅ Manual load successful, updating activities...');
+                            if (typeof updateRecentActivities === 'function') {
+                                updateRecentActivities(result.data);
+                            } else {
+                                console.error('❌ updateRecentActivities function not available');
+                            }
+                        } else {
+                            console.warn('⚠️ Manual load: No activities found');
+                        }
+                    } else {
+                        console.warn('⚠️ Manual load failed:', response.status);
+                    }
+                } catch (error) {
+                    console.error('❌ Manual load error:', error);
+                }
+            };
+
+            // Start loading activities only if backend didn't provide them
+            if ({{ count($recentActivities ?? []) }} === 0) {
+                console.log('🔄 No backend activities, starting JavaScript load...');
+                loadActivitiesWithRetry();
+            } else {
+                console.log('✅ Backend provided activities, JavaScript load not needed');
+                // Disable automatic JavaScript loading since we have backend data
+                window.backendActivitiesLoaded = true;
+                // Also disable the retry mechanism
+                window.disableActivityLoading = true;
+
+                // Log the activities that are already displayed
+                setTimeout(() => {
+                    const displayedActivities = document.querySelectorAll('#recent-activities-container .px-6.py-5');
+                    console.log(`📊 Backend activities displayed: ${displayedActivities.length} items`);
+                }, 1000);
+            }
+
+            // Handle unauthorized access notification
+            const userRole = "{{ Auth::user()->role }}";
+
+            // Add event listeners to restricted links
+            document.querySelectorAll('a[data-requires-role]').forEach(link => {
+                const requiredRole = link.getAttribute('data-requires-role');
+
+                // Sembunyikan menu jika pengguna tidak memiliki role yang diperlukan
+                if (requiredRole === 'kasubbag' && userRole !== 'kasubbag') {
+                    link.classList.add('opacity-50', 'cursor-not-allowed');
+                } else if (requiredRole === 'approver' && !['kasubbag', 'sekretaris', 'ppk'].includes(userRole)) {
+                    link.classList.add('opacity-50', 'cursor-not-allowed');
+                } else if (requiredRole === 'view_all_sppd' && !['admin', 'kasubbag', 'sekretaris', 'ppk'].includes(userRole)) {
+                    link.classList.add('opacity-50', 'cursor-not-allowed');
+                } else if (requiredRole === 'analytics' && !['kasubbag', 'sekretaris', 'ppk'].includes(userRole)) {
+                    link.classList.add('opacity-50', 'cursor-not-allowed');
+                } else if (requiredRole === 'document_management' && !['admin', 'kasubbag', 'sekretaris', 'ppk'].includes(userRole)) {
+                    link.classList.add('opacity-50', 'cursor-not-allowed');
+                } else if (requiredRole === 'user_management' && !['admin', 'kasubbag', 'sekretaris', 'ppk'].includes(userRole)) {
+                    link.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+
+                link.addEventListener('click', function(e) {
+                    if ((requiredRole === 'kasubbag' && userRole !== 'kasubbag') ||
+                        (requiredRole === 'approver' && !['kasubbag', 'sekretaris', 'ppk'].includes(userRole)) ||
+                        (requiredRole === 'view_all_sppd' && !['admin', 'kasubbag', 'sekretaris', 'ppk'].includes(userRole)) ||
+                        (requiredRole === 'analytics' && !['kasubbag', 'sekretaris', 'ppk'].includes(userRole)) ||
+                        (requiredRole === 'document_management' && !['admin', 'kasubbag', 'sekretaris', 'ppk'].includes(userRole)) ||
+                        (requiredRole === 'user_management' && !['admin', 'kasubbag', 'sekretaris', 'ppk'].includes(userRole))) {
+                        e.preventDefault();
+                        document.getElementById('unauthorized-notification').classList.remove('hidden');
+
+                        // Auto-hide notification after 5 seconds
+                        setTimeout(() => {
+                            document.getElementById('unauthorized-notification').classList.add('hidden');
+                        }, 5000);
+                    }
+                });
+            });
+
+            console.log('🎯 Dashboard SPPD KPU Kabupaten Cirebon - Enhanced Version Active');
+
+        // Debug: Check if all required functions are available
+        console.log('🔍 Checking required functions:');
+        console.log('- loadRecentActivities:', typeof loadRecentActivities === 'function');
+        console.log('- updateRecentActivities:', typeof updateRecentActivities === 'function');
+        console.log('- fetchRealtimeDashboard:', typeof fetchRealtimeDashboard === 'function');
+
+        // Debug: Check if activity container exists
+        const activityContainer = document.querySelector('#recent-activities-container');
+        console.log('- Activity container found:', !!activityContainer);
+        if (activityContainer) {
+            console.log('- Activity container HTML:', activityContainer.innerHTML.substring(0, 100) + '...');
+        }
+
+        // Debug: Check backend data
+        console.log('🔍 Backend data check:');
+        console.log('- Recent activities count:', {{ count($recentActivities ?? []) }});
+        console.log('- Recent activities data:', @json($recentActivities ?? []));
+
+        // Check if activities are properly formatted
+        @if(isset($recentActivities) && count($recentActivities) > 0)
+            console.log('🔍 First activity details:');
+            console.log('- Status:', '{{ $recentActivities[0]['status'] ?? 'N/A' }}');
+            console.log('- Description:', '{{ $recentActivities[0]['description'] ?? 'N/A' }}');
+            console.log('- Kode SPPD:', '{{ $recentActivities[0]['kode_sppd'] ?? 'N/A' }}');
+        @endif
+
+        // If we have backend data, don't try to load via JavaScript
+        if ({{ count($recentActivities ?? []) }} > 0) {
+            console.log('✅ Backend already provided activities, skipping JavaScript load');
+            console.log('📊 Activities from backend:', @json($recentActivities ?? []));
+
+            // Verify that activities are displayed correctly
+            const activityContainer = document.querySelector('#recent-activities-container');
+            if (activityContainer) {
+                const activityItems = activityContainer.querySelectorAll('.px-6.py-5');
+                console.log('📋 Found activity items in DOM:', activityItems.length);
+
+                if (activityItems.length === 0) {
+                    console.warn('⚠️ No activity items found in DOM despite backend data');
+                    // Force refresh the display
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    console.log('✅ Backend activities are properly displayed in DOM');
+                }
+            }
+        } else {
+            console.log('⚠️ No backend activities, will try JavaScript load');
+            // Try to load activities immediately if backend didn't provide them
+            setTimeout(() => {
+                if (typeof loadRecentActivities === 'function') {
+                    console.log('🔄 Loading activities via JavaScript...');
+                    loadRecentActivities();
+                } else {
+                    console.error('❌ loadRecentActivities function not available');
+                }
+            }, 1000);
+        }
+
+        // Final verification: Ensure activities are visible (only if backend didn't provide them)
+        if ({{ count($recentActivities ?? []) }} === 0) {
+            setTimeout(() => {
+                const finalCheck = document.querySelector('#recent-activities-container .px-6.py-5');
+                if (!finalCheck) {
+                    console.warn('⚠️ Final check: No activities visible, attempting manual load...');
+                    if (typeof testRecentActivitiesAPI === 'function') {
+                        testRecentActivitiesAPI().then(activities => {
+                            if (activities && activities.length > 0) {
+                                if (typeof manualUpdateActivities === 'function') {
+                                    manualUpdateActivities(activities);
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    console.log('✅ Final check: Activities are visible');
+                }
+            }, 3000);
+        } else {
+            console.log('✅ Backend provided activities, skipping final verification');
+            // Set a flag to prevent any JavaScript interference
+            window.activitiesLocked = true;
+        }
+        });
+    </script>
 @endpush
 
 @push('styles')

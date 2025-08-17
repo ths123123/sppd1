@@ -33,6 +33,32 @@ class ApprovalWorkflowTest extends TestCase
     }
 
     /** @test */
+    public function kasubbag_cannot_access_approval_menu()
+    {
+        $this->actingAs($this->kasubbag);
+
+        // Try to access approval menu
+        $response = $this->get(route('approval.pimpinan.index'));
+
+        // Should be forbidden
+        $response->assertStatus(403);
+        $response->assertSee('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');
+    }
+
+    /** @test */
+    public function kasubbag_cannot_access_approval_ajax()
+    {
+        $this->actingAs($this->kasubbag);
+
+        // Try to access approval AJAX endpoint
+        $response = $this->get(route('approval.pimpinan.ajax'));
+
+        // Should be forbidden
+        $response->assertStatus(403);
+        $response->assertSee('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');
+    }
+
+    /** @test */
     public function kasubbag_can_submit_sppd_for_approval()
     {
         $this->actingAs($this->kasubbag);

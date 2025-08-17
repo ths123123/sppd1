@@ -233,16 +233,22 @@ class ApprovalPimpinanController extends Controller
     }
 
     /**
-     * Tampilkan semua pengajuan SPPD yang perlu disetujui dengan query yang aman
+     * Tampilkan daftar pengajuan SPPD yang memerlukan approval dengan security yang ditingkatkan
      */
     public function index(Request $request)
     {
         $user = Auth::user();
 
+        // Check if user has access to approval menu
+        if ($user->role === 'kasubbag') {
+            abort(403, 'Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');
+        }
+
         try {
             $query = $this->buildApprovalQuery($request, $user);
             $requests = $query->paginate(10);
 
+            // Handle AJAX requests
             if ($request->ajax()) {
                 return view('approval.pimpinan.partials.approval_requests_table', compact('requests'))->render();
             }
@@ -259,6 +265,11 @@ class ApprovalPimpinanController extends Controller
     public function ajaxListApproval(Request $request)
     {
         $user = Auth::user();
+
+        // Check if user has access to approval menu
+        if ($user->role === 'kasubbag') {
+            abort(403, 'Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');
+        }
 
         try {
             $query = $this->buildApprovalQuery($request, $user);
@@ -370,7 +381,19 @@ class ApprovalPimpinanController extends Controller
             );
 
             if ($success) {
-                // Log the approval activity
+                // Log the approval activity dengan pesan yang berbeda berdasarkan role
+                            $approvalDescription = "";
+            if ($user->role === 'sekretaris' && $travelRequest->status !== 'completed') {
+                $approvalDescription = "SPPD dengan nomor {$travelRequest->kode_sppd} telah disetujui Sekretaris dan menunggu persetujuan Pejabat Pembuat Komitmen.";
+            } else if ($travelRequest->status === 'completed') {
+                $approvalDescription = "Surat Perintah Perjalanan Dinas {$travelRequest->kode_sppd} telah disetujui lengkap.";
+            } else if ($travelRequest->status === 'rejected') {
+                $applicantName = $travelRequest->user ? $travelRequest->user->name : 'Sistem';
+                $approvalDescription = "SPPD yang diajukan oleh {$applicantName} tidak dapat melanjutkan proses dan telah ditolak oleh {$user->name} ({$user->role}).";
+            } else {
+                $approvalDescription = "SPPD dengan nomor {$travelRequest->kode_sppd} telah berhasil disetujui oleh {$user->name} ({$user->role}) untuk tujuan {$travelRequest->tujuan}.";
+            }
+
                 $this->activityLogService->log(
                     'SPPD Disetujui',
                     TravelRequest::class,
@@ -381,7 +404,7 @@ class ApprovalPimpinanController extends Controller
                         'approver_name' => $user->name,
                         'approver_role' => $user->role,
                         'comments' => $finalComments,
-                        'description' => "✅ SPPD {$travelRequest->kode_sppd} telah berhasil disetujui oleh {$user->name} ({$user->role}) untuk tujuan {$travelRequest->tujuan}.",
+                        'description' => $approvalDescription,
                     ],
                     $user
                 );

@@ -214,77 +214,26 @@
             transform: translateX(3px);
         }
 
-        /* Mencegah hover effect yang tidak diinginkan pada menu tanpa akses */
-        a[data-access-restricted="true"]:hover,
-        a[data-access-restricted="true"]:focus {
-            background-color: transparent !important;
-            color: inherit !important;
-            text-decoration: none !important;
+        /* Professional notification banner styling */
+        #access-warning-banner {
+            animation: slideDown 0.3s ease-out;
         }
 
-        /* Mencegah hover effect pada menu yang dibatasi akses */
-        a.opacity-50.cursor-not-allowed:hover,
-        a.opacity-50.cursor-not-allowed:focus {
-            background-color: transparent !important;
-            color: inherit !important;
-            text-decoration: none !important;
-            transform: none !important;
-        }
-
-        /* Mencegah hover effect pada mobile menu yang dibatasi */
-        .mobile-menu-item.opacity-50.cursor-not-allowed:hover {
-            background: none !important;
-            color: #222 !important;
-        }
-
-        /* Mencegah hover effect pada desktop navbar yang dibatasi */
-        .text-white.opacity-50.cursor-not-allowed:hover {
-            background-color: transparent !important;
-            color: rgba(255, 255, 255, 0.5) !important;
-        }
-
-        /* High-Resolution Chart Styling */
-        .chart-container {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .chart-container canvas {
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: crisp-edges;
-            image-rendering: pixelated;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
-        }
-
-        /* Ensure chart text is crisp */
-        .chart-container canvas * {
-            text-rendering: optimizeLegibility;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* High DPI support for chart elements */
-        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-            .chart-container canvas {
-                image-rendering: -webkit-optimize-contrast;
-                image-rendering: crisp-edges;
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
             }
-        }
-
-        /* Ultra high DPI support */
-        @media (-webkit-min-device-pixel-ratio: 3), (min-resolution: 288dpi) {
-            .chart-container canvas {
-                image-rendering: -webkit-optimize-contrast;
-                image-rendering: crisp-edges;
+            to {
+                transform: translateY(0);
+                opacity: 1;
             }
         }
     </style>
 
     <!-- Scripts -->
     <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
+    <link href="<?php echo e(asset('css/components/navbar-access-control.css')); ?>" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" integrity="sha512-fD9DI5bZwQxOi7MhYWnnNPlvXdp/2Pj3XSTRrFs5FQa4mizyGLnJcN6tuvUS6LbmgN1ut+XGSABKvjN0H6Aoow==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>

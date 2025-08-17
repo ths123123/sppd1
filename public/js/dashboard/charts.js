@@ -692,9 +692,53 @@ setInterval(() => {
     }
 }, 60000);
 
+// Fungsi untuk memuat aktivitas terbaru secara terpisah
+async function loadRecentActivities() {
+    try {
+        const response = await fetch('/dashboard/recent-activities');
+        if (response.ok) {
+            const activities = await response.json();
+            updateRecentActivities(activities);
+        } else {
+            console.warn('Failed to load recent activities:', response.status);
+            // Tampilkan pesan error yang user-friendly
+            const activityContainer = document.querySelector('#recent-activities-container');
+            if (activityContainer) {
+                activityContainer.innerHTML = `
+                    <div class="px-6 py-8 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                        <p class="mt-2 text-sm font-medium text-gray-900">Gagal memuat aktivitas</p>
+                        <p class="mt-1 text-sm text-gray-500">Silakan refresh halaman atau coba lagi nanti.</p>
+                    </div>
+                `;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading recent activities:', error);
+        // Tampilkan pesan error yang user-friendly
+        const activityContainer = document.querySelector('#recent-activities-container');
+        if (activityContainer) {
+            activityContainer.innerHTML = `
+                <div class="px-6 py-8 text-center">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <p class="mt-2 text-sm font-medium text-gray-900">Terjadi kesalahan</p>
+                    <p class="mt-1 text-sm text-gray-500">Gagal memuat aktivitas terbaru. Silakan coba lagi.</p>
+                </div>
+            `;
+        }
+    }
+}
+
 // Fetch once on page load
 document.addEventListener('DOMContentLoaded', () => {
     try {
+        // Load recent activities immediately
+        loadRecentActivities();
+        
         // Delay sedikit untuk memastikan DOM sudah siap
         setTimeout(() => {
             if (typeof fetchRealtimeDashboard === 'function') {

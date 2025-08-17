@@ -39,7 +39,10 @@
                     <!-- Approval - Tampilkan untuk semua user -->
                     <a href="<?php echo e(route('approval.pimpinan.index')); ?>"
                        data-requires-role="approver"
-                       class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-2 transition-colors duration-200 <?php echo e(!in_array($role, ['kasubbag', 'sekretaris', 'ppk']) ? 'opacity-50 cursor-not-allowed' : ''); ?>">
+                       class="text-white px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-2 transition-colors duration-200 <?php echo e(in_array($role, ['sekretaris', 'ppk']) ? 'hover:text-gray-200' : 'opacity-50 cursor-not-allowed'); ?>"
+                       <?php if(!in_array($role, ['sekretaris', 'ppk'])): ?>
+                       onclick="event.preventDefault(); showAccessWarning('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');"
+                       <?php endif; ?>>
                         <span>Approval</span>
                     </a>
 
@@ -58,7 +61,10 @@
                                 <!-- Buat SPPD - Tampilkan untuk semua user -->
                                 <a href="<?php echo e(route('travel-requests.create')); ?>"
                                    data-requires-role="kasubbag"
-                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 <?php echo e($role !== 'kasubbag' ? 'opacity-50 cursor-not-allowed' : ''); ?>">
+                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                   <?php if($role !== 'kasubbag'): ?>
+                                   onclick="event.preventDefault(); showAccessWarning('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');"
+                                   <?php endif; ?>>
                                     Buat SPPD Baru
                                 </a>
 
@@ -70,7 +76,10 @@
                                 <!-- Daftar SPPD - Tampilkan untuk semua user -->
                                 <a href="<?php echo e(route('travel-requests.index')); ?>"
                                    data-requires-role="view_all_sppd"
-                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 <?php echo e(!in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin']) ? 'opacity-50 cursor-not-allowed' : ''); ?>">
+                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                   <?php if(!in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin'])): ?>
+                                   onclick="event.preventDefault(); showAccessWarning('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');"
+                                   <?php endif; ?>>
                                     Daftar Semua SPPD
                                 </a>
                             </div>
@@ -91,12 +100,18 @@
                             <div class="py-1">
                                 <a href="<?php echo e(route('analytics.index')); ?>"
                                    data-requires-role="analytics"
-                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 <?php echo e(!in_array($role, ['kasubbag', 'sekretaris', 'ppk']) ? 'opacity-50 cursor-not-allowed' : ''); ?>">
+                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                   <?php if(!in_array($role, ['kasubbag', 'sekretaris', 'ppk'])): ?>
+                                   onclick="event.preventDefault(); showAccessWarning('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');"
+                                   <?php endif; ?>>
                                     Analytics
                                 </a>
                                 <a href="<?php echo e(route('laporan.daftar')); ?>"
                                    data-requires-role="analytics"
-                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 <?php echo e(!in_array($role, ['kasubbag', 'sekretaris', 'ppk']) ? 'opacity-50 cursor-not-allowed' : ''); ?>">
+                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                   <?php if(!in_array($role, ['kasubbag', 'sekretaris', 'ppk'])): ?>
+                                   onclick="event.preventDefault(); showAccessWarning('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');"
+                                   <?php endif; ?>>
                                     Laporan
                                 </a>
                             </div>
@@ -120,7 +135,10 @@
                                 </a>
                                 <a href="<?php echo e(route('templates.index')); ?>"
                                    data-requires-role="document_management"
-                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 <?php echo e(!in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin']) ? 'opacity-50 cursor-not-allowed' : ''); ?>">
+                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                   <?php if(!in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin'])): ?>
+                                   onclick="event.preventDefault(); showAccessWarning('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');"
+                                   <?php endif; ?>>
                                     Manajemen Template
                                 </a>
                             </div>
@@ -130,7 +148,10 @@
                     <!-- Kelola User - Tampilkan untuk semua user -->
                     <a href="<?php echo e(route('users.index')); ?>"
                        data-requires-role="user_management"
-                       class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-2 transition-colors duration-200 <?php echo e(!in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin']) ? 'opacity-50 cursor-not-allowed' : ''); ?>">
+                       class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-2 transition-colors duration-200"
+                       <?php if(!in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin'])): ?>
+                       onclick="event.preventDefault(); showAccessWarning('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');"
+                       <?php endif; ?>>
                         <span>Kelola User</span>
                     </a>
                 </div>
@@ -600,7 +621,7 @@ function fetchNotifications() {
             dropdown.innerHTML = `<div class='px-4 py-6 text-center text-red-400 text-sm'>
     <div class='flex justify-center items-center space-x-2'>
         <svg class='h-5 w-5 text-red-500' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-            <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' />
+            <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z' />
         </svg>
         <span>Gagal memuat notifikasi</span>
     </div>
@@ -758,5 +779,47 @@ function goToNotifications() {
 
 // Make goToNotifications globally available
 window.goToNotifications = goToNotifications;
+
+// Function to show access warning for restricted menus
+function showAccessWarning(message) {
+    // Remove any existing access warning
+    const existingWarning = document.getElementById('access-warning-banner');
+    if (existingWarning) {
+        existingWarning.remove();
+    }
+
+    // Create professional notification banner
+    const warningBanner = document.createElement('div');
+    warningBanner.id = 'access-warning-banner';
+    warningBanner.className = 'fixed top-0 left-0 right-0 z-50 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 shadow-lg';
+    warningBanner.innerHTML = `
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <span class="font-medium">${message}</span>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" class="text-red-500 hover:text-red-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    `;
+
+    // Insert banner at the top of the page
+    document.body.insertBefore(warningBanner, document.body.firstChild);
+
+    // Auto-remove after 8 seconds
+    setTimeout(() => {
+        if (warningBanner.parentNode) {
+            warningBanner.remove();
+        }
+    }, 8000);
+}
+
+// Make showAccessWarning globally available
+window.showAccessWarning = showAccessWarning;
 </script>
 <?php /**PATH D:\pkl\SPPD-KP1\SPPD-KPUKP1\resources\views/components/navbar.blade.php ENDPATH**/ ?>

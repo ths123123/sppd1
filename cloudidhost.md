@@ -109,11 +109,29 @@ cp .env.example .env
 nano .env
 ```
 
-**Edit file .env:**
+**Edit file .env lengkap:**
 ```env
 APP_NAME="SPPD KPU Cirebon"
 APP_ENV=production
+APP_KEY=
+APP_DEBUG=false
 APP_URL=http://103.139.193.218
+
+APP_LOCALE=id
+APP_FALLBACK_LOCALE=id
+APP_FAKER_LOCALE=id_ID
+
+APP_MAINTENANCE_DRIVER=file
+# APP_MAINTENANCE_STORE=database
+
+PHP_CLI_SERVER_WORKERS=4
+
+BCRYPT_ROUNDS=12
+
+LOG_CHANNEL=stack
+LOG_STACK=single
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=error
 
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
@@ -121,6 +139,49 @@ DB_PORT=5432
 DB_DATABASE=sppd_kpu
 DB_USERNAME=fillahi
 DB_PASSWORD=sppd123
+
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+MEMCACHED_HOST=127.0.0.1
+
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+AWS_USE_PATH_STYLE_ENDPOINT=false
+
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_HOST=
+PUSHER_PORT=443
+PUSHER_SCHEME=https
+PUSHER_APP_CLUSTER=mt1
+
+VITE_APP_NAME="${APP_NAME}"
+VITE_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+VITE_PUSHER_HOST="${PUSHER_HOST}"
+VITE_PUSHER_PORT="${PUSHER_PORT}"
+VITE_PUSHER_SCHEME="${PUSHER_SCHEME}"
+VITE_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
 ```
 
 #### 4.3 Install Dependencies Laravel
@@ -302,6 +363,52 @@ php artisan db:seed
 ### 🔄 **Cara Deploy Update:**
 1. **Otomatis:** Push ke branch `main` → GitHub Actions deploy otomatis
 2. **Manual:** Ikuti langkah di bagian "Update Aplikasi" di bawah
+
+---
+
+## 🚨 **Troubleshooting GitHub Actions (16 Agustus 2025)**
+
+### ❌ **Error: SSH Private Key Invalid**
+**Masalah:** `ssh.ParsePrivateKey: ssh: no key found`
+
+**Penyebab:** Menggunakan Public Key alih-alih Private Key
+
+**Solusi:**
+1. **Dapatkan Private Key yang benar:**
+   ```bash
+   # Di Windows Command Prompt
+   notepad C:\Users\Fillahi Hazarul\.ssh\id_ed25519
+   ```
+
+2. **Copy Private Key (BUKAN Public Key):**
+   ```
+   -----BEGIN OPENSSH PRIVATE KEY-----
+   b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+   QyNTUxOQAAACBKjqNc6EQhvmXSiGlxqHlbjukL6be5+qC0z1CtHEhKXwAAAJgAAAAAAAAA
+   ... (banyak baris kode) ...
+   -----END OPENSSH PRIVATE KEY-----
+   ```
+
+3. **Update GitHub Secrets:**
+   - Buka: https://github.com/ths123123/sppd1/settings/secrets/actions
+   - Klik edit (ikon pensil) pada `SSH_PRIVATE_KEY`
+   - Hapus isi lama (public key)
+   - Paste private key yang baru
+   - Klik "Update secret"
+
+4. **Re-run Workflow:**
+   - Klik tab "Actions"
+   - Klik workflow yang gagal (merah X)
+   - Klik "Re-run jobs"
+
+### 📋 **Perbedaan Public vs Private Key:**
+- **Public Key** (yang salah): `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI...`
+- **Private Key** (yang benar): `-----BEGIN OPENSSH PRIVATE KEY-----...`
+
+### ✅ **Status Deployment:**
+- **16 Agustus 2025, 20:19 WIB:** GitHub Actions gagal karena SSH key salah
+- **16 Agustus 2025, 20:20 WIB:** SSH Private Key sudah diupdate dengan benar
+- **Status:** Menunggu re-run workflow
 
 ---
 

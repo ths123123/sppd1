@@ -180,7 +180,7 @@ class DashboardService
                 return [];
             }
 
-            return $activities->map(function ($item) {
+            $formattedActivities = $activities->map(function ($item) {
                 if (!$item instanceof ActivityLog) {
                     return null; // Lewati jika bukan ActivityLog
                 }
@@ -246,19 +246,25 @@ class DashboardService
                 if ($travelRequest) {
                     switch ($status) {
                         case 'submitted':
-                            $description = "📋 SPPD {$kodeSppd} telah berhasil diajukan untuk tujuan {$travelRequest->tujuan} oleh {$userName}.";
+                            $description = "Pengajuan SPPD atas nama {$userName} telah berhasil disampaikan.";
                             break;
                         case 'completed':
-                            $description = "✅ SPPD {$kodeSppd} telah memperoleh persetujuan penuh dan siap untuk eksekusi perjalanan dinas.";
+                            $description = "Surat Perintah Perjalanan Dinas {$kodeSppd} telah disetujui oleh semua pihak.";
                             break;
                         case 'rejected':
-                            $description = "❌ SPPD {$kodeSppd} tidak dapat diproses dan telah ditolak oleh {$approverName}.";
+                            $applicantName = $travelRequest->user ? $travelRequest->user->name : 'Sistem';
+                            $description = "SPPD yang diajukan oleh {$applicantName} tidak dapat melanjutkan proses dan telah ditolak oleh {$approverName}.";
                             break;
                         case 'revision':
-                            $description = "🔄 SPPD {$kodeSppd} memerlukan perbaikan berdasarkan evaluasi dari {$approverName}.";
+                            $description = "SPPD dengan nomor {$kodeSppd} memerlukan perbaikan berdasarkan evaluasi dari {$approverName}.";
                             break;
                         case 'in_review':
-                            $description = "⏳ SPPD {$kodeSppd} sedang dalam tahap peninjauan dan evaluasi oleh tim yang berwenang.";
+                            // Cek apakah ini approval oleh sekretaris atau approval final
+                            if ($approverRole === 'sekretaris' && $travelRequest->current_approval_level == 2) {
+                                $description = "SPPD dengan nomor {$kodeSppd} telah disetujui Sekretaris dan menunggu persetujuan Pejabat Pembuat Komitmen.";
+                            } else {
+                                $description = "SPPD dengan nomor {$kodeSppd} sedang dalam tahap peninjauan dan evaluasi oleh tim yang berwenang.";
+                            }
                             break;
                     }
                 } else {
@@ -279,8 +285,20 @@ class DashboardService
                     'updated_at' => $createdAt->format('d/m/Y H:i:s'),
                     'time_ago' => $timeAgo,
                     'updated_at_diff' => $createdAt->diffForHumans(),
+                    // Add unique identifier for deduplication
+                    'unique_key' => $kodeSppd . '_' . $status . '_' . md5($description),
                 ];
-            })->filter()->values()->toArray(); // filter() untuk menghapus null
+            })->filter()->values();
+
+            // Filter out duplicates based on unique_key
+            $uniqueActivities = $formattedActivities->unique('unique_key')->take($limit);
+
+            // Remove the unique_key from final result
+            return $uniqueActivities->map(function ($activity) {
+                unset($activity['unique_key']);
+                return $activity;
+            })->toArray();
+
         } catch (\Exception $e) {
             Log::error('Error getting formatted recent activities: ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
             return [];

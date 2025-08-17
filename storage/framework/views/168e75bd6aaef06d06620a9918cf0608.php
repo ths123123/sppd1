@@ -101,7 +101,10 @@
                 <!-- Approval - Tampilkan untuk semua user -->
                 <a href="<?php echo e(route('approval.pimpinan.index')); ?>"
                    data-requires-role="approver"
-                   class="mobile-menu-item text-black <?php echo e(request()->routeIs('approval.pimpinan.*') ? 'active' : ''); ?> <?php echo e(!in_array($role, ['kasubbag', 'sekretaris', 'ppk']) ? 'opacity-50 cursor-not-allowed' : ''); ?>">
+                   class="mobile-menu-item text-black <?php echo e(request()->routeIs('approval.pimpinan.*') ? 'active' : ''); ?> <?php echo e(!in_array($role, ['sekretaris', 'ppk']) ? 'opacity-50 cursor-not-allowed' : ''); ?>"
+                   <?php if(!in_array($role, ['sekretaris', 'ppk'])): ?>
+                   onclick="event.preventDefault(); showAccessWarning('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');"
+                   <?php endif; ?>>
                     <svg class="mobile-menu-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 9a2 2 0 012-2h2a2 2 0 012 2m-6 0a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                     Approval
                 </a>
@@ -118,7 +121,10 @@
                     <!-- Buat SPPD - Tampilkan untuk semua user -->
                     <a href="<?php echo e(route('travel-requests.create')); ?>"
                        data-requires-role="kasubbag"
-                       class="mobile-menu-item text-black <?php echo e($role !== 'kasubbag' ? 'opacity-50 cursor-not-allowed' : ''); ?>">
+                       class="mobile-menu-item text-black"
+                       <?php if($role !== 'kasubbag'): ?>
+                       onclick="event.preventDefault(); showAccessWarning('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');"
+                       <?php endif; ?>>
                         Buat SPPD
                     </a>
 
@@ -130,7 +136,10 @@
                     <!-- Daftar SPPD - Tampilkan untuk semua user -->
                     <a href="<?php echo e(route('travel-requests.index')); ?>"
                        data-requires-role="view_all_sppd"
-                       class="mobile-menu-item text-black <?php echo e(!in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin']) ? 'opacity-50 cursor-not-allowed' : ''); ?>">
+                       class="mobile-menu-item text-black"
+                       <?php if(!in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin'])): ?>
+                       onclick="event.preventDefault(); showAccessWarning('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');"
+                       <?php endif; ?>>
                         Daftar SPPD
                     </a>
                 </div>
@@ -146,12 +155,18 @@
                 <div x-show="analyticsOpen" x-transition class="pl-10 space-y-1">
                     <a href="<?php echo e(route('analytics.index')); ?>"
                        data-requires-role="analytics"
-                       class="mobile-menu-item text-black <?php echo e(!in_array($role, ['kasubbag', 'sekretaris', 'ppk']) ? 'opacity-50 cursor-not-allowed' : ''); ?>">
+                       class="mobile-menu-item text-black"
+                       <?php if(!in_array($role, ['kasubbag', 'sekretaris', 'ppk'])): ?>
+                       onclick="event.preventDefault(); showAccessWarning('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');"
+                       <?php endif; ?>>
                         Analytics
                     </a>
                     <a href="<?php echo e(route('laporan.daftar')); ?>"
                        data-requires-role="analytics"
-                       class="mobile-menu-item text-black <?php echo e(!in_array($role, ['kasubbag', 'sekretaris', 'ppk']) ? 'opacity-50 cursor-not-allowed' : ''); ?>">
+                       class="mobile-menu-item text-black"
+                       <?php if(!in_array($role, ['kasubbag', 'sekretaris', 'ppk'])): ?>
+                       onclick="event.preventDefault(); showAccessWarning('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');"
+                       <?php endif; ?>>
                         Laporan
                     </a>
                 </div>
@@ -170,7 +185,10 @@
                     </a>
                     <a href="<?php echo e(route('templates.index')); ?>"
                        data-requires-role="document_management"
-                       class="mobile-menu-item text-black <?php echo e(!in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin']) ? 'opacity-50 cursor-not-allowed' : ''); ?>">
+                       class="mobile-menu-item text-black"
+                       <?php if(!in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin'])): ?>
+                       onclick="event.preventDefault(); showAccessWarning('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');"
+                       <?php endif; ?>>
                         Manajemen Template
                     </a>
                 </div>
@@ -179,7 +197,10 @@
                 <div class="mobile-menu-section">MENU MANAJEMEN</div>
                 <a href="<?php echo e(route('users.index')); ?>"
                    data-requires-role="user_management"
-                   class="mobile-menu-item text-black <?php echo e(request()->routeIs('users.*') ? 'active' : ''); ?> <?php echo e(!in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin']) ? 'opacity-50 cursor-not-allowed' : ''); ?>">
+                   class="mobile-menu-item text-black <?php echo e(request()->routeIs('users.*') ? 'active' : ''); ?>"
+                   <?php if(!in_array($role, ['kasubbag', 'sekretaris', 'ppk', 'admin'])): ?>
+                   onclick="event.preventDefault(); showAccessWarning('Anda tidak memiliki akses ke menu ini silahkan hubungi kasubbag');"
+                   <?php endif; ?>>
                     <svg class="mobile-menu-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                     Kelola User
                 </a>

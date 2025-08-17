@@ -55,9 +55,30 @@ class DashboardController extends Controller
     {
         try {
             $activities = $this->dashboardService->getFormattedRecentActivities(10);
-            return response()->json($activities);
+            return response()->json([
+                'success' => true,
+                'data' => $activities
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Gagal memuat aktivitas terbaru'], 500);
+            // Handle database connection errors gracefully
+            if (str_contains($e->getMessage(), 'could not connect to server') || 
+                str_contains($e->getMessage(), 'Connection refused')) {
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Database connection error. Please check your database configuration.',
+                    'data' => [],
+                    'error' => 'Database connection failed'
+                ], 503); // Service Unavailable
+            }
+            
+            // Handle other errors
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading recent activities',
+                'data' => [],
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -83,4 +104,6 @@ class DashboardController extends Controller
             ]);
         }
     }
+
+
 }

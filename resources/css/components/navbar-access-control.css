@@ -1,0 +1,67 @@
+/* Navbar Access Control Styles */
+/* Mengatur gaya visual untuk menu yang dibatasi akses */
+
+/* Menu yang dibatasi akses */
+[data-access-restricted="true"] {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    pointer-events: auto !important; /* Tetap bisa diklik untuk show warning */
+}
+
+/* Hapus hover effects untuk menu yang dibatasi */
+[data-access-restricted="true"]:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
+/* Gaya khusus untuk menu approval yang dibatasi */
+[data-requires-role="approver"][data-access-restricted="true"] {
+    position: relative;
+}
+
+[data-requires-role="approver"][data-access-restricted="true"]::after {
+    content: "🔒";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+/* Gaya untuk mobile menu yang dibatasi */
+.mobile-menu-item[data-access-restricted="true"] {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+}
+
+/* Hapus hover effects di mobile */
+.mobile-menu-item[data-access-restricted="true"]:hover {
+    background-color: transparent !important;
+    color: inherit !important;
+}
+
+/* Transisi halus untuk perubahan opacity */
+[data-requires-role] {
+    transition: opacity 0.2s ease-in-out, cursor 0.2s ease-in-out;
+}
+
+/* Gaya untuk menu yang aktif */
+[data-requires-role]:not([data-access-restricted="true"]) {
+    opacity: 1;
+    cursor: pointer;
+}
+
+/* Hover effects hanya untuk menu yang aktif */
+[data-requires-role]:not([data-access-restricted="true"]):hover {
+    opacity: 0.8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    [data-access-restricted="true"]::after {
+        font-size: 8px;
+        top: -1px;
+        right: -1px;
+    }
+}

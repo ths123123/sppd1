@@ -8,7 +8,7 @@
     "name": "vendor"
   },
   "resources/css/app.css": {
-    "file": "assets/app-CshAkUJ1.css",
+    "file": "assets/app-CLC7bP3K.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -46,7 +46,7 @@
     ]
   },
   "resources/js/dashboard/charts.js": {
-    "file": "assets/charts-BZSCLydE.js",
+    "file": "assets/charts-D9YU60MV.js",
     "name": "charts",
     "src": "resources/js/dashboard/charts.js",
     "isEntry": true

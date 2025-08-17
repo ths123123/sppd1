@@ -1,12 +1,33 @@
 /**
  * ====================================================================
- * DASHBOARD CHARTS MODULE - ENHANCED STABILITY VERSION
+ * DASHBOARD CHARTS MODULE - SISTEM SPPD KPU KABUPATEN CIREBON
  * ====================================================================
  *
- * 🎯 ACTIVITY PRESERVATION SYSTEM
- * - Prevents activities from disappearing
- * - Implements proper race condition handling
- * - Enhanced error recovery and data persistence
+ * 📊 PROFESSIONAL CHART MANAGEMENT - ENHANCED STABILITY VERSION
+ *
+ * 🎯 FEATURES:
+ * - Monthly trend analysis
+ * - Status distribution visualization
+ * - Real-time data integration
+ * - Responsive chart rendering
+ * - Fallback data handling
+ * - ACTIVITY PRESERVATION SYSTEM
+ * - RACE CONDITION PREVENTION
+ * - ENHANCED ERROR RECOVERY
+ *
+ * 🔧 DEPENDENCIES:
+ * - Chart.js v3+
+ * - Backend data integration
+ *
+ * === ACTIVITY PRESERVATION SYSTEM ===
+ * Sistem ini menggunakan beberapa mekanisme untuk mencegah aktivitas terbaru menghilang:
+ * 1. Single source of truth untuk data aktivitas
+ * 2. Mutex locks untuk mencegah operasi bersamaan
+ * 3. Data validation sebelum DOM updates
+ * 4. localStorage backup untuk persistensi data
+ * 5. Comprehensive error boundaries
+ * 6. Activity restoration mechanism
+ * 7. Proper throttling (10+ seconds minimum)
  *
  * ====================================================================
  */
@@ -21,44 +42,69 @@ class ActivityPreservationSystem {
         this.activities = [];
         this.isInitialized = false;
         this.backupInterval = null;
-
+        
+        // Initialize the system
         this.initialize();
     }
 
+    /**
+     * Initialize the activity preservation system
+     */
     initialize() {
         console.log('🔧 Initializing Activity Preservation System...');
+        
+        // Load activities from localStorage if available
         this.loadFromStorage();
+        
+        // Set up periodic backup
         this.startPeriodicBackup();
+        
+        // Mark as initialized
         this.isInitialized = true;
+        
         console.log('✅ Activity Preservation System initialized');
     }
 
+    /**
+     * Acquire mutex lock
+     */
     async acquireLock() {
         if (this.mutex) {
             console.log('🔒 Mutex already locked, waiting...');
             return false;
         }
+        
         this.mutex = true;
         console.log('🔒 Mutex acquired');
         return true;
     }
 
+    /**
+     * Release mutex lock
+     */
     releaseLock() {
         this.mutex = false;
         console.log('🔓 Mutex released');
     }
 
+    /**
+     * Check if enough time has passed since last API call
+     */
     canMakeApiCall() {
         const now = Date.now();
         const timeSinceLastCall = now - this.lastApiCall;
-
+        
         if (timeSinceLastCall < this.minApiInterval) {
             console.log(`⏰ API call throttled: ${Math.round(timeSinceLastCall/1000)}s < ${this.minApiInterval/1000}s`);
             return false;
         }
+        
         return true;
     }
 
+    /**
+     * Store activities in localStorage
+     */
     saveToStorage(activities) {
         try {
             if (typeof localStorage !== 'undefined') {
@@ -75,6 +121,9 @@ class ActivityPreservationSystem {
         }
     }
 
+    /**
+     * Load activities from localStorage
+     */
     loadFromStorage() {
         try {
             if (typeof localStorage !== 'undefined') {
@@ -82,7 +131,8 @@ class ActivityPreservationSystem {
                 if (stored) {
                     const backup = JSON.parse(stored);
                     const age = Date.now() - backup.timestamp;
-
+                    
+                    // Only use backup if it's less than 1 hour old
                     if (age < 3600000 && backup.activities && Array.isArray(backup.activities)) {
                         this.activities = backup.activities;
                         console.log('📂 Loaded activities from localStorage:', this.activities.length);
@@ -99,11 +149,14 @@ class ActivityPreservationSystem {
         return false;
     }
 
+    /**
+     * Start periodic backup of activities
+     */
     startPeriodicBackup() {
         if (this.backupInterval) {
             clearInterval(this.backupInterval);
         }
-
+        
         this.backupInterval = setInterval(() => {
             if (this.activities.length > 0) {
                 this.saveToStorage(this.activities);
@@ -111,26 +164,43 @@ class ActivityPreservationSystem {
         }, 30000); // Backup every 30 seconds
     }
 
+    /**
+     * Update activities with validation
+     */
     updateActivities(newActivities) {
+        // Validate new activities
         if (!newActivities || !Array.isArray(newActivities) || newActivities.length === 0) {
             console.log('⚠️ Invalid activities data provided, keeping existing');
             return false;
         }
 
+        // Store new activities
         this.activities = newActivities;
+        
+        // Save to storage
         this.saveToStorage(this.activities);
+        
         console.log('✅ Activities updated:', this.activities.length);
         return true;
     }
 
+    /**
+     * Get current activities
+     */
     getActivities() {
         return this.activities;
     }
 
+    /**
+     * Check if we have valid activities
+     */
     hasActivities() {
         return this.activities && Array.isArray(this.activities) && this.activities.length > 0;
     }
 
+    /**
+     * Cleanup
+     */
     destroy() {
         if (this.backupInterval) {
             clearInterval(this.backupInterval);
@@ -142,7 +212,6 @@ class ActivityPreservationSystem {
 // Initialize the activity preservation system
 const activitySystem = new ActivityPreservationSystem();
 
-// === CHART CLASSES ===
 class DashboardCharts {
     constructor(data) {
         this.data = data;
@@ -428,8 +497,11 @@ window.DashboardManager = {
     }
 };
 
-// === ENHANCED ACTIVITY MANAGEMENT FUNCTIONS ===
+// === ENHANCED ACTIVITY MANAGEMENT SYSTEM ===
 
+/**
+ * Show empty activity message
+ */
 function showEmptyActivityMessage() {
     const activityContainer = document.querySelector('#recent-activities-container');
     if (!activityContainer) {
@@ -437,6 +509,7 @@ function showEmptyActivityMessage() {
         return;
     }
 
+    // Check if activities are already displayed
     const existingActivities = document.querySelectorAll('#recent-activities-container .px-6.py-5');
     if (existingActivities.length > 0) {
         console.log('📝 Activities already displayed, skipping empty message');
@@ -455,9 +528,12 @@ function showEmptyActivityMessage() {
     `;
 }
 
+/**
+ * Update recent activities with enhanced validation and preservation
+ */
 function updateRecentActivities(activities) {
     console.log('🔄 Updating recent activities with:', activities);
-
+    
     const activityContainer = document.querySelector('#recent-activities-container');
     if (!activityContainer) {
         console.error('❌ Activity container not found!');
@@ -467,23 +543,26 @@ function updateRecentActivities(activities) {
     // CRITICAL: Validate data before any DOM operations
     if (!activities || !Array.isArray(activities) || activities.length === 0) {
         console.log('⚠️ Invalid activities data provided');
-
+        
+        // Check if we already have activities displayed
         const existingActivities = document.querySelectorAll('#recent-activities-container .px-6.py-5');
         if (existingActivities.length > 0) {
             console.log('📝 Keeping existing activities - no valid replacement data');
             return;
         }
-
+        
+        // Only show empty message if no activities are displayed
         showEmptyActivityMessage();
         return;
     }
 
     // Update activity system
     activitySystem.updateActivities(activities);
-
+    
     try {
+        // Check if we already have activities displayed
         const existingActivities = document.querySelectorAll('#recent-activities-container .px-6.py-5');
-
+        
         // CRITICAL: Only clear container if we have valid new data AND no existing activities
         if (existingActivities.length === 0) {
             console.log('📋 Rendering activities - container was empty');
@@ -498,6 +577,9 @@ function updateRecentActivities(activities) {
         let html = '';
 
         activities.forEach((activity, index) => {
+            console.log(`📝 Processing activity ${index + 1}:`, activity);
+            
+            // Determine icon and color based on status
             let bgColor = 'bg-blue-100';
             let textColor = 'text-blue-600';
             let icon = 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2';
@@ -558,10 +640,10 @@ function updateRecentActivities(activities) {
 
         activityContainer.innerHTML = html;
         console.log('✅ Activities rendered successfully');
-
+        
     } catch (error) {
         console.error('❌ Error updating activities:', error);
-
+        
         // CRITICAL: Restore activities if rendering failed
         if (activitySystem.hasActivities()) {
             console.log('🔄 Attempting to restore activities after error');
@@ -570,6 +652,7 @@ function updateRecentActivities(activities) {
                 updateRecentActivities(restoredActivities);
             }
         } else {
+            // Show empty message only if no activities are displayed
             const existingActivities = document.querySelectorAll('#recent-activities-container .px-6.py-5');
             if (existingActivities.length === 0) {
                 showEmptyActivityMessage();
@@ -578,21 +661,27 @@ function updateRecentActivities(activities) {
     }
 }
 
+/**
+ * Load recent activities with enhanced error handling and race condition prevention
+ */
 async function loadRecentActivities() {
     try {
         console.log('🔄 Loading recent activities...');
 
+        // Check mutex lock
         if (!(await activitySystem.acquireLock())) {
             console.log('🚫 Activities loading already in progress, skipping');
             return;
         }
 
+        // Check API call throttling
         if (!activitySystem.canMakeApiCall()) {
             console.log('🚫 API call throttled, skipping');
             activitySystem.releaseLock();
             return;
         }
 
+        // Check if we already have activities displayed
         const existingActivities = document.querySelectorAll('#recent-activities-container .px-6.py-5');
         if (existingActivities.length > 0) {
             console.log('✅ Activities already displayed, skipping API call');
@@ -600,6 +689,7 @@ async function loadRecentActivities() {
             return;
         }
 
+        // Update last API call timestamp
         activitySystem.lastApiCall = Date.now();
 
         console.log('📡 Fetching recent activities from API...');
@@ -615,7 +705,8 @@ async function loadRecentActivities() {
                 updateRecentActivities(result.data);
             } else {
                 console.warn('⚠️ No activities found or empty response:', result.message);
-
+                
+                // Try to restore from activity system
                 if (activitySystem.hasActivities()) {
                     console.log('🔄 Restoring activities from system');
                     updateRecentActivities(activitySystem.getActivities());
@@ -625,7 +716,8 @@ async function loadRecentActivities() {
             }
         } else {
             console.warn('⚠️ Failed to load recent activities:', response.status);
-
+            
+            // Try to restore from activity system
             if (activitySystem.hasActivities()) {
                 console.log('🔄 Restoring activities from system after API failure');
                 updateRecentActivities(activitySystem.getActivities());
@@ -635,7 +727,8 @@ async function loadRecentActivities() {
         }
     } catch (error) {
         console.error('❌ Error loading recent activities:', error);
-
+        
+        // Try to restore from activity system
         if (activitySystem.hasActivities()) {
             console.log('🔄 Restoring activities from system after error');
             updateRecentActivities(activitySystem.getActivities());
@@ -646,25 +739,32 @@ async function loadRecentActivities() {
             }
         }
     } finally {
+        // Release mutex lock
         activitySystem.releaseLock();
     }
 }
 
+/**
+ * Fetch realtime dashboard data with enhanced error handling
+ */
 async function fetchRealtimeDashboard() {
     try {
         console.log('📡 Fetching realtime dashboard data...');
 
+        // Check mutex lock
         if (!(await activitySystem.acquireLock())) {
             console.log('🚫 Dashboard refresh already in progress, skipping');
             return;
         }
 
+        // Check API call throttling
         if (!activitySystem.canMakeApiCall()) {
             console.log('🚫 API call throttled, skipping dashboard refresh');
             activitySystem.releaseLock();
             return;
         }
 
+        // Update last API call timestamp
         activitySystem.lastApiCall = Date.now();
 
         const response = await fetch('/api/dashboard/realtime', {
@@ -690,7 +790,7 @@ async function fetchRealtimeDashboard() {
         }
 
         const result = await response.json();
-
+        
         if (result && result.success && result.data) {
             // Update charts and statistics
             if (window.DashboardManager) {
@@ -721,7 +821,8 @@ async function fetchRealtimeDashboard() {
                 updateRecentActivities(result.data.recent_activities);
             } else {
                 console.log('📊 No valid recent activities in realtime data, keeping existing');
-
+                
+                // Check if we need to restore activities
                 const existingActivities = document.querySelectorAll('#recent-activities-container .px-6.py-5');
                 if (existingActivities.length === 0 && activitySystem.hasActivities()) {
                     console.log('🔄 Restoring activities from system');
@@ -755,11 +856,12 @@ async function fetchRealtimeDashboard() {
         }
     } catch (error) {
         console.error('❌ Failed to fetch realtime dashboard data:', error);
-
+        
         if (error.message.includes('Not authenticated')) {
             window.location.href = '/login';
         }
     } finally {
+        // Release mutex lock
         activitySystem.releaseLock();
     }
 }
@@ -768,16 +870,19 @@ async function fetchRealtimeDashboard() {
 
 // Auto-refresh every 5 minutes (increased from 3 minutes)
 setInterval(() => {
+    // Check if activity system is initialized
     if (!activitySystem.isInitialized) {
         console.log('🚫 Activity system not initialized, skipping auto-refresh');
         return;
     }
 
+    // Check if we can make API calls
     if (!activitySystem.canMakeApiCall()) {
         console.log('🚫 Auto-refresh throttled, skipping');
         return;
     }
 
+    // Check if activities are displayed
     const existingActivities = document.querySelectorAll('#recent-activities-container .px-6.py-5');
     if (existingActivities.length === 0 && activitySystem.hasActivities()) {
         console.log('🔄 Auto-refresh: Restoring activities from system');
@@ -804,28 +909,30 @@ console.log('- Activities count:', activitySystem.getActivities().length);
 
 // Load activities on page load
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 DOM Content Loaded - Initializing enhanced dashboard...');
+    console.log('🚀 DOM Content Loaded - Initializing dashboard...');
 
     // Check if backend already provided activities
     const backendActivities = document.querySelectorAll('#recent-activities-container .px-6.py-5');
     if (backendActivities.length > 0) {
         console.log('✅ Backend provided activities, storing in system');
-
+        
         // Extract activities from DOM and store in system
         const activities = Array.from(backendActivities).map(activity => {
+            // Extract activity data from DOM (simplified)
             return {
                 description: activity.querySelector('.text-sm.font-medium')?.textContent || 'Aktivitas SPPD',
-                status: 'submitted',
+                status: 'submitted', // Default status
                 kode_sppd: 'SPPD-' + Math.random().toString(36).substr(2, 9),
                 time_ago: 'Baru saja'
             };
         });
-
+        
         activitySystem.updateActivities(activities);
         console.log('📊 Backend activities stored in system:', activities.length);
     } else {
         console.log('🔄 No backend activities, will load via JavaScript');
-
+        
+        // Load activities after a short delay
         setTimeout(() => {
             if (typeof loadRecentActivities === 'function') {
                 loadRecentActivities();
@@ -849,11 +956,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 completed: 0
             }
         };
-
+        
         window.DashboardManager.init(dashboardData);
     }
 
-    console.log('🎯 Enhanced Dashboard SPPD KPU Kabupaten Cirebon - Stability Version Active');
+    console.log('🎯 Dashboard SPPD KPU Kabupaten Cirebon - Enhanced Stability Version Active');
 });
 
 // Export functions to global scope
