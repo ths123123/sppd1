@@ -127,7 +127,7 @@ class NotificationService
             if ($travelRequest->status === 'completed') {
                 $submitter = $travelRequest->user;
                 $title = 'SPPD Selesai';
-                $message = 'SPPD Anda telah selesai disetujui oleh semua pihak.';
+                $message = 'SPPD Anda telah selesai disetujui oleh ' . $approver->role . '.';
                 $this->createNotification($submitter, $travelRequest, 'sppd_completed', $title, $message);
             }
         } catch (\Exception $e) {

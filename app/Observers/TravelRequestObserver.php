@@ -31,7 +31,7 @@ class TravelRequestObserver
         $userName = $user ? $user->name : 'Sistem';
 
         $action = 'SPPD Dibuat';
-        $description = "Pengajuan SPPD atas nama {$userName} telah berhasil disampaikan.";
+        $description = "Pengajuan SPPD atas nama {$userName} telah berhasil diajukan.";
 
         $this->activityLogService->log(
             $action,
@@ -62,7 +62,7 @@ class TravelRequestObserver
             $userName = $user ? $user->name : 'Sistem';
 
             $action = 'SPPD Diajukan';
-            $description = "Pengajuan SPPD atas nama {$userName} telah berhasil disampaikan.";
+            $description = "Pengajuan SPPD atas nama {$userName} telah berhasil diajukan.";
 
             $this->activityLogService->log(
                 $action,

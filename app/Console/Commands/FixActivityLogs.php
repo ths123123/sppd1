@@ -177,7 +177,7 @@ class FixActivityLogs extends Command
 
                 switch ($travelRequest->status) {
             case 'submitted':
-                return "Pengajuan SPPD atas nama {$userName} telah berhasil disampaikan.";
+                return "Pengajuan SPPD atas nama {$userName} telah berhasil diajukann.";
             
             case 'in_review':
                 // Check if this is approval by sekretaris

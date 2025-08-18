@@ -246,10 +246,10 @@ class DashboardService
                 if ($travelRequest) {
                     switch ($status) {
                         case 'submitted':
-                            $description = "Pengajuan SPPD atas nama {$userName} telah berhasil disampaikan.";
+                            $description = "Pengajuan SPPD atas nama {$userName} telah berhasil diajukan.";
                             break;
                         case 'completed':
-                            $description = "Surat Perintah Perjalanan Dinas {$kodeSppd} telah disetujui oleh semua pihak.";
+                            $description = "Surat Perintah Perjalanan Dinas {$kodeSppd} telah disetujui oleh {$approverName}.";
                             break;
                         case 'rejected':
                             $applicantName = $travelRequest->user ? $travelRequest->user->name : 'Sistem';

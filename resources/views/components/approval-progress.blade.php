@@ -135,7 +135,7 @@
                 </h4>
                 <p class="text-sm text-gray-600 mt-1">
                     @if($travelRequest->status === 'approved')
-                        SPPD telah disetujui oleh semua pihak yang berwenang.
+                        SPPD telah disetujui oleh {{ $approverName }}.
                     @elseif($travelRequest->status === 'rejected')
                         SPPD ditolak. Silakan periksa alasan penolakan.
                     @elseif($travelRequest->status === 'in_review')

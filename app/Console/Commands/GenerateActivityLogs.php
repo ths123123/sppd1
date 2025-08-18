@@ -66,7 +66,7 @@ class GenerateActivityLogs extends Command
                                 switch ($travelRequest->status) {
                     case 'submitted':
                         $action = 'SPPD Dibuat';
-                        $description = "Pengajuan SPPD atas nama {$userName} telah berhasil disampaikan.";
+                        $description = "Pengajuan SPPD atas nama {$userName} telah berhasil diajukan.";
                         break;
                     case 'in_review':
                         $approverRole = $travelRequest->current_approver_role ?? 'pihak berwenang';
