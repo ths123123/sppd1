@@ -108,7 +108,7 @@ class NotificationService
             // Beritahu submitter bahwa SPPD telah disetujui oleh approver
             $submitter = $travelRequest->user;
             $title = "SPPD Disetujui oleh {$approver->role}";
-            $message = "SPPD Anda ({$travelRequest->kode_sppd}) telah disetujui oleh {$approver->role}.";
+            $message = "SPPD Anda ({$travelRequest->kode_sppd}) telah disetujui oleh {$approver->name} ({$approver->role}).";
             
             // Database notification
             $this->createNotification($submitter, $travelRequest, 'sppd_approved', $title, $message);
@@ -127,7 +127,8 @@ class NotificationService
             if ($travelRequest->status === 'completed') {
                 $submitter = $travelRequest->user;
                 $title = 'SPPD Selesai';
-                $message = 'SPPD Anda telah selesai disetujui oleh ' . $approver->role . '.';
+                $title = 'SPPD Selesai';
+                $message = "SPPD dengan nomor {$travelRequest->kode_sppd} telah disetujui. Selamat melaksanakan perjalanan dinas.";
                 $this->createNotification($submitter, $travelRequest, 'sppd_completed', $title, $message);
             }
         } catch (\Exception $e) {
