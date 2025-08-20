@@ -362,6 +362,11 @@ function renderNotificationItem(n) {
         bgColor = 'bg-green-50';
         borderColor = 'border-l-green-400';
         statusBadge = '<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 font-medium">SPPD Disetujui</span>';
+    } else if (n.type === 'sppd_approved_by_sekretaris') {
+        icon = '<div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shadow-sm"><i class="fas fa-paper-plane text-green-600 text-lg"></i></div>';
+        bgColor = 'bg-green-50';
+        borderColor = 'border-l-green-400';
+        statusBadge = '<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 font-medium">SPPD Disetujui</span>';
     } else {
         icon = '<div class="flex-shrink-0 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center shadow-sm"><i class="fas fa-bell text-gray-600 text-lg"></i></div>';
     }
